@@ -1,7 +1,7 @@
+
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import i18n from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   DropdownMenu,
@@ -10,9 +10,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Sheet,
   SheetContent,
@@ -20,17 +20,17 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
-import { Menu } from "lucide-react"
-import { Switch } from "@/components/ui/switch"
-import { useTheme } from "@/contexts/ThemeContext"
-import { MoonIcon, SunIcon } from '@radix-ui/react-icons';
+} from "@/components/ui/sheet";
+import { Menu, Sun, Moon } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { useTheme } from "@/contexts/ThemeContext";
+import LanguageSwitcher from './LanguageSwitcher';
 
-// Import our new CartButton
+// Import our CartButton
 import CartButton from '@/components/cart/CartButton';
 
 const Navbar = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, session, signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -45,22 +45,22 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow">
+    <nav className="bg-white dark:bg-gray-900 shadow">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="text-2xl font-bold text-mzad-primary">
+          <Link to="/" className="text-2xl font-bold text-mzad-primary dark:text-white">
             MzadKumSooq
           </Link>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-5">
-            <NavLink to="/browse" className={({ isActive }) => isActive ? 'text-blue-500' : 'hover:text-gray-500'}>
+            <NavLink to="/browse" className={({ isActive }) => isActive ? 'text-blue-500' : 'hover:text-gray-500 dark:text-gray-300'}>
               {t('browse')}
             </NavLink>
-            <NavLink to="/sell" className={({ isActive }) => isActive ? 'text-blue-500' : 'hover:text-gray-500'}>
+            <NavLink to="/sell" className={({ isActive }) => isActive ? 'text-blue-500' : 'hover:text-gray-500 dark:text-gray-300'}>
               {t('sell')}
             </NavLink>
-            <NavLink to="/about" className={({ isActive }) => isActive ? 'text-blue-500' : 'hover:text-gray-500'}>
+            <NavLink to="/about" className={({ isActive }) => isActive ? 'text-blue-500' : 'hover:text-gray-500 dark:text-gray-300'}>
               {t('about')}
             </NavLink>
           </div>
@@ -68,6 +68,13 @@ const Navbar = () => {
           {/* Desktop Menu - Auth */}
           <div className="hidden md:flex items-center gap-2">
             <CartButton />
+            <LanguageSwitcher />
+            <div className="flex items-center space-x-2 ml-2">
+              <Sun className="h-[1.2rem] w-[1.2rem] dark:hidden" />
+              <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
+              <Moon className="h-[1.2rem] w-[1.2rem] hidden dark:inline-block" />
+            </div>
+            
             {session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -128,30 +135,16 @@ const Navbar = () => {
                     <Link to="/about">{t('about')}</Link>
                   </Button>
 
-                  <div className="flex items-center">
+                  <div className="flex items-center space-x-2">
                     <CartButton />
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          {t('language')}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" forceMount>
-                        <DropdownMenuItem onClick={() => changeLanguage('en')}>
-                          English
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => changeLanguage('ar')}>
-                          العربية
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <LanguageSwitcher />
                   </div>
 
                   <div className="grid gap-2">
                     <div className="flex items-center space-x-2">
-                      <SunIcon />
+                      <Sun className="h-4 w-4" />
                       <Switch id="airplane-mode" onClick={toggleTheme} checked={theme === "dark"} />
-                      <MoonIcon />
+                      <Moon className="h-4 w-4" />
                     </div>
                   </div>
 
