@@ -2,7 +2,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Star, Package, MessageCircle, User } from 'lucide-react';
+import { Star, Package, MessageCircle, User, ThumbsUp } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,8 @@ import { fetchProfile } from '@/services/profileService';
 import { fetchProductsBySellerId } from '@/services/product';
 import { mapProductToCardProps } from '@/services/product/mappers';
 import { toast } from 'sonner';
+import { SellerFeedbackSummary } from '@/components/feedback/SellerFeedbackSummary';
+import { calculateFeedbackStats } from '@/services/feedbackService';
 
 export const SellerProfile = () => {
   const { sellerId } = useParams<{ sellerId: string }>();
@@ -28,6 +30,12 @@ export const SellerProfile = () => {
   const { data: sellerProducts, isLoading: isLoadingProducts } = useQuery({
     queryKey: ['sellerProducts', sellerId],
     queryFn: () => fetchProductsBySellerId(sellerId || ''),
+    enabled: !!sellerId,
+  });
+  
+  const { data: feedbackStats } = useQuery({
+    queryKey: ['feedback-stats', sellerId],
+    queryFn: () => calculateFeedbackStats(sellerId || ''),
     enabled: !!sellerId,
   });
 
@@ -59,8 +67,10 @@ export const SellerProfile = () => {
   }
 
   const displayName = sellerProfile?.username || sellerProfile?.full_name || `User ${sellerId.substring(0, 5)}`;
-  const sellerRating = 4.8; // This would ideally come from the database
-  const salesCount = 245; // This would ideally come from the database
+  // Use feedback stats if available, otherwise fallback values
+  const positivePercentage = feedbackStats?.positivePercentage || 100;
+  const totalFeedback = feedbackStats?.total || 0;
+  const salesCount = totalFeedback || 245; // Use feedback count or fallback
 
   const renderStars = () => {
     const stars = [];
@@ -99,7 +109,7 @@ export const SellerProfile = () => {
                   <h1 className="text-2xl font-bold">{displayName}</h1>
                   <div className="flex items-center mt-1">
                     {renderStars()}
-                    <span className="ml-2 text-lg font-medium">{sellerRating.toFixed(1)}</span>
+                    <span className="ml-2 text-lg font-medium">{(positivePercentage/100 * 5).toFixed(1)}</span>
                     <span className="ml-2 text-gray-500">({salesCount}+ sales)</span>
                   </div>
                   <div className="mt-1 text-sm text-gray-600">
@@ -121,8 +131,8 @@ export const SellerProfile = () => {
               </div>
             </div>
             <div className="mt-6 flex items-center">
-              <Badge className="bg-green-50 text-green-700 border-green-300 mr-4">
-                100% positive feedback
+              <Badge className={`${positivePercentage >= 98 ? 'bg-green-50 text-green-700 border-green-300' : 'bg-amber-50 text-amber-700 border-amber-300'} mr-4`}>
+                {positivePercentage}% positive feedback
               </Badge>
               {sellerProfile?.location && (
                 <div className="text-gray-600">
@@ -133,14 +143,14 @@ export const SellerProfile = () => {
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="items">
+        <Tabs defaultValue="feedback">
           <TabsList className="mb-6">
             <TabsTrigger value="items">
               <Package className="mr-2" />
               Items for sale
             </TabsTrigger>
             <TabsTrigger value="feedback">
-              <Star className="mr-2" />
+              <ThumbsUp className="mr-2" />
               Feedback
             </TabsTrigger>
           </TabsList>
@@ -165,11 +175,7 @@ export const SellerProfile = () => {
           <TabsContent value="feedback">
             <div className="mb-4">
               <h2 className="text-xl font-semibold mb-4">Seller Feedback</h2>
-              <div className="text-center py-12 bg-gray-50 rounded-lg">
-                <Star className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-4 text-lg font-medium text-gray-900">100% Positive Feedback</h3>
-                <p className="mt-2 text-sm text-gray-500">Based on {salesCount} total transactions</p>
-              </div>
+              {sellerId && <SellerFeedbackSummary sellerId={sellerId} />}
             </div>
           </TabsContent>
         </Tabs>

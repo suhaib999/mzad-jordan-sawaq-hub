@@ -48,6 +48,7 @@ function AppRoutes(): ReactNode {
       <Route path="/seller/account" element={<SellerAccount />} />
       <Route path="/seller/subscriptions" element={<SellerSubscriptions />} />
       <Route path="/seller/profile/:sellerId" element={<SellerProfile />} />
+      <Route path="/seller/profile/:sellerId/feedback" element={<SellerProfile />} />
       <Route path="/seller/profile/:sellerId/items" element={<SellerProfile />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
