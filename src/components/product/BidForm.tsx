@@ -26,7 +26,7 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
   const [bidAmount, setBidAmount] = useState<string>(minBid.toFixed(2));
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Load initial bid amount on mount and when product changes
+  // Load initial bid amount on mount and when product or current bid changes
   useEffect(() => {
     const loadInitialBidAmount = async () => {
       try {
@@ -53,6 +53,20 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
     setBidAmount(newAmount.toFixed(2));
   };
 
+  const validateBidAmount = (amount: number): boolean => {
+    if (isNaN(amount)) {
+      toast.error('Please enter a valid number');
+      return false;
+    }
+    
+    if (amount < minBid) {
+      toast.error(`Bid must be at least ${minBid.toFixed(2)} ${product.currency}`);
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -64,8 +78,7 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
 
     const amount = parseFloat(bidAmount);
     
-    if (isNaN(amount) || amount < minBid) {
-      toast.error(`Bid must be at least ${minBid.toFixed(2)} ${product.currency}`);
+    if (!validateBidAmount(amount)) {
       return;
     }
 
@@ -105,6 +118,12 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
     }
   };
 
+  // Handle direct input change with validation feedback
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setBidAmount(value);
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
@@ -126,7 +145,7 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
             step="0.01"
             min={minBid}
             value={bidAmount}
-            onChange={(e) => setBidAmount(e.target.value)}
+            onChange={handleInputChange}
             className="flex-1 rounded-none text-center"
             disabled={isSubmitting}
           />
@@ -153,7 +172,7 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
         <Button 
           type="submit" 
           className="w-full mt-3 bg-mzad-primary hover:bg-mzad-secondary" 
-          disabled={isSubmitting || !session?.user}
+          disabled={isSubmitting || !session?.user || parseFloat(bidAmount) < minBid}
         >
           {isSubmitting ? 'Placing Bid...' : 'Place Bid'}
         </Button>

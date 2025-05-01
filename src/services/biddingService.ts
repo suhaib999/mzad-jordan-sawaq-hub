@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ProductWithImages } from './productService';
+import { ProductWithImages } from './product/types';
 import { toast } from "sonner";
 
 export interface Bid {
@@ -61,13 +61,32 @@ export const placeBid = async (
 
     // Determine minimum acceptable bid
     const currentBid = product.current_bid || product.start_price || 0;
-    const minimumBid = currentBid + calculateBidIncrement(currentBid);
+    const minimumBid = getMinimumBidAmount(currentBid, product.start_price);
 
-    // Validate bid amount
+    // Perform strict bid validation
     if (amount < minimumBid) {
       return { 
         success: false, 
-        message: `Bid must be at least ${minimumBid}` 
+        message: `Bid must be at least ${minimumBid.toFixed(2)}` 
+      };
+    }
+
+    // Double-check to ensure we're not accepting lower bids (due to race conditions)
+    const { data: latestBids } = await supabase
+      .from('bids')
+      .select('amount')
+      .eq('product_id', productId)
+      .order('amount', { ascending: false })
+      .limit(1);
+      
+    const highestBidAmount = latestBids && latestBids.length > 0 
+      ? latestBids[0].amount 
+      : (product.start_price || 0);
+      
+    if (amount <= highestBidAmount) {
+      return {
+        success: false,
+        message: `Your bid must be higher than the current highest bid of ${highestBidAmount.toFixed(2)}`
       };
     }
 
