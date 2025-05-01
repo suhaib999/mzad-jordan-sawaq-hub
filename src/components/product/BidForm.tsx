@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { placeBid, getMinimumBidAmount } from '@/services/biddingService';
-import { ProductWithImages } from '@/services/productService';
+import { ProductWithImages } from '@/services/product/types';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -49,15 +49,22 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
       
       if (result.success) {
         toast.success(result.message);
-        setBidAmount(minBid.toFixed(2));
         
-        // Invalidate cache to refresh product data
+        // Update minimum bid after successful bid
+        const newMinBid = getMinimumBidAmount(amount, null);
+        setBidAmount(newMinBid.toFixed(2));
+        
+        // Invalidate cache to refresh product data and bid history
         queryClient.invalidateQueries({
           queryKey: ['product', product.id]
         });
         
-        if (onBidPlaced && result.currentBid) {
-          onBidPlaced(result.currentBid);
+        queryClient.invalidateQueries({
+          queryKey: ['bids', product.id]
+        });
+        
+        if (onBidPlaced) {
+          onBidPlaced(amount);
         }
       } else {
         toast.error(result.message);
@@ -87,15 +94,22 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
           />
           <Button 
             type="submit" 
-            className="ml-2" 
+            className="ml-2 bg-mzad-primary hover:bg-mzad-secondary" 
             disabled={isSubmitting || !session?.user}
           >
             {isSubmitting ? 'Placing Bid...' : 'Place Bid'}
           </Button>
         </div>
-        <p className="text-xs text-gray-500 mt-1">
-          Minimum bid: {minBid.toFixed(2)} {product.currency}
-        </p>
+        <div className="flex justify-between mt-1.5">
+          <p className="text-xs text-gray-500">
+            Minimum bid: {minBid.toFixed(2)} {product.currency}
+          </p>
+          {!session?.user && (
+            <p className="text-xs text-amber-600">
+              Sign in required to bid
+            </p>
+          )}
+        </div>
       </div>
     </form>
   );

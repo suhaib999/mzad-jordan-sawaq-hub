@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, Timer } from 'lucide-react';
 
 interface AuctionCountdownProps {
   endTime: string;
@@ -12,6 +12,7 @@ export const AuctionCountdown: React.FC<AuctionCountdownProps> = ({
   onEnd 
 }) => {
   const [timeRemaining, setTimeRemaining] = useState<string>('');
+  const [isEnding, setIsEnding] = useState(false);
 
   useEffect(() => {
     const calculateTimeRemaining = () => {
@@ -20,6 +21,7 @@ export const AuctionCountdown: React.FC<AuctionCountdownProps> = ({
       
       if (end <= now) {
         setTimeRemaining('Auction ended');
+        setIsEnding(false);
         if (onEnd) onEnd();
         return;
       }
@@ -33,6 +35,9 @@ export const AuctionCountdown: React.FC<AuctionCountdownProps> = ({
       const hours = diffHours % 24;
       const mins = diffMins % 60;
       const secs = diffSecs % 60;
+      
+      // Set urgent flag if less than 1 hour remaining
+      setIsEnding(diffHours < 1);
       
       if (diffDays > 0) {
         setTimeRemaining(`${diffDays}d ${hours}h ${mins}m ${secs}s`);
@@ -51,10 +56,17 @@ export const AuctionCountdown: React.FC<AuctionCountdownProps> = ({
     return () => clearInterval(timerId);
   }, [endTime, onEnd]);
   
+  const isEnded = timeRemaining === 'Auction ended';
+  
   return (
-    <div className={`flex items-center ${timeRemaining === 'Auction ended' ? 'text-red-500' : 'text-amber-600'}`}>
-      <Clock className="h-4 w-4 mr-1.5" />
-      <span className="font-medium">{timeRemaining}</span>
+    <div className={`flex items-center ${isEnded ? 'text-red-500' : isEnding ? 'text-red-600' : 'text-amber-600'}`}>
+      {isEnding ? 
+        <Timer className="h-4 w-4 mr-1.5 animate-pulse" /> : 
+        <Clock className="h-4 w-4 mr-1.5" />
+      }
+      <span className={`font-medium ${isEnding && !isEnded ? 'animate-pulse' : ''}`}>
+        {isEnded ? 'Auction ended' : `Time left: ${timeRemaining}`}
+      </span>
     </div>
   );
 };

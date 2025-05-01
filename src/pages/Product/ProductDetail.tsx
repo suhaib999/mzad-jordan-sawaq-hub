@@ -4,9 +4,14 @@ import { useParams } from 'react-router-dom';
 import { fetchProductById } from '@/services/product';
 import { ProductWithImages } from '@/services/product/types';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Gavel } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { AuctionCountdown } from '@/components/product/AuctionCountdown';
+import { BidForm } from '@/components/product/BidForm';
+import { BidHistory } from '@/components/product/BidHistory';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,7 +26,7 @@ const ProductDetail = () => {
     }
   };
 
-  // Fix: Use a separate effect for updating recently viewed products
+  // Update recently viewed products
   useEffect(() => {
     if (id) {
       setRecentlyViewedProducts(prev => {
@@ -35,7 +40,7 @@ const ProductDetail = () => {
     }
   }, [id, setRecentlyViewedProducts]);
 
-  // Fix: Separate effect for product fetching
+  // Fetch product data
   useEffect(() => {
     const fetchProductData = async () => {
       if (!id) {
@@ -62,6 +67,16 @@ const ProductDetail = () => {
     fetchProductData();
   }, [id]);
 
+  // Callback to update UI after a bid is placed
+  const handleBidPlaced = (newBidAmount: number) => {
+    if (product) {
+      setProduct({
+        ...product,
+        current_bid: newBidAmount
+      });
+    }
+  };
+
   if (isLoading) {
     return <div className="flex justify-center items-center min-h-[50vh]">Loading product details...</div>;
   }
@@ -73,26 +88,101 @@ const ProductDetail = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Product image */}
         <div>
           <img src={product.main_image_url} alt={product.title} className="w-full rounded-lg" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold mb-2">{product.title}</h1>
-          <div className="text-gray-600 mb-4">Condition: {product.condition}</div>
-          <div className="text-xl font-semibold text-mzad-primary mb-4">
-            {product.price.toFixed(2)} {product.currency}
-          </div>
-          <p className="text-gray-700 mb-4">{product.description}</p>
           
-          <Button 
-            className="w-full bg-mzad-secondary text-white hover:bg-mzad-primary"
-            onClick={handleAddToCart}
-          >
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            Add to Cart
-          </Button>
+          {/* Additional product images could be added here */}
+          <div className="flex gap-2 mt-4">
+            {product.images && product.images.slice(0, 4).map((image, index) => (
+              <img 
+                key={image.id} 
+                src={image.image_url} 
+                alt={`${product.title} - image ${index + 1}`}
+                className="w-20 h-20 object-cover rounded cursor-pointer"
+              />
+            ))}
+          </div>
+        </div>
+        
+        {/* Product details */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-2xl font-bold">{product.title}</h1>
+            {product.is_auction && (
+              <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
+                Auction
+              </Badge>
+            )}
+          </div>
+          
+          <div className="text-gray-600 mb-4">Condition: {product.condition}</div>
+          
+          {/* Pricing information */}
+          {product.is_auction ? (
+            <div className="space-y-2 mb-6">
+              <div className="text-xl font-bold text-mzad-primary">
+                Current bid: {(product.current_bid || product.start_price || 0).toFixed(2)} {product.currency}
+              </div>
+              
+              {product.end_time && (
+                <div className="mt-2">
+                  <AuctionCountdown endTime={product.end_time} />
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-xl font-semibold text-mzad-primary mb-4">
+              {product.price.toFixed(2)} {product.currency}
+            </div>
+          )}
+          
+          {product.location && (
+            <div className="text-sm text-gray-500 mb-4">
+              Location: {product.location}
+            </div>
+          )}
+          
+          {product.shipping && (
+            <div className="text-sm text-gray-500 mb-4">
+              Shipping: {product.shipping}
+            </div>
+          )}
+          
+          <p className="text-gray-700 mb-6">{product.description}</p>
+          
+          {/* Action buttons */}
+          {product.is_auction ? (
+            <Card className="p-4 border-mzad-secondary mb-6">
+              <BidForm 
+                product={product} 
+                onBidPlaced={handleBidPlaced} 
+              />
+            </Card>
+          ) : (
+            <Button 
+              className="w-full bg-mzad-secondary text-white hover:bg-mzad-primary"
+              onClick={handleAddToCart}
+            >
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              Add to Cart
+            </Button>
+          )}
         </div>
       </div>
+      
+      {/* Bid history section (only for auctions) */}
+      {product.is_auction && (
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold mb-4 flex items-center">
+            <Gavel className="mr-2 h-5 w-5" />
+            Bid History
+          </h2>
+          <Card className="p-4">
+            <BidHistory productId={product.id} currency={product.currency} />
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

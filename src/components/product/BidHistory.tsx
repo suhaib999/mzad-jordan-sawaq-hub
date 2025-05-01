@@ -1,8 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { fetchBidHistory, Bid } from '@/services/biddingService';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Clock, User } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 
 interface BidHistoryProps {
   productId: string;
@@ -10,43 +12,39 @@ interface BidHistoryProps {
 }
 
 export const BidHistory: React.FC<BidHistoryProps> = ({ productId, currency }) => {
-  const [bids, setBids] = useState<Bid[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadBidHistory = async () => {
-      setLoading(true);
-      try {
-        const history = await fetchBidHistory(productId);
-        setBids(history);
-      } catch (error) {
-        console.error('Error loading bid history:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadBidHistory();
-  }, [productId]);
+  const { data: bids, isLoading, error } = useQuery({
+    queryKey: ['bids', productId],
+    queryFn: () => fetchBidHistory(productId),
+    refetchInterval: 10000, // Refresh every 10 seconds
+  });
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString();
   };
 
-  if (loading) {
+  if (isLoading) {
     return <div className="text-center py-4">Loading bid history...</div>;
   }
 
-  if (bids.length === 0) {
-    return <div className="text-center py-4 text-gray-500">No bids have been placed yet</div>;
+  if (error) {
+    return <div className="text-center py-4 text-red-500">Error loading bid history</div>;
+  }
+
+  if (!bids || bids.length === 0) {
+    return (
+      <Card className="p-6 text-center py-8 text-gray-500 bg-gray-50">
+        <p>No bids have been placed yet</p>
+        <p className="text-sm mt-2">Be the first to bid on this item!</p>
+      </Card>
+    );
   }
 
   return (
     <ScrollArea className="h-[250px]">
       <div className="space-y-2">
         {bids.map((bid) => (
-          <div key={bid.id} className="border-b border-gray-100 py-2">
+          <div key={bid.id} className="border-b border-gray-100 py-3 last:border-b-0">
             <div className="flex justify-between">
               <div className="flex items-center">
                 <User className="h-4 w-4 mr-2 text-gray-500" />

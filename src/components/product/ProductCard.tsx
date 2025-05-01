@@ -1,9 +1,11 @@
 
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingCart } from 'lucide-react';
+import { Heart, ShoppingCart, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { fetchProductById } from '@/services/product';
+import { Badge } from '@/components/ui/badge';
+import { formatTimeRemaining } from '@/services/biddingService';
 
 export interface ProductCardProps {
   id: string;
@@ -48,6 +50,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
       console.error('Error adding product to cart:', error);
     }
   };
+
+  const formattedTimeRemaining = endTime ? formatTimeRemaining(endTime) : '';
+  const isEnded = formattedTimeRemaining === 'Auction ended';
   
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
@@ -69,7 +74,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
         
         {isAuction && (
           <div className="absolute bottom-2 left-2">
-            <span className="auction-badge">Auction</span>
+            <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
+              {isEnded ? 'Ended' : 'Auction'}
+            </Badge>
           </div>
         )}
       </div>
@@ -84,12 +91,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <div className="mb-1">
               <span className="text-sm text-gray-500">Current Bid:</span>
               <span className="text-lg font-bold text-mzad-primary ml-1">
-                {currentBid?.toFixed(2)} {currency}
+                {(currentBid || price).toFixed(2)} {currency}
               </span>
             </div>
             {endTime && (
-              <div className="text-sm text-gray-500 mb-2">
-                Ends: {endTime}
+              <div className="text-sm flex items-center text-amber-600 mb-2">
+                <Clock className="h-3 w-3 mr-1" />
+                <span className={isEnded ? 'text-red-500' : ''}>
+                  {formattedTimeRemaining}
+                </span>
               </div>
             )}
           </>
