@@ -85,6 +85,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             "absolute top-2 right-2 bg-white/70 hover:bg-white rounded-full h-8 w-8",
             isFavorite ? "text-red-500" : "text-gray-400"
           )}
+          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
           <Heart size={18} fill={isFavorite ? "currentColor" : "none"} />
         </Button>

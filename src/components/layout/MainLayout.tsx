@@ -40,6 +40,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           <button 
             className="fixed bottom-4 right-4 z-10 p-2 rounded-full bg-mzad-primary text-white shadow-lg md:hidden"
             onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
           >
             {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -48,6 +49,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           <button
             className="hidden md:flex absolute left-4 top-4 z-40 p-2 rounded-md bg-white dark:bg-gray-800 shadow-md hover:bg-gray-100 dark:hover:bg-gray-700"
             onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
           >
             <Menu size={20} />
           </button>
