@@ -1,187 +1,189 @@
-
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, User, ShoppingCart, Menu, X, Heart, Bell, LogOut } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import MobileMenu from './MobileMenu';
-import LanguageSwitcher from './LanguageSwitcher';
+import { Link, NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { Menu } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import { useTheme } from "@/contexts/ThemeContext"
+import { MoonIcon, SunIcon } from '@radix-ui/react-icons';
+
+// Import our new CartButton
+import CartButton from '@/components/cart/CartButton';
 
 const Navbar = () => {
+  const { t } = useTranslation();
+  const { user, session, signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light");
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle search logic
-    console.log('Searching for:', searchQuery);
-    // Redirect to search results page with query parameter
-    navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+    setIsMenuOpen(false);
   };
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <nav className="bg-white shadow">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-mzad-primary">Mzad</span>
-              <span className="text-2xl font-bold text-mzad-secondary">KumSooq</span>
-            </Link>
+          <Link to="/" className="text-2xl font-bold text-mzad-primary">
+            MzadKumSooq
+          </Link>
+
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center gap-5">
+            <NavLink to="/browse" className={({ isActive }) => isActive ? 'text-blue-500' : 'hover:text-gray-500'}>
+              {t('browse')}
+            </NavLink>
+            <NavLink to="/sell" className={({ isActive }) => isActive ? 'text-blue-500' : 'hover:text-gray-500'}>
+              {t('sell')}
+            </NavLink>
+            <NavLink to="/about" className={({ isActive }) => isActive ? 'text-blue-500' : 'hover:text-gray-500'}>
+              {t('about')}
+            </NavLink>
           </div>
 
-          {/* Search bar - Hide on mobile */}
-          <div className="hidden md:flex flex-1 mx-4">
-            <form onSubmit={handleSearch} className="w-full max-w-2xl relative">
-              <Input
-                type="search"
-                placeholder="Search for anything..."
-                className="w-full pl-4 pr-10 py-2 border rounded-md"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <Button 
-                type="submit" 
-                className="absolute right-0 top-0 bottom-0 px-3 rounded-r-md"
-                variant="ghost"
-              >
-                <Search size={20} />
-              </Button>
-            </form>
-          </div>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-4">
-            <LanguageSwitcher />
-            <Link to="/wishlist">
-              <Button variant="ghost" size="icon">
-                <Heart size={20} />
-              </Button>
-            </Link>
-            <Link to="/notifications">
-              <Button variant="ghost" size="icon">
-                <Bell size={20} />
-              </Button>
-            </Link>
-            <Link to="/cart">
-              <Button variant="ghost" size="icon">
-                <ShoppingCart size={20} />
-              </Button>
-            </Link>
-            
-            {user ? (
+          {/* Desktop Menu - Auth */}
+          <div className="hidden md:flex items-center gap-2">
+            <CartButton />
+            {session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                  <Button variant="ghost" className="h-8 w-8 p-0">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback>
-                        {user.email?.charAt(0).toUpperCase()}
-                      </AvatarFallback>
+                      <AvatarImage src={user?.user_metadata?.avatar_url} />
+                      <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/profile" className="cursor-pointer w-full">
-                      Profile
-                    </Link>
+                    <Link to="/profile">Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/my-listings" className="cursor-pointer w-full">
-                      My Listings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/my-bids" className="cursor-pointer w-full">
-                      My Bids
-                    </Link>
+                    <Link to="/my-listings">My Listings</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={signOut}>Logout</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link to="/auth/login">
-                <Button variant="outline" className="flex items-center">
-                  <User size={18} className="mr-2" />
-                  Login
-                </Button>
-              </Link>
+              <>
+                <Link to="/auth/login" className="text-mzad-secondary hover:text-mzad-secondary/80 font-medium px-4 py-2 rounded-md transition-colors">
+                  {t('login')}
+                </Link>
+                <Link to="/auth/register" className="bg-mzad-secondary text-white font-medium px-4 py-2 rounded-md hover:bg-mzad-secondary/90 transition-colors">
+                  {t('register')}
+                </Link>
+              </>
             )}
-            
-            <Link to="/sell">
-              <Button className="bg-mzad-secondary hover:bg-mzad-secondary/90">Sell</Button>
-            </Link>
-          </nav>
+          </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
-            <Link to="/cart" className="mr-2">
-              <Button variant="ghost" size="icon">
-                <ShoppingCart size={20} />
-              </Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleMenu}
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </Button>
+          {/* Mobile Menu */}
+          <div className="md:hidden">
+            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="sm:w-2/3 md:w-1/2 lg:w-1/3">
+                <SheetHeader className="space-y-2">
+                  <SheetTitle>Menu</SheetTitle>
+                  <SheetDescription>
+                    Explore MzadKumSooq
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="grid gap-4 py-4">
+                  <Button variant="ghost" asChild className="justify-start">
+                    <Link to="/browse">{t('browse')}</Link>
+                  </Button>
+                  <Button variant="ghost" asChild className="justify-start">
+                    <Link to="/sell">{t('sell')}</Link>
+                  </Button>
+                  <Button variant="ghost" asChild className="justify-start">
+                    <Link to="/about">{t('about')}</Link>
+                  </Button>
+
+                  <div className="flex items-center">
+                    <CartButton />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          {t('language')}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" forceMount>
+                        <DropdownMenuItem onClick={() => changeLanguage('en')}>
+                          English
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => changeLanguage('ar')}>
+                          العربية
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <div className="flex items-center space-x-2">
+                      <SunIcon />
+                      <Switch id="airplane-mode" onClick={toggleTheme} checked={theme === "dark"} />
+                      <MoonIcon />
+                    </div>
+                  </div>
+
+                  {session ? (
+                    <>
+                      <Button variant="ghost" asChild className="justify-start">
+                        <Link to="/profile">Profile</Link>
+                      </Button>
+                      <Button variant="ghost" asChild className="justify-start">
+                        <Link to="/my-listings">My Listings</Link>
+                      </Button>
+                      <Button variant="destructive" className="w-full" onClick={signOut}>
+                        Logout
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button variant="secondary" className="w-full" asChild>
+                        <Link to="/auth/login">{t('login')}</Link>
+                      </Button>
+                      <Button className="w-full" asChild>
+                        <Link to="/auth/register">{t('register')}</Link>
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
-
-        {/* Mobile Search - only visible on mobile */}
-        <div className="md:hidden py-2">
-          <form onSubmit={handleSearch} className="w-full relative">
-            <Input
-              type="search"
-              placeholder="Search for anything..."
-              className="w-full pl-4 pr-10 py-2 border rounded-md"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Button 
-              type="submit" 
-              className="absolute right-0 top-0 bottom-0 px-3 rounded-r-md"
-              variant="ghost"
-            >
-              <Search size={20} />
-            </Button>
-          </form>
-        </div>
       </div>
-
-      {/* Mobile Menu */}
-      {isMenuOpen && <MobileMenu onClose={toggleMenu} isLoggedIn={!!user} onSignOut={handleSignOut} />}
-    </header>
+    </nav>
   );
 };
 

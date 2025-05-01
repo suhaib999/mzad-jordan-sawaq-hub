@@ -13,9 +13,11 @@ import BrowseProducts from './pages/Browse/BrowseProducts';
 import Profile from './pages/Profile/Profile';
 import MyListings from './pages/Profile/MyListings';
 import SellPage from './pages/Sell/SellPage';
+import CartPage from './pages/Cart/CartPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "./components/ui/toaster";
 import { AuthProvider } from './contexts/AuthContext';
+import { CartProvider } from './contexts/CartContext';
 import './App.css';
 
 const queryClient = new QueryClient();
@@ -35,6 +37,7 @@ function AppRoutes(): ReactNode {
       <Route path="/profile" element={<Profile />} />
       <Route path="/my-listings" element={<MyListings />} />
       <Route path="/sell" element={<SellPage />} />
+      <Route path="/cart" element={<CartPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -45,8 +48,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
-          <Toaster />
+          <CartProvider>
+            <AppRoutes />
+            <Toaster />
+          </CartProvider>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

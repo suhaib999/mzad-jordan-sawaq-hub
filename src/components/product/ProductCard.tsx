@@ -1,7 +1,9 @@
 
 import { Link } from 'react-router-dom';
-import { Heart } from 'lucide-react';
+import { Heart, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useCart } from '@/contexts/CartContext';
+import { fetchProductById } from '@/services/productService';
 
 export interface ProductCardProps {
   id: string;
@@ -30,6 +32,23 @@ const ProductCard: React.FC<ProductCardProps> = ({
   shipping,
   location
 }) => {
+  const { addToCart } = useCart();
+  
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigating to product detail
+    e.stopPropagation();
+    
+    try {
+      // Fetch full product data for cart
+      const product = await fetchProductById(id);
+      if (product) {
+        addToCart(product);
+      }
+    } catch (error) {
+      console.error('Error adding product to cart:', error);
+    }
+  };
+  
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
       <div className="relative">
@@ -90,6 +109,20 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {location && (
           <div className="mt-2 text-xs text-gray-500">
             {location}
+          </div>
+        )}
+        
+        {!isAuction && (
+          <div className="mt-3">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full border-mzad-secondary text-mzad-secondary hover:bg-mzad-secondary hover:text-white"
+              onClick={handleAddToCart}
+            >
+              <ShoppingCart className="mr-1 h-4 w-4" />
+              Add to Cart
+            </Button>
           </div>
         )}
       </div>
