@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -68,6 +68,7 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const [showMap, setShowMap] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -81,6 +82,43 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
       longitude: "",
     }
   });
+
+  // Add wheel event listener to handle scrolling in the dropdown
+  useEffect(() => {
+    const scrollableArea = scrollAreaRef.current;
+    
+    if (!scrollableArea) return;
+    
+    const handleWheel = (event: WheelEvent) => {
+      const element = scrollableArea;
+      
+      // Check if we can scroll in the direction the user is trying to scroll
+      const isScrollingUp = event.deltaY < 0;
+      const isScrollingDown = event.deltaY > 0;
+      
+      const isAtTop = element.scrollTop === 0;
+      const isAtBottom = Math.abs(element.scrollHeight - element.clientHeight - element.scrollTop) < 1;
+      
+      // If we're at the top and trying to scroll up, or at the bottom and trying to scroll down,
+      // then let the event propagate (default behavior)
+      if ((isScrollingUp && isAtTop) || (isScrollingDown && isAtBottom)) {
+        return;
+      }
+      
+      // Otherwise, we want to handle the scroll ourselves
+      event.stopPropagation();
+      event.preventDefault();
+      
+      // Manually scroll the element
+      element.scrollTop += event.deltaY;
+    };
+    
+    scrollableArea.addEventListener('wheel', handleWheel, { passive: false });
+    
+    return () => {
+      scrollableArea.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
 
   const onSubmit = async (data: FormValues) => {
     if (!user) return;
@@ -174,11 +212,11 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <ScrollArea className="h-[200px] overflow-y-auto">
+                        <div ref={scrollAreaRef} className="h-[200px] overflow-y-auto">
                           {jordanianCities.map((city) => (
                             <SelectItem key={city} value={city}>{city}</SelectItem>
                           ))}
-                        </ScrollArea>
+                        </div>
                       </SelectContent>
                     </Select>
                     <FormMessage />
