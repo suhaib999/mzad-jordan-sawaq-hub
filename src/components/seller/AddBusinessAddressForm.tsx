@@ -19,8 +19,33 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import MapLocationPicker from './MapLocationPicker';
+
+// List of Jordanian cities for the dropdown
+const jordanianCities = [
+  "Ajloun",
+  "Al Karak",
+  "Amman",
+  "Aqaba",
+  "Irbid",
+  "Jerash",
+  "Jordan Valley",
+  "Ma'an",
+  "Madaba",
+  "Mafraq",
+  "Ramtha",
+  "Salt",
+  "Tafila",
+  "Zarqa"
+];
 
 const formSchema = z.object({
   street_address: z.string().min(3, "Street address is required"),
@@ -51,7 +76,7 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
       city: "",
       neighborhood: "",
       postal_code: "",
-      country: "",
+      country: "Jordan", // Default to Jordan
       latitude: "",
       longitude: "",
     }
@@ -138,9 +163,21 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>City</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter city" {...field} />
-                    </FormControl>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a city" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {jordanianCities.map((city) => (
+                          <SelectItem key={city} value={city}>{city}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
