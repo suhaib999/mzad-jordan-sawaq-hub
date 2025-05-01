@@ -375,15 +375,24 @@ const AddProduct = () => {
         }
       }
       
+      // Fix for auction listings: set a default price value for both listing types
+      // For fixed price listings, use the actual price
+      // For auctions, use the start_price as the price (to satisfy DB constraints)
+      const price = values.listingType === "fixed" 
+        ? Number(values.price)
+        : values.startPrice 
+          ? Number(values.startPrice) 
+          : 0;
+      
       // Insert product data - match the actual schema fields in Supabase
       const productData = {
         id: productId,
         title: enhancedTitle,
         description: values.description,
-        price: values.listingType === "fixed" ? Number(values.price) : null,
+        price: price, // Always set a price value now
         currency: values.currency,
         condition: values.condition,
-        category: categoryPath,  // Use 'category' instead of 'category_id'
+        category: categoryPath,
         seller_id: session.user.id,
         location: values.location || null,
         shipping: values.shipping || null,
