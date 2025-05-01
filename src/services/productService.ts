@@ -103,13 +103,21 @@ export const fetchProducts = async (
   filterParams: ProductFilterParams = {}
 ): Promise<{ products: ProductWithImages[]; count: number }> => {
   try {
+    console.log("Fetching products with params:", filterParams);
+    
     // First execute a count query separately to avoid type issues
     const countQuery = await supabase
       .from('products')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'active');
     
+    if (countQuery.error) {
+      console.error('Error in count query:', countQuery.error);
+      throw new Error(`Count query failed: ${countQuery.error.message}`);
+    }
+    
     const countValue = countQuery.count || 0;
+    console.log("Total count:", countValue);
 
     // Build and execute the data query
     const query = supabase
@@ -127,13 +135,16 @@ export const fetchProducts = async (
 
     if (error) {
       console.error('Error fetching products:', error);
+      throw new Error(`Data query failed: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      console.log('No products found');
       return { products: [], count: 0 };
     }
 
-    if (!data) {
-      return { products: [], count: 0 };
-    }
-
+    console.log(`Found ${data.length} products`);
+    
     // Process the data
     const productsWithMainImage = processProductData(data);
 
@@ -241,6 +252,8 @@ function processProductData(data: any[]): ProductWithImages[] {
 
 export const fetchProductsBySellerId = async (sellerId: string): Promise<ProductWithImages[]> => {
   try {
+    console.log("Fetching products for seller:", sellerId);
+    
     // Execute the query
     const { data, error } = await supabase
       .from('products')
@@ -250,13 +263,16 @@ export const fetchProductsBySellerId = async (sellerId: string): Promise<Product
 
     if (error) {
       console.error('Error fetching products by seller:', error);
+      throw new Error(`Seller products query failed: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      console.log('No products found for this seller');
       return [];
     }
 
-    if (!data) {
-      return [];
-    }
-
+    console.log(`Found ${data.length} seller products`);
+    
     // Process with simplified typing
     return processProductData(data);
   } catch (error) {
@@ -267,6 +283,8 @@ export const fetchProductsBySellerId = async (sellerId: string): Promise<Product
 
 export const fetchProductById = async (id: string): Promise<ProductWithImages | null> => {
   try {
+    console.log("Fetching product by ID:", id);
+    
     // Execute the query
     const { data, error } = await supabase
       .from('products')
@@ -276,13 +294,16 @@ export const fetchProductById = async (id: string): Promise<ProductWithImages | 
 
     if (error) {
       console.error('Error fetching product:', error);
-      return null;
+      throw new Error(`Product detail query failed: ${error.message}`);
     }
 
     if (!data) {
+      console.log('No product found with this ID');
       return null;
     }
 
+    console.log("Product found:", data.title);
+    
     // Process the product
     const product = data;
     const images = product.images || [];
