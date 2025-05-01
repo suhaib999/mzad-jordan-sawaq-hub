@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -239,7 +240,12 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
                               placeholder="Search city..."
                               value={citySearch}
                               onChange={(e) => setCitySearch(e.target.value)}
-                              className="pl-8"
+                              className="pl-8 w-full"
+                              // Fix for showing full text input
+                              style={{ 
+                                overflow: 'visible',
+                                textOverflow: 'clip'
+                              }}
                             />
                           </div>
                         </div>
