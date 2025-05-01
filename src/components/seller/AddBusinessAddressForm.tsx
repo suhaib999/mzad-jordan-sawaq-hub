@@ -245,11 +245,8 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
                         </div>
                         <div 
                           ref={scrollAreaRef} 
-                          className="h-[200px] overflow-y-auto"
-                          style={{ 
-                            touchAction: 'none',
-                            height: '100%' // Applied the suggested fix
-                          }}
+                          className="max-h-[200px] overflow-y-auto"
+                          style={{ touchAction: 'none' }}
                         >
                           {filteredCities.length > 0 ? (
                             filteredCities.map((city) => (
