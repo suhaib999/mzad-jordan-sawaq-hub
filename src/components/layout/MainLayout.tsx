@@ -4,6 +4,8 @@ import Footer from './Footer';
 import SidebarNav from './SidebarNav';
 import TopNav from './TopNav';
 import { cn } from '@/lib/utils';
+import { Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -11,6 +13,10 @@ interface MainLayoutProps {
 
 const MainLayout = ({ children }: MainLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -35,6 +41,26 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         )}>
           <SidebarNav collapsed={!sidebarOpen} />
         </div>
+        
+        {/* Sidebar toggle button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
+          className="fixed bottom-4 left-4 z-40 md:hidden bg-white dark:bg-gray-800 shadow-md"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+        
+        {/* Desktop toggle button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
+          className="hidden md:flex fixed top-24 left-4 z-40 bg-white dark:bg-gray-800 shadow-md"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
         
         {/* Main content */}
         <div className="flex flex-col flex-1 w-full overflow-x-hidden">
