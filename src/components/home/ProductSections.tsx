@@ -2,7 +2,7 @@
 import React from 'react';
 import ProductGrid from '@/components/product/ProductGrid';
 import { useQuery } from '@tanstack/react-query';
-import { fetchProducts, mapProductToCardProps } from '@/services/productService';
+import { fetchProducts, mapProductToCardProps } from '@/services/product';
 import { placeholderFeaturedProducts, placeholderAuctionProducts } from '@/data/placeholderProducts';
 
 const ProductSections = () => {
