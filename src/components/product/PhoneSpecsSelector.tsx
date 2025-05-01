@@ -12,7 +12,8 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { useFormContext } from 'react-hook-form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Info } from 'lucide-react';
+import { Info, Smartphone, Tablet } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface PhoneSpecsSelectorProps {
   categoryPath: string;
@@ -24,13 +25,18 @@ const PhoneSpecsSelector: React.FC<PhoneSpecsSelectorProps> = ({ categoryPath })
   const [selectedModel, setSelectedModel] = useState<SmartphoneModel | null>(null);
   const [showSpecs, setShowSpecs] = useState(false);
   
-  // Check if current category is related to phones
+  // Check if current category is related to phones or tablets
   const isPhoneCategory = categoryPath && 
     (categoryPath.toLowerCase().includes('phone') || 
      categoryPath.toLowerCase().includes('mobile'));
   
+  const isTabletCategory = categoryPath && 
+    categoryPath.toLowerCase().includes('tablet');
+
+  const isDeviceCategory = isPhoneCategory || isTabletCategory;
+  
   useEffect(() => {
-    if (!isPhoneCategory) {
+    if (!isDeviceCategory) {
       setShowSpecs(false);
       return;
     }
@@ -54,16 +60,30 @@ const PhoneSpecsSelector: React.FC<PhoneSpecsSelectorProps> = ({ categoryPath })
         }
       }
     }
-  }, [categoryPath, form]);
+  }, [categoryPath, form, isDeviceCategory]);
   
   if (!showSpecs) return null;
+  
+  // Define common screen sizes based on device type
+  const getCommonScreenSizes = () => {
+    if (isPhoneCategory) {
+      return ['4.7"', '5.5"', '5.8"', '6.1"', '6.5"', '6.7"', '6.8"', '7.0"'];
+    }
+    if (isTabletCategory) {
+      return ['7.9"', '8.3"', '8.7"', '9.7"', '10.2"', '10.9"', '11"', '12.9"', '14.6"'];
+    }
+    return [];
+  };
+  
+  const deviceIcon = isTabletCategory ? <Tablet className="h-5 w-5 mr-2" /> : <Smartphone className="h-5 w-5 mr-2" />;
+  const deviceType = isTabletCategory ? "Tablet" : "Phone";
   
   return (
     <div className="space-y-4">
       <div className="bg-blue-50 border-l-4 border-blue-500 p-4 text-sm text-blue-700 mb-4">
         <div className="flex">
-          <Info className="h-5 w-5 mr-2" />
-          <p>Adding specific details about your device helps buyers find your listing.</p>
+          {deviceIcon}
+          <p>{deviceType} specifications help buyers find your listing more easily.</p>
         </div>
       </div>
       
@@ -145,7 +165,7 @@ const PhoneSpecsSelector: React.FC<PhoneSpecsSelectorProps> = ({ categoryPath })
           name="storage"
           render={({ field }) => (
             <FormItem className="space-y-3">
-              <FormLabel>Storage Size*</FormLabel>
+              <FormLabel>Storage Capacity*</FormLabel>
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
@@ -192,6 +212,40 @@ const PhoneSpecsSelector: React.FC<PhoneSpecsSelectorProps> = ({ categoryPath })
           )}
         />
       )}
+      
+      {/* Add Screen Size field */}
+      <FormField
+        control={form.control}
+        name="screen_size"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Screen Size*</FormLabel>
+            <Select onValueChange={field.onChange} value={field.value || ""}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select screen size" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {getCommonScreenSizes().map((size) => (
+                  <SelectItem key={size} value={size}>
+                    {size}
+                  </SelectItem>
+                ))}
+                <SelectItem value="custom">Custom size</SelectItem>
+              </SelectContent>
+            </Select>
+            {field.value === "custom" && (
+              <Input 
+                className="mt-2" 
+                placeholder='Enter screen size (e.g. "6.5"")' 
+                onChange={(e) => form.setValue("screen_size", e.target.value)} 
+              />
+            )}
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 };

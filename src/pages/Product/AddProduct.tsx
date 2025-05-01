@@ -96,6 +96,7 @@ const formSchema = z.object({
   model: z.string().optional(),
   storage: z.string().optional(),
   color: z.string().optional(),
+  screen_size: z.string().optional(), // Added screen size field
   isDeliveryAvailable: z.enum(["yes", "no"]).optional(),
 });
 
@@ -134,6 +135,7 @@ const AddProduct = () => {
       model: "",
       storage: "",
       color: "",
+      screen_size: "", // Added default for screen size
       isDeliveryAvailable: undefined,
     },
     mode: "onChange"
@@ -267,9 +269,14 @@ const AddProduct = () => {
       }
     });
 
-    // Device-specific fields if category is related to phones
-    if (selectedCategory && selectedCategory.name.toLowerCase().includes('phone')) {
-      const deviceFields = ['brand', 'model', 'storage', 'color'];
+    // Device-specific fields if category is related to phones or tablets
+    const categoryPath = selectedCategory?.name.toLowerCase() || '';
+    const isDeviceCategory = categoryPath.includes('phone') || 
+                            categoryPath.includes('mobile') || 
+                            categoryPath.includes('tablet');
+    
+    if (isDeviceCategory) {
+      const deviceFields = ['brand', 'model', 'storage', 'color', 'screen_size'];
       deviceFields.forEach(field => {
         totalFields++;
         if (formValues[field as keyof FormValues]) {
@@ -327,7 +334,11 @@ const AddProduct = () => {
         if (!enhancedTitle.toLowerCase().includes(values.brand.toLowerCase()) && 
             !enhancedTitle.toLowerCase().includes(values.model.toLowerCase())) {
           const modelName = values.model.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-          enhancedTitle = `${values.brand} ${modelName} ${values.storage} ${values.color || ''}`.trim();
+          const deviceInfo = [values.brand, modelName, values.storage];
+          if (values.color) deviceInfo.push(values.color);
+          if (values.screen_size) deviceInfo.push(`${values.screen_size} screen`);
+          
+          enhancedTitle = deviceInfo.join(' ').trim();
           if (values.title) {
             enhancedTitle = `${enhancedTitle} - ${values.title}`;
           }
@@ -356,6 +367,7 @@ const AddProduct = () => {
         model: values.model || null,
         storage: values.storage || null,
         color: values.color || null,
+        screen_size: values.screen_size || null, // Added screen size field
         delivery_available: values.isDeliveryAvailable === 'yes'
       };
       

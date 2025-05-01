@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Product {
@@ -26,6 +25,7 @@ export interface Product {
   storage?: string;
   color?: string;
   delivery_available?: boolean;
+  screen_size?: string; // Added screen size field
 }
 
 export interface ProductImage {
@@ -103,6 +103,9 @@ interface ProductQueryResponse {
   count: number | null;
 }
 
+// Type for Supabase query builder to avoid excessive type depth
+type ProductQueryBuilder = ReturnType<typeof supabase.from<string>>;
+
 export const fetchProducts = async (
   limit: number | undefined,
   offset: number | undefined,
@@ -122,16 +125,15 @@ export const fetchProducts = async (
     } = filterParams;
 
     // Simplified query approach to avoid excessive type depth
-    let queryString = `
-      *,
-      images:product_images(*)
-    `;
+    const queryString = "*,images:product_images(*)";
 
-    // Use basic query builder
+    // Use basic query builder with explicit typing
     let queryBuilder = supabase
       .from('products')
-      .select(queryString, { count: 'exact' })
-      .eq('status', 'active');
+      .select(queryString, { count: 'exact' }) as unknown as ProductQueryBuilder;
+    
+    // Add filters
+    queryBuilder = queryBuilder.eq('status', 'active');
 
     // Apply filters
     if (category_id) {
