@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Layout from '@/components/layout/Layout';
-import { ProductGrid } from '@/components/product/ProductGrid';
+import ProductGrid from '@/components/product/ProductGrid';
 import { fetchProfile } from '@/services/profileService';
 import { fetchProductsBySellerId } from '@/services/product';
 
