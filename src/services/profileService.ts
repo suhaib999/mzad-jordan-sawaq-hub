@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -32,7 +33,11 @@ export const fetchProfile = async (userId: string): Promise<ProfileWithAvatar | 
       return null;
     }
 
-    return data as ProfileWithAvatar;
+    // Add the location property to the returned data
+    return {
+      ...data,
+      location: data.location || null
+    } as ProfileWithAvatar;
   } catch (error) {
     console.error('Error in fetchProfile:', error);
     return null;
