@@ -10,6 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,9 +22,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu, Sun, Moon } from "lucide-react";
+import { Menu, Sun, Moon, User, Settings, MessageSquare, Shield, MapPin, TrendingUp } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { useTheme } from "@/contexts/ThemeContext";
 import LanguageSwitcher from './LanguageSwitcher';
 import CartButton from '@/components/cart/CartButton';
 import SearchBox from '@/components/search/SearchBox';
@@ -85,16 +85,77 @@ const Navbar = () => {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile">Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/my-listings">My Listings</Link>
-                  </DropdownMenuItem>
+                <DropdownMenuContent className="w-64" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">{user?.user_metadata?.full_name || user?.email}</p>
+                      <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={signOut}>Logout</DropdownMenuItem>
+                  
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>Account</DropdownMenuLabel>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex items-center">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Personal Info</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile/security" className="flex items-center">
+                        <Shield className="mr-2 h-4 w-4" />
+                        <span>Sign-in and Security</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile/addresses" className="flex items-center">
+                        <MapPin className="mr-2 h-4 w-4" />
+                        <span>Addresses</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile/feedback" className="flex items-center">
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        <span>Feedback</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>Selling</DropdownMenuLabel>
+                    <DropdownMenuItem asChild>
+                      <Link to="/seller/dashboard" className="flex items-center">
+                        <TrendingUp className="mr-2 h-4 w-4" />
+                        <span>Seller Dashboard</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/seller/account" className="flex items-center">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Seller Account</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/seller/subscriptions" className="flex items-center">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Subscriptions</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/my-listings" className="flex items-center">
+                        <MapPin className="mr-2 h-4 w-4" />
+                        <span>My Listings</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-red-500 cursor-pointer" onClick={signOut}>
+                    Logout
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
