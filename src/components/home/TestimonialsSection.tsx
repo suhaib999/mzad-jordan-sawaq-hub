@@ -8,21 +8,21 @@ const testimonials = [
     id: 1,
     name: 'Ahmed Hassan',
     role: 'Regular Buyer',
-    quote: 'I've been using MzadKumSooq for months now and it's become my go-to marketplace. The auctions are exciting and I've found incredible deals!',
+    quote: "I've been using MzadKumSooq for months now and it's become my go-to marketplace. The auctions are exciting and I've found incredible deals!",
     avatar: '/public/lovable-uploads/82bb57d2-9c39-42c3-8646-d34822d0d6b3.png'
   },
   {
     id: 2,
     name: 'Layla Mahmoud',
     role: 'Power Seller',
-    quote: 'As a seller, I appreciate how easy it is to list my products. The platform has connected me with buyers across Jordan and increased my sales significantly.',
+    quote: "As a seller, I appreciate how easy it is to list my products. The platform has connected me with buyers across Jordan and increased my sales significantly.",
     avatar: '/public/lovable-uploads/82bb57d2-9c39-42c3-8646-d34822d0d6b3.png'
   },
   {
     id: 3,
     name: 'Omar Saleh',
     role: 'Collector',
-    quote: 'The variety of unique items I've found on MzadKumSooq is amazing. The bidding system is fair and the shipping options are convenient.',
+    quote: "The variety of unique items I've found on MzadKumSooq is amazing. The bidding system is fair and the shipping options are convenient.",
     avatar: '/public/lovable-uploads/82bb57d2-9c39-42c3-8646-d34822d0d6b3.png'
   }
 ];
