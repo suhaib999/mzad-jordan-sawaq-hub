@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -8,9 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Building, Store, Truck, CreditCard, BarChart, Package } from "lucide-react";
+import EditBusinessInfoForm from '@/components/seller/EditBusinessInfoForm';
+import AddBusinessAddressForm from '@/components/seller/AddBusinessAddressForm';
 
 const SellerAccount = () => {
   const { user, isLoading } = useAuth();
+  const [editBusinessOpen, setEditBusinessOpen] = useState(false);
+  const [addAddressOpen, setAddAddressOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -27,6 +31,22 @@ const SellerAccount = () => {
   if (!user) {
     return <Navigate to="/auth/login" />;
   }
+  
+  // Get business information from user metadata
+  const businessName = user.user_metadata?.full_name || "Not set";
+  const businessType = user.user_metadata?.business_type || "Individual Seller";
+  const taxId = user.user_metadata?.tax_id || "Not set";
+  const businessAddress = user.user_metadata?.business_address || null;
+  
+  // Handler for edit business info button
+  const handleEditBusinessInfo = () => {
+    setEditBusinessOpen(true);
+  };
+  
+  // Handler for add business address button
+  const handleAddBusinessAddress = () => {
+    setAddAddressOpen(true);
+  };
 
   return (
     <Layout>
@@ -55,25 +75,34 @@ const SellerAccount = () => {
                       <div className="space-y-4">
                         <div>
                           <p className="text-sm text-muted-foreground">Business Name</p>
-                          <p className="font-medium">{user.user_metadata?.full_name || "Not set"}</p>
+                          <p className="font-medium">{businessName}</p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Business Type</p>
-                          <p className="font-medium">Individual Seller</p>
+                          <p className="font-medium">{businessType}</p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Tax ID</p>
-                          <p className="font-medium">Not set</p>
+                          <p className="font-medium">{taxId}</p>
                         </div>
                       </div>
-                      <Button variant="outline" className="mt-4">Edit Business Information</Button>
+                      <Button variant="outline" className="mt-4" onClick={handleEditBusinessInfo}>Edit Business Information</Button>
                     </div>
                     
                     <div>
                       <h3 className="text-lg font-medium mb-2">Business Address</h3>
                       <div className="space-y-4">
-                        <p className="text-sm">No business address set</p>
-                        <Button variant="outline">Add Business Address</Button>
+                        {businessAddress ? (
+                          <>
+                            <p className="text-sm">{businessAddress}</p>
+                            <Button variant="outline" onClick={handleAddBusinessAddress}>Update Address</Button>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-sm">No business address set</p>
+                            <Button variant="outline" onClick={handleAddBusinessAddress}>Add Business Address</Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -293,6 +322,24 @@ const SellerAccount = () => {
           </section>
         </div>
       </div>
+      
+      {/* Edit Business Information Modal */}
+      <EditBusinessInfoForm 
+        open={editBusinessOpen}
+        onClose={() => setEditBusinessOpen(false)}
+        defaultValues={{
+          business_name: user.user_metadata?.full_name,
+          business_type: user.user_metadata?.business_type || 'individual',
+          tax_id: user.user_metadata?.tax_id,
+        }}
+      />
+      
+      {/* Add Business Address Modal */}
+      <AddBusinessAddressForm
+        open={addAddressOpen}
+        onClose={() => setAddAddressOpen(false)}
+      />
+      
     </Layout>
   );
 };
