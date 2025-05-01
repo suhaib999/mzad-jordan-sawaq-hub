@@ -1,16 +1,13 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import ProductGrid from '@/components/product/ProductGrid';
-import { fetchProducts, mapProductToCardProps } from '@/services/productService';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { SearchIcon, Filter, X } from 'lucide-react';
+import { fetchProducts, mapProductToCardProps, ProductFilterParams } from '@/services/productService';
+import SearchBar from './components/SearchBar';
+import FilterSidebar, { FilterValues } from './components/FilterSidebar';
+import ProductResults from './components/ProductResults';
+import ActiveFiltersBar from './components/ActiveFiltersBar';
 
 const categories = [
   "Electronics",
@@ -27,57 +24,161 @@ const categories = [
 
 const BrowseProducts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialCategory = searchParams.get('category') || 'all';
-  const initialQuery = searchParams.get('q') || '';
-  const initialListingType = searchParams.get('type') || 'all';
+  
+  // Parse initial filters from URL params
+  const initialFilters: FilterValues = {
+    category: searchParams.get('category') || 'all',
+    listingType: (searchParams.get('type') as 'all' | 'auction' | 'fixed') || 'all',
+    searchQuery: searchParams.get('q') || '',
+    priceMin: searchParams.get('priceMin') ? Number(searchParams.get('priceMin')) : undefined,
+    priceMax: searchParams.get('priceMax') ? Number(searchParams.get('priceMax')) : undefined,
+    condition: searchParams.get('condition') ? searchParams.get('condition')!.split(',') : [],
+    location: searchParams.get('location') || undefined,
+    freeShippingOnly: searchParams.get('freeShipping') === 'true',
+    localPickupOnly: searchParams.get('localPickup') === 'true',
+    sortOrder: searchParams.get('sort') || 'bestMatch'
+  };
 
-  const [searchQuery, setSearchQuery] = useState(initialQuery);
-  const [category, setCategory] = useState(initialCategory);
-  const [listingType, setListingType] = useState<'all' | 'auction' | 'fixed'>(initialListingType as any || 'all');
+  // State for filters
+  const [filters, setFilters] = useState<FilterValues>(initialFilters);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(initialFilters.searchQuery || '');
 
+  // Query for products
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products', category, listingType, searchQuery],
+    queryKey: ['products', filters],
     queryFn: async () => {
-      const isAuction = listingType === 'all' ? undefined : listingType === 'auction';
-      // Only pass category to API if it's not "all"
-      const categoryParam = category === 'all' ? undefined : category;
-      const result = await fetchProducts(50, 0, categoryParam, isAuction, searchQuery || undefined);
+      // Convert filters to API parameters
+      const apiParams: ProductFilterParams = {
+        category: filters.category === 'all' ? undefined : filters.category,
+        isAuction: filters.listingType === 'all' ? undefined : filters.listingType === 'auction',
+        searchQuery: filters.searchQuery || undefined,
+        priceMin: filters.priceMin,
+        priceMax: filters.priceMax,
+        condition: filters.condition && filters.condition.length > 0 ? filters.condition : undefined,
+        location: filters.location,
+        freeShippingOnly: filters.freeShippingOnly,
+        localPickupOnly: filters.localPickupOnly,
+        sortOrder: filters.sortOrder
+      };
+      
+      const result = await fetchProducts(50, 0, apiParams);
       return result.map(mapProductToCardProps);
     }
   });
 
+  // Handle search form submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    updateSearchParams();
+    setFilters(prev => ({ ...prev, searchQuery }));
+    updateSearchParams({ ...filters, searchQuery });
   };
 
-  const updateSearchParams = () => {
+  // Handle filter changes
+  const handleFilterChange = (name: string, value: any) => {
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Apply filters
+  const applyFilters = () => {
+    updateSearchParams(filters);
+    setIsFilterOpen(false);
+  };
+
+  // Update URL search parameters
+  const updateSearchParams = (currentFilters: FilterValues) => {
     const params = new URLSearchParams();
     
-    if (searchQuery) {
-      params.set('q', searchQuery);
+    if (currentFilters.searchQuery) {
+      params.set('q', currentFilters.searchQuery);
     }
     
-    if (category && category !== 'all') {
-      params.set('category', category);
+    if (currentFilters.category && currentFilters.category !== 'all') {
+      params.set('category', currentFilters.category);
     }
     
-    if (listingType !== 'all') {
-      params.set('type', listingType);
+    if (currentFilters.listingType !== 'all') {
+      params.set('type', currentFilters.listingType);
+    }
+
+    if (currentFilters.priceMin !== undefined) {
+      params.set('priceMin', currentFilters.priceMin.toString());
+    }
+    
+    if (currentFilters.priceMax !== undefined) {
+      params.set('priceMax', currentFilters.priceMax.toString());
+    }
+    
+    if (currentFilters.condition && currentFilters.condition.length > 0) {
+      params.set('condition', currentFilters.condition.join(','));
+    }
+    
+    if (currentFilters.location) {
+      params.set('location', currentFilters.location);
+    }
+    
+    if (currentFilters.freeShippingOnly) {
+      params.set('freeShipping', 'true');
+    }
+    
+    if (currentFilters.localPickupOnly) {
+      params.set('localPickup', 'true');
+    }
+    
+    if (currentFilters.sortOrder && currentFilters.sortOrder !== 'bestMatch') {
+      params.set('sort', currentFilters.sortOrder);
     }
     
     setSearchParams(params);
   };
 
+  // Clear all filters
   const clearFilters = () => {
+    const emptyFilters: FilterValues = {
+      category: 'all',
+      listingType: 'all',
+      searchQuery: '',
+      priceMin: undefined,
+      priceMax: undefined,
+      condition: [],
+      location: undefined,
+      freeShippingOnly: false,
+      localPickupOnly: false,
+      sortOrder: 'bestMatch'
+    };
+    
+    setFilters(emptyFilters);
     setSearchQuery('');
-    setCategory('all');
-    setListingType('all');
     setSearchParams({});
   };
 
-  const hasActiveFilters = searchQuery || category !== 'all' || listingType !== 'all';
+  // Remove a single filter
+  const removeFilter = (name: string) => {
+    if (name === 'searchQuery') {
+      setSearchQuery('');
+    }
+    
+    setFilters(prev => {
+      const updated = { ...prev };
+      
+      if (name === 'category') {
+        updated.category = 'all';
+      } else if (name === 'listingType') {
+        updated.listingType = 'all';
+      } else if (name === 'priceMin' || name === 'priceMax') {
+        updated[name] = undefined;
+      } else if (name === 'condition') {
+        updated.condition = [];
+      } else if (name === 'freeShippingOnly' || name === 'localPickupOnly') {
+        updated[name] = false;
+      } else {
+        updated[name] = undefined;
+      }
+      
+      updateSearchParams(updated);
+      return updated;
+    });
+  };
 
   return (
     <Layout>
@@ -85,112 +186,31 @@ const BrowseProducts = () => {
         <div className="flex flex-col md:flex-row items-center justify-between mb-8">
           <h1 className="text-2xl font-bold mb-4 md:mb-0">Browse Products</h1>
           
-          <form onSubmit={handleSearch} className="w-full md:w-auto flex gap-2">
-            <div className="relative flex-grow">
-              <Input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-10"
-              />
-              <SearchIcon className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
-            </div>
-            
-            <Button 
-              type="button"
-              variant="outline" 
-              size="icon"
-              className="md:hidden"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-            >
-              <Filter size={18} />
-            </Button>
-            
-            <Button type="submit">Search</Button>
-          </form>
+          <SearchBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onSearch={handleSearch}
+            onToggleFilters={() => setIsFilterOpen(!isFilterOpen)}
+          />
         </div>
 
+        <ActiveFiltersBar 
+          filters={{ ...filters, searchQuery }}
+          onRemoveFilter={removeFilter}
+        />
+
         <div className="flex flex-col md:flex-row gap-6">
-          <Card className={`w-full md:w-64 md:block ${isFilterOpen ? 'block' : 'hidden'}`}>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">Filters</CardTitle>
-              {hasActiveFilters && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={clearFilters}
-                  className="text-xs flex items-center"
-                >
-                  <X size={14} className="mr-1" /> Clear all
-                </Button>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {/* Fix: Changed the empty string to "all" for the All Categories option */}
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Listing Type</Label>
-                <RadioGroup value={listingType} onValueChange={(value: 'all' | 'auction' | 'fixed') => setListingType(value)}>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="all" id="all" />
-                    <Label htmlFor="all" className="cursor-pointer">All</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="auction" id="auction" />
-                    <Label htmlFor="auction" className="cursor-pointer">Auction Only</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="fixed" id="fixed" />
-                    <Label htmlFor="fixed" className="cursor-pointer">Fixed Price Only</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <Button 
-                onClick={() => {
-                  updateSearchParams();
-                  setIsFilterOpen(false);
-                }}
-                className="w-full md:hidden"
-              >
-                Apply Filters
-              </Button>
-            </CardContent>
-          </Card>
+          <FilterSidebar
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onApplyFilters={applyFilters}
+            onClearFilters={clearFilters}
+            categories={categories}
+            isFilterOpen={isFilterOpen}
+          />
 
           <div className="flex-grow">
-            {isLoading ? (
-              <div className="flex justify-center p-12">
-                <div className="text-center">
-                  <div className="animate-spin h-8 w-8 border-4 border-mzad-primary border-t-transparent rounded-full mx-auto"></div>
-                  <p className="mt-4">Loading products...</p>
-                </div>
-              </div>
-            ) : products.length === 0 ? (
-              <div className="text-center p-12 bg-gray-50 rounded-lg">
-                <h3 className="text-xl font-medium">No products found</h3>
-                <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
-              </div>
-            ) : (
-              <ProductGrid products={products} />
-            )}
+            <ProductResults products={products} isLoading={isLoading} />
           </div>
         </div>
       </div>

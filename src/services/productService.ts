@@ -11,13 +11,37 @@ export type ProductWithImages = Product & {
   main_image_url: string;
 };
 
+export type ProductFilterParams = {
+  category?: string;
+  isAuction?: boolean;
+  searchQuery?: string;
+  priceMin?: number;
+  priceMax?: number;
+  condition?: string[];
+  location?: string;
+  freeShippingOnly?: boolean;
+  localPickupOnly?: boolean;
+  sortOrder?: string;
+};
+
 export const fetchProducts = async (
   limit: number = 10,
   offset: number = 0,
-  category?: string,
-  isAuction?: boolean,
-  searchQuery?: string
+  filters: ProductFilterParams = {}
 ): Promise<ProductWithImages[]> => {
+  const { 
+    category, 
+    isAuction, 
+    searchQuery, 
+    priceMin, 
+    priceMax, 
+    condition, 
+    location, 
+    freeShippingOnly, 
+    localPickupOnly,
+    sortOrder
+  } = filters;
+
   let query = supabase
     .from("products")
     .select(
@@ -39,10 +63,51 @@ export const fetchProducts = async (
   if (searchQuery) {
     query = query.ilike("title", `%${searchQuery}%`);
   }
+  
+  if (priceMin !== undefined) {
+    query = query.gte("price", priceMin);
+  }
+  
+  if (priceMax !== undefined) {
+    query = query.lte("price", priceMax);
+  }
+  
+  if (condition && condition.length > 0) {
+    query = query.in("condition", condition);
+  }
+  
+  if (location) {
+    query = query.ilike("location", `%${location}%`);
+  }
+  
+  if (freeShippingOnly) {
+    query = query.eq("shipping", "Free");
+  }
+  
+  if (localPickupOnly) {
+    query = query.eq("shipping", "Local pickup");
+  }
+  
+  // Apply sorting
+  switch (sortOrder) {
+    case 'priceAsc':
+      query = query.order("price", { ascending: true });
+      break;
+    case 'priceDesc':
+      query = query.order("price", { ascending: false });
+      break;
+    case 'newlyListed':
+      query = query.order("created_at", { ascending: false });
+      break;
+    case 'endingSoonest':
+      query = query.order("end_time", { ascending: true });
+      break;
+    default:
+      query = query.order("created_at", { ascending: false });
+      break;
+  }
 
-  const { data, error } = await query
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit - 1);
+  const { data, error } = await query.range(offset, offset + limit - 1);
 
   if (error) {
     console.error("Error fetching products:", error);
