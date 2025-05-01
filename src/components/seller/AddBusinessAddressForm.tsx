@@ -106,8 +106,8 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
       }
       
       // Otherwise, we want to handle the scroll ourselves
-      event.stopPropagation();
       event.preventDefault();
+      event.stopPropagation();
       
       // Manually scroll the element
       element.scrollTop += event.deltaY;
@@ -212,9 +212,15 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <div ref={scrollAreaRef} className="h-[200px] overflow-y-auto">
+                        <div 
+                          ref={scrollAreaRef} 
+                          className="h-[200px] overflow-y-auto"
+                          style={{ touchAction: 'none' }} // Prevent touch scrolling which might interfere
+                        >
                           {jordanianCities.map((city) => (
-                            <SelectItem key={city} value={city}>{city}</SelectItem>
+                            <div key={city} className="city-item">
+                              <SelectItem value={city}>{city}</SelectItem>
+                            </div>
                           ))}
                         </div>
                       </SelectContent>
