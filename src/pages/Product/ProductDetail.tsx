@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchProductById } from '@/services/product';
@@ -20,10 +21,26 @@ const ProductDetail = () => {
     }
   };
 
+  // Fix: Use a separate effect for updating recently viewed products
+  useEffect(() => {
+    if (id) {
+      setRecentlyViewedProducts(prev => {
+        // Avoid unnecessary updates by checking if id is already at the end
+        if (prev[prev.length - 1] === id) {
+          return prev;
+        }
+        const filtered = prev.filter(productId => productId !== id);
+        return [...filtered, id];
+      });
+    }
+  }, [id, setRecentlyViewedProducts]);
+
+  // Fix: Separate effect for product fetching
   useEffect(() => {
     const fetchProductData = async () => {
       if (!id) {
         console.error("Product ID is missing.");
+        setIsLoading(false);
         return;
       }
 
@@ -43,21 +60,14 @@ const ProductDetail = () => {
     };
 
     fetchProductData();
-
-    if (id) {
-      setRecentlyViewedProducts(prev => {
-        const filtered = prev.filter(productId => productId !== id);
-        return [...filtered, id];
-      });
-    }
-  }, [id, setRecentlyViewedProducts]);
+  }, [id]);
 
   if (isLoading) {
-    return <div>Loading product details...</div>;
+    return <div className="flex justify-center items-center min-h-[50vh]">Loading product details...</div>;
   }
 
   if (!product) {
-    return <div>Product not found</div>;
+    return <div className="flex justify-center items-center min-h-[50vh]">Product not found</div>;
   }
 
   return (
