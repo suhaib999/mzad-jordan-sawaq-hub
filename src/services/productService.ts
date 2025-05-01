@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Product {
@@ -25,7 +26,7 @@ export interface Product {
   storage?: string;
   color?: string;
   delivery_available?: boolean;
-  screen_size?: string; // Added screen size field
+  screen_size?: string;
 }
 
 export interface ProductImage {
@@ -96,15 +97,12 @@ export const mapProductToCardProps = (product: ProductWithImages): ProductCardPr
   };
 };
 
-// Type definition for query response
+// Simplified interface for product query response
 interface ProductQueryResponse {
   data: any[] | null;
   error: any;
   count: number | null;
 }
-
-// Type for Supabase query builder to avoid excessive type depth
-type ProductQueryBuilder = ReturnType<typeof supabase.from<string>>;
 
 export const fetchProducts = async (
   limit: number | undefined,
@@ -124,13 +122,11 @@ export const fetchProducts = async (
       sort_by
     } = filterParams;
 
-    // Simplified query approach to avoid excessive type depth
+    // Use string literal for query to avoid type complexity
     const queryString = "*,images:product_images(*)";
 
-    // Use basic query builder with explicit typing
-    let queryBuilder = supabase
-      .from('products')
-      .select(queryString, { count: 'exact' }) as unknown as ProductQueryBuilder;
+    // Apply filters step by step to avoid complex type inference
+    let queryBuilder = supabase.from('products').select(queryString, { count: 'exact' });
     
     // Add filters
     queryBuilder = queryBuilder.eq('status', 'active');
@@ -193,9 +189,11 @@ export const fetchProducts = async (
       }
     }
 
-    // Execute query and explicitly type the response
-    const response = await queryBuilder as unknown as ProductQueryResponse;
-    const { data, error, count } = response;
+    // Execute query
+    const response = await queryBuilder;
+    
+    const { data, error } = response;
+    const count = response.count || 0;
 
     if (error) {
       console.error('Error fetching products:', error);
@@ -206,10 +204,10 @@ export const fetchProducts = async (
       return { products: [], count: 0 };
     }
 
-    // Process the data with explicit typing
-    const productsWithMainImage = data.map((product: any) => {
+    // Process the data
+    const productsWithMainImage = data.map((product) => {
       const images = product.images || [];
-      const sortedImages = [...images].sort((a: any, b: any) => a.display_order - b.display_order);
+      const sortedImages = [...images].sort((a, b) => a.display_order - b.display_order);
       const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
       
       return {
@@ -220,7 +218,7 @@ export const fetchProducts = async (
 
     return { 
       products: productsWithMainImage as ProductWithImages[], 
-      count: count || 0
+      count 
     };
   } catch (error) {
     console.error('Error in fetchProducts:', error);
@@ -251,10 +249,10 @@ export const fetchProductsBySellerId = async (sellerId: string): Promise<Product
       return [];
     }
 
-    // Process with explicit typing
-    const productsWithMainImage = data.map((product: any) => {
+    // Process with simplified typing
+    const productsWithMainImage = data.map((product) => {
       const images = product.images || [];
-      const sortedImages = [...images].sort((a: any, b: any) => a.display_order - b.display_order);
+      const sortedImages = [...images].sort((a, b) => a.display_order - b.display_order);
       const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
       
       return {
@@ -278,13 +276,11 @@ export const fetchProductById = async (id: string): Promise<ProductWithImages | 
       images:product_images(*)
     `;
     
-    const response = await supabase
+    const { data, error } = await supabase
       .from('products')
       .select(queryString)
       .eq('id', id)
       .single();
-
-    const { data, error } = response;
 
     if (error) {
       console.error('Error fetching product:', error);
@@ -295,10 +291,10 @@ export const fetchProductById = async (id: string): Promise<ProductWithImages | 
       return null;
     }
 
-    // Process with explicit typing
-    const product = data as any;
+    // Process with simplified typing
+    const product = data;
     const images = product.images || [];
-    const sortedImages = [...images].sort((a: any, b: any) => a.display_order - b.display_order);
+    const sortedImages = [...images].sort((a, b) => a.display_order - b.display_order);
     const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
     
     return {
