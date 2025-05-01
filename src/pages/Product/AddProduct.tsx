@@ -21,7 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { X, Plus, Upload, Loader2, Info, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -907,4 +907,3 @@ const AddProduct = () => {
                                 </button>
                                 {index === 0 && (
                                   <span className="absolute top-1 left-1 bg-mzad-primary text-white text-xs px-2 py-0.5 rounded">
-                                    Main
