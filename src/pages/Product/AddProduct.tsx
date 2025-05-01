@@ -907,3 +907,40 @@ const AddProduct = () => {
                                 </button>
                                 {index === 0 && (
                                   <span className="absolute top-1 left-1 bg-mzad-primary text-white text-xs px-2 py-0.5 rounded">
+                                    Main
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="border-t pt-6 flex justify-end">
+                    <Button 
+                      type="submit"
+                      disabled={isUploading}
+                      className="bg-mzad-primary hover:bg-mzad-primary/90"
+                    >
+                      {isUploading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        'List Item'
+                      )}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+            </form>
+          </Form>
+        </Tabs>
+      </div>
+    </Layout>
+  );
+};
+
+export default AddProduct;
