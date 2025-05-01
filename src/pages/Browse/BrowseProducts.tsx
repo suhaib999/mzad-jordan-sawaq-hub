@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import { fetchProducts, ProductSearchParams, mapProductToCardProps } from '@/services/productService';
+import { fetchProducts, ProductSearchParams, ProductWithImages, mapProductToCardProps } from '@/services/productService';
 import SearchBar from './components/SearchBar';
 import FilterSidebar, { FilterValues } from './components/FilterSidebar';
 import ProductResults from './components/ProductResults';
@@ -58,7 +58,7 @@ const BrowseProducts = () => {
         condition: filters.condition && filters.condition.length > 0 ? filters.condition : undefined,
         location: filters.location ? [filters.location] : undefined,
         with_shipping: filters.freeShippingOnly,
-        sort_by: filters.sortOrder === 'bestMatch' ? 'newest' : filters.sortOrder
+        sort_by: filters.sortOrder === 'bestMatch' ? 'newest' : filters.sortOrder as 'price_asc' | 'price_desc' | 'newest' | 'oldest'
       };
       
       return fetchProducts(50, 0, apiParams);

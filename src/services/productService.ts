@@ -60,9 +60,9 @@ export interface ProductFilterParams {
   is_auction?: boolean;
   with_shipping?: boolean;
   query?: string;
+  sort_by?: 'price_asc' | 'price_desc' | 'newest' | 'oldest';
   limit?: number;
   offset?: number;
-  sort_by?: 'price_asc' | 'price_desc' | 'newest' | 'oldest';
 }
 
 export interface ProductSearchParams {
@@ -97,8 +97,8 @@ export const mapProductToCardProps = (product: ProductWithImages): ProductCardPr
 };
 
 export const fetchProducts = async (
-  limit?: number,
-  offset?: number,
+  limit: number | undefined,
+  offset: number | undefined,
   filterParams: ProductFilterParams = {}
 ): Promise<{ products: ProductWithImages[]; count: number }> => {
   try {
@@ -114,6 +114,7 @@ export const fetchProducts = async (
       sort_by
     } = filterParams;
 
+    // Create query builder with explicit typing
     let queryBuilder = supabase
       .from('products')
       .select(`
@@ -180,15 +181,19 @@ export const fetchProducts = async (
       }
     }
 
-    const { data: products, error, count } = await queryBuilder;
+    // Execute query with explicit type annotations
+    const { data, error, count } = await queryBuilder;
 
     if (error) {
       console.error('Error fetching products:', error);
       return { products: [], count: 0 };
     }
 
+    // Explicitly type the data before processing
+    const rawProducts = data as any[];
+    
     // Add main_image_url to each product for easy access
-    const productsWithMainImage = products.map((product: any) => {
+    const productsWithMainImage = rawProducts.map((product) => {
       const images = product.images || [];
       const sortedImages = [...images].sort((a: any, b: any) => a.display_order - b.display_order);
       const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
@@ -225,8 +230,11 @@ export const fetchProductsBySellerId = async (sellerId: string): Promise<Product
       return [];
     }
 
+    // Explicitly type the data before processing
+    const rawProducts = data as any[];
+    
     // Add main_image_url to each product
-    const productsWithMainImage = data.map((product: any) => {
+    const productsWithMainImage = rawProducts.map((product) => {
       const images = product.images || [];
       const sortedImages = [...images].sort((a: any, b: any) => a.display_order - b.display_order);
       const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
@@ -260,13 +268,16 @@ export const fetchProductById = async (id: string): Promise<ProductWithImages | 
       return null;
     }
 
+    // Explicitly type before processing
+    const product = data as any;
+    
     // Add main_image_url
-    const images = data.images || [];
+    const images = product.images || [];
     const sortedImages = [...images].sort((a: any, b: any) => a.display_order - b.display_order);
     const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
     
     return {
-      ...data,
+      ...product,
       main_image_url: mainImageUrl
     } as ProductWithImages;
   } catch (error) {
