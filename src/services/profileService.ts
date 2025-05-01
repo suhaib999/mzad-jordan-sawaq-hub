@@ -33,11 +33,16 @@ export const fetchProfile = async (userId: string): Promise<ProfileWithAvatar | 
       return null;
     }
 
-    // Add the location property to the returned data
+    // Create a ProfileWithAvatar object with location (may be derived from address if location doesn't exist)
     return {
-      ...data,
-      location: data.location || null
-    } as ProfileWithAvatar;
+      id: data.id,
+      username: data.username,
+      full_name: data.full_name,
+      avatar_url: data.avatar_url,
+      phone_number: data.phone_number,
+      address: data.address,
+      location: data.address // Using address as location since location doesn't exist in the database
+    };
   } catch (error) {
     console.error('Error in fetchProfile:', error);
     return null;
