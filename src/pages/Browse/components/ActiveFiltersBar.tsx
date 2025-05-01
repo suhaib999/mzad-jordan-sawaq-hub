@@ -1,5 +1,5 @@
 
-import { X, Tag, DollarSign, Package } from 'lucide-react';
+import { X, Tag, DollarSign, Package, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { FilterValues } from './FilterSidebar';
 
@@ -12,6 +12,7 @@ const ActiveFiltersBar = ({ filters, onRemoveFilter }: ActiveFiltersBarProps) =>
   const hasActiveFilters = 
     filters.category !== 'all' || 
     filters.listingType !== 'all' ||
+    filters.searchQuery || 
     filters.priceMin !== undefined ||
     filters.priceMax !== undefined ||
     (filters.condition && filters.condition.length > 0) ||
@@ -28,6 +29,14 @@ const ActiveFiltersBar = ({ filters, onRemoveFilter }: ActiveFiltersBarProps) =>
           <Tag className="h-3 w-3" />
           Category: {filters.category}
           <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => onRemoveFilter('category')} />
+        </Badge>
+      )}
+      
+      {filters.searchQuery && (
+        <Badge variant="outline" className="flex items-center gap-1">
+          <Search className="h-3 w-3" />
+          Search: {filters.searchQuery}
+          <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => onRemoveFilter('searchQuery')} />
         </Badge>
       )}
       

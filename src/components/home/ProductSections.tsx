@@ -10,7 +10,7 @@ const ProductSections = () => {
   const { data: featuredProducts = [], isLoading: isFeaturedLoading } = useQuery({
     queryKey: ['featuredProducts'],
     queryFn: async () => {
-      const products = await fetchProducts(5, 0, undefined, false);
+      const products = await fetchProducts(5, 0, { isAuction: false });
       return products.map(mapProductToCardProps);
     }
   });
@@ -19,7 +19,7 @@ const ProductSections = () => {
   const { data: auctionProducts = [], isLoading: isAuctionLoading } = useQuery({
     queryKey: ['auctionProducts'],
     queryFn: async () => {
-      const products = await fetchProducts(5, 0, undefined, true);
+      const products = await fetchProducts(5, 0, { isAuction: true });
       return products.map(mapProductToCardProps);
     }
   });

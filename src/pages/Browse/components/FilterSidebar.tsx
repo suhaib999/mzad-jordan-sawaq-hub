@@ -14,6 +14,7 @@ import SortOrderFilter from './filters/SortOrderFilter';
 export type FilterValues = {
   category: string;
   listingType: 'all' | 'auction' | 'fixed';
+  searchQuery?: string;
   priceMin?: number;
   priceMax?: number;
   condition?: string[];
