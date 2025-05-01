@@ -12,6 +12,7 @@ import AddProduct from './pages/Product/AddProduct';
 import BrowseProducts from './pages/Browse/BrowseProducts';
 import Profile from './pages/Profile/Profile';
 import MyListings from './pages/Profile/MyListings';
+import SellPage from './pages/Sell/SellPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "./components/ui/toaster";
 import { AuthProvider } from './contexts/AuthContext';
@@ -33,6 +34,7 @@ function AppRoutes(): ReactNode {
       <Route path="/browse" element={<BrowseProducts />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/my-listings" element={<MyListings />} />
+      <Route path="/sell" element={<SellPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
