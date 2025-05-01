@@ -2,10 +2,8 @@
 import { useState } from 'react';
 import Footer from './Footer';
 import SidebarNav from './SidebarNav';
-import TopNav from './TopNav';
+import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Menu } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -14,14 +12,8 @@ interface MainLayoutProps {
 const MainLayout = ({ children }: MainLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
   return (
     <div className="flex flex-col min-h-screen">
-      <TopNav />
-      
       <div className="flex flex-1 overflow-hidden">
         {/* Mobile sidebar backdrop */}
         {sidebarOpen && (
@@ -42,29 +34,27 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           <SidebarNav collapsed={!sidebarOpen} />
         </div>
         
-        {/* Sidebar toggle button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          className="fixed bottom-4 left-4 z-40 md:hidden bg-white dark:bg-gray-800 shadow-md"
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-        
-        {/* Desktop toggle button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          className="hidden md:flex fixed top-24 left-4 z-40 bg-white dark:bg-gray-800 shadow-md"
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-        
         {/* Main content */}
         <div className="flex flex-col flex-1 w-full overflow-x-hidden">
-          <main className="flex-grow p-4">
+          {/* Mobile sidebar toggle button */}
+          <button 
+            className="fixed bottom-4 right-4 z-10 p-2 rounded-full bg-mzad-primary text-white shadow-lg md:hidden"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+          >
+            {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+          
+          {/* Desktop sidebar toggle button */}
+          <button
+            className="hidden md:flex absolute left-4 top-4 z-40 p-2 rounded-md bg-white dark:bg-gray-800 shadow-md hover:bg-gray-100 dark:hover:bg-gray-700"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            <Menu size={20} />
+          </button>
+          
+          <main className="flex-grow p-4 pt-16 md:pt-4">
             {children}
           </main>
           
