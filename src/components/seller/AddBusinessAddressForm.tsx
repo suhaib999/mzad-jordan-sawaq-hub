@@ -25,7 +25,7 @@ import MapLocationPicker from './MapLocationPicker';
 const formSchema = z.object({
   street_address: z.string().min(3, "Street address is required"),
   city: z.string().min(2, "City is required"),
-  state: z.string().min(2, "State/Province is required"),
+  neighborhood: z.string().min(2, "Neighborhood is required"),
   postal_code: z.string().min(2, "Postal/ZIP code is required"),
   country: z.string().min(2, "Country is required"),
   latitude: z.string().optional(),
@@ -49,7 +49,7 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
     defaultValues: {
       street_address: "",
       city: "",
-      state: "",
+      neighborhood: "",
       postal_code: "",
       country: "",
       latitude: "",
@@ -62,7 +62,7 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
     
     try {
       // Format address as a single string to store in user metadata
-      const formattedAddress = `${data.street_address}, ${data.city}, ${data.state} ${data.postal_code}, ${data.country}`;
+      const formattedAddress = `${data.street_address}, ${data.city}, ${data.neighborhood} ${data.postal_code}, ${data.country}`;
       
       // Update user metadata
       const { data: updateData, error } = await supabase.auth.updateUser({
@@ -148,12 +148,12 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
               
               <FormField
                 control={form.control}
-                name="state"
+                name="neighborhood"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>State/Province</FormLabel>
+                    <FormLabel>Neighborhood</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter state/province" {...field} />
+                      <Input placeholder="Enter neighborhood" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
