@@ -173,10 +173,12 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
                           <SelectValue placeholder="Select a city" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="max-h-[200px]">
-                        {jordanianCities.map((city) => (
-                          <SelectItem key={city} value={city}>{city}</SelectItem>
-                        ))}
+                      <SelectContent>
+                        <ScrollArea className="h-[200px]">
+                          {jordanianCities.map((city) => (
+                            <SelectItem key={city} value={city}>{city}</SelectItem>
+                          ))}
+                        </ScrollArea>
                       </SelectContent>
                     </Select>
                     <FormMessage />
