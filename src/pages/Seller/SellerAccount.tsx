@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Building, Store, Truck, CreditCard, BarChart, Package } from "lucide-react";
+import { Building, Store, Truck, CreditCard, BarChart, Package, MapPin } from "lucide-react";
 import EditBusinessInfoForm from '@/components/seller/EditBusinessInfoForm';
 import AddBusinessAddressForm from '@/components/seller/AddBusinessAddressForm';
 
@@ -37,6 +37,7 @@ const SellerAccount = () => {
   const businessType = user.user_metadata?.business_type || "Individual Seller";
   const taxId = user.user_metadata?.tax_id || "Not set";
   const businessAddress = user.user_metadata?.business_address || null;
+  const businessLocation = user.user_metadata?.business_location || null;
   
   // Handler for edit business info button
   const handleEditBusinessInfo = () => {
@@ -46,6 +47,28 @@ const SellerAccount = () => {
   // Handler for add business address button
   const handleAddBusinessAddress = () => {
     setAddAddressOpen(true);
+  };
+
+  // Function to render map link if location is available
+  const renderLocationLink = () => {
+    if (!businessLocation) return null;
+    
+    const { latitude, longitude } = businessLocation;
+    const googleMapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+    
+    return (
+      <div className="mt-2">
+        <a 
+          href={googleMapsUrl} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-primary flex items-center hover:underline"
+        >
+          <MapPin className="h-4 w-4 mr-1" />
+          View on Google Maps
+        </a>
+      </div>
+    );
   };
 
   return (
@@ -95,6 +118,7 @@ const SellerAccount = () => {
                         {businessAddress ? (
                           <>
                             <p className="text-sm">{businessAddress}</p>
+                            {renderLocationLink()}
                             <Button variant="outline" onClick={handleAddBusinessAddress}>Update Address</Button>
                           </>
                         ) : (

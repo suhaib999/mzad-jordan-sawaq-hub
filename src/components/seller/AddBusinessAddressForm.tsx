@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -8,6 +8,7 @@ import { updateProfile } from '@/services/profileService';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { MapPin } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -15,9 +16,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import MapLocationPicker from './MapLocationPicker';
 
 const formSchema = z.object({
   street_address: z.string().min(3, "Street address is required"),
@@ -25,6 +28,8 @@ const formSchema = z.object({
   state: z.string().min(2, "State/Province is required"),
   postal_code: z.string().min(2, "Postal/ZIP code is required"),
   country: z.string().min(2, "Country is required"),
+  latitude: z.string().optional(),
+  longitude: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -37,6 +42,7 @@ interface AddBusinessAddressFormProps {
 const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) => {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
+  const [showMap, setShowMap] = useState(false);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -46,6 +52,8 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
       state: "",
       postal_code: "",
       country: "",
+      latitude: "",
+      longitude: "",
     }
   });
 
@@ -59,7 +67,9 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
       // Update user metadata
       const { data: updateData, error } = await supabase.auth.updateUser({
         data: {
-          business_address: formattedAddress
+          business_address: formattedAddress,
+          business_location: data.latitude && data.longitude ? 
+            { latitude: data.latitude, longitude: data.longitude } : null
         }
       });
       
@@ -89,6 +99,13 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
         variant: "destructive",
       });
     }
+  };
+
+  // Handle location selection from map
+  const handleLocationSelected = (lat: string, lng: string) => {
+    form.setValue("latitude", lat);
+    form.setValue("longitude", lng);
+    setShowMap(false);
   };
 
   return (
@@ -173,6 +190,27 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
                 )}
               />
             </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col">
+                <h3 className="text-sm font-medium">Map Location</h3>
+                <p className="text-sm text-muted-foreground">
+                  {form.watch("latitude") && form.watch("longitude") 
+                    ? `Location set: ${form.watch("latitude")}, ${form.watch("longitude")}` 
+                    : "No location set"}
+                </p>
+              </div>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowMap(true)}
+                className="flex items-center gap-1"
+              >
+                <MapPin className="h-4 w-4" />
+                Set on Map
+              </Button>
+            </div>
             
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
@@ -180,6 +218,18 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
             </DialogFooter>
           </form>
         </Form>
+        
+        {showMap && (
+          <MapLocationPicker 
+            isOpen={showMap} 
+            onClose={() => setShowMap(false)}
+            onLocationSelected={handleLocationSelected}
+            initialLocation={{
+              lat: form.watch("latitude") ? parseFloat(form.watch("latitude")) : 31.9539, // Default to Jordan
+              lng: form.watch("longitude") ? parseFloat(form.watch("longitude")) : 35.9106
+            }}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
