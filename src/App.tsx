@@ -60,6 +60,9 @@ function AppRoutes(): ReactNode {
         <Route path="/my-listings" element={<MainLayout><MyListings /></MainLayout>} />
         <Route path="/sell" element={<Layout><SellPage /></Layout>} />
         <Route path="/cart" element={<Layout><CartPage /></Layout>} />
+        <Route path="/language" element={<Layout><div className="container mx-auto p-8"><h1 className="text-2xl font-bold mb-4">Language Settings</h1><p>Language preference options will appear here</p></div></Layout>} />
+        <Route path="/theme" element={<Layout><div className="container mx-auto p-8"><h1 className="text-2xl font-bold mb-4">Theme Settings</h1><p>Theme options will appear here</p></div></Layout>} />
+        <Route path="/about" element={<Layout><div className="container mx-auto p-8"><h1 className="text-2xl font-bold mb-4">About MzadKumSooq</h1><p>Information about our platform</p></div></Layout>} />
         
         {/* Add placeholder routes for the new sidebar items */}
         <Route path="/chats" element={<MainLayout><div className="container mx-auto p-8"><h1 className="text-2xl font-bold mb-4">Chats</h1><p>Chat functionality coming soon</p></div></MainLayout>} />
