@@ -1,9 +1,9 @@
-
 import Layout from '@/components/layout/Layout';
 import HeroBanner from '@/components/home/HeroBanner';
 import CategoriesSection from '@/components/home/CategoriesSection';
 import ProductGrid from '@/components/product/ProductGrid';
 import { ProductCardProps } from '@/components/product/ProductCard';
+import { Link } from 'react-router-dom';
 
 // Sample product data
 const featuredProducts: ProductCardProps[] = [
