@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +12,7 @@ type AuthContextType = {
   signOut: () => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   updateUserMetadata: (metadata: { [key: string]: any }) => Promise<void>;
+  refreshUser: () => Promise<void>; // Add this new method
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -165,6 +165,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Add refreshUser method to get the latest user data
+  const refreshUser = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase.auth.getUser();
+      
+      if (error) throw error;
+      
+      if (data?.user) {
+        setUser(data.user);
+      }
+      
+      return Promise.resolve();
+    } catch (error: any) {
+      toast({
+        title: "Error refreshing user data",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      return Promise.reject(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -174,7 +199,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp, 
       signOut, 
       updatePassword,
-      updateUserMetadata 
+      updateUserMetadata,
+      refreshUser // Add the new refreshUser method to the context
     }}>
       {children}
     </AuthContext.Provider>
