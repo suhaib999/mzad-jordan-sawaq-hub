@@ -6,23 +6,23 @@ import {
 } from 'lucide-react';
 
 const categories = [
-  { name: 'Electronics', icon: Smartphone, link: '/category/electronics' },
-  { name: 'Computers', icon: Laptop, link: '/category/computers' },
-  { name: 'Cameras', icon: Camera, link: '/category/cameras' },
-  { name: 'Vehicles', icon: Car, link: '/category/vehicles' },
-  { name: 'Home & Garden', icon: Home, link: '/category/home-garden' },
-  { name: 'Fashion', icon: Shirt, link: '/category/fashion' },
-  { name: 'Collectibles', icon: ShoppingBag, link: '/category/collectibles' },
-  { name: 'Jewelry & Watches', icon: Watch, link: '/category/jewelry-watches' },
-  { name: 'Luxury', icon: Gem, link: '/category/luxury' },
-  { name: 'Consumer Electronics', icon: Tv, link: '/category/consumer-electronics' },
-  { name: 'Business & Industrial', icon: Briefcase, link: '/category/business' },
-  { name: 'Sporting Goods', icon: Dumbbell, link: '/category/sporting-goods' }
+  { name: 'Electronics', icon: Smartphone, slug: 'electronics' },
+  { name: 'Computers', icon: Laptop, slug: 'computers-laptops' },
+  { name: 'Cameras', icon: Camera, slug: 'cameras' },
+  { name: 'Vehicles', icon: Car, slug: 'vehicles' },
+  { name: 'Home & Garden', icon: Home, slug: 'home-garden' },
+  { name: 'Fashion', icon: Shirt, slug: 'womens-fashion' },
+  { name: 'Collectibles', icon: ShoppingBag, slug: 'books-hobbies' },
+  { name: 'Jewelry & Watches', icon: Watch, slug: 'womens-fashion/jewelry' },
+  { name: 'Luxury', icon: Gem, slug: 'mens-fashion' },
+  { name: 'Consumer Electronics', icon: Tv, slug: 'electronics/tv-audio' },
+  { name: 'Business & Industrial', icon: Briefcase, slug: 'business-equipment' },
+  { name: 'Sporting Goods', icon: Dumbbell, slug: 'sports-fitness' }
 ];
 
 const CategoriesSection = () => {
   return (
-    <div className="py-10 bg-gray-50">
+    <div className="py-10 bg-gray-50 rounded-lg">
       <div className="container mx-auto px-4">
         <h2 className="text-2xl font-bold mb-8 text-center">Shop by Category</h2>
         
@@ -30,7 +30,7 @@ const CategoriesSection = () => {
           {categories.map((category, index) => (
             <Link 
               key={index}
-              to={category.link}
+              to={`/browse?category=${category.slug}`}
               className="flex flex-col items-center justify-center bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200"
             >
               <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-mzad-primary mb-3">
