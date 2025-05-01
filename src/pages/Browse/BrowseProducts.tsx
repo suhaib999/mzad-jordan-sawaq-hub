@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
@@ -28,7 +27,7 @@ const categories = [
 
 const BrowseProducts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialCategory = searchParams.get('category') || '';
+  const initialCategory = searchParams.get('category') || 'all';
   const initialQuery = searchParams.get('q') || '';
   const initialListingType = searchParams.get('type') || 'all';
 
@@ -41,7 +40,9 @@ const BrowseProducts = () => {
     queryKey: ['products', category, listingType, searchQuery],
     queryFn: async () => {
       const isAuction = listingType === 'all' ? undefined : listingType === 'auction';
-      const result = await fetchProducts(50, 0, category || undefined, isAuction, searchQuery || undefined);
+      // Only pass category to API if it's not "all"
+      const categoryParam = category === 'all' ? undefined : category;
+      const result = await fetchProducts(50, 0, categoryParam, isAuction, searchQuery || undefined);
       return result.map(mapProductToCardProps);
     }
   });
@@ -58,7 +59,7 @@ const BrowseProducts = () => {
       params.set('q', searchQuery);
     }
     
-    if (category) {
+    if (category && category !== 'all') {
       params.set('category', category);
     }
     
@@ -71,12 +72,12 @@ const BrowseProducts = () => {
 
   const clearFilters = () => {
     setSearchQuery('');
-    setCategory('');
+    setCategory('all');
     setListingType('all');
     setSearchParams({});
   };
 
-  const hasActiveFilters = searchQuery || category || listingType !== 'all';
+  const hasActiveFilters = searchQuery || category !== 'all' || listingType !== 'all';
 
   return (
     <Layout>
@@ -133,7 +134,8 @@ const BrowseProducts = () => {
                     <SelectValue placeholder="All Categories" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Categories</SelectItem>
+                    {/* Fix: Changed the empty string to "all" for the All Categories option */}
+                    <SelectItem value="all">All Categories</SelectItem>
                     {categories.map((cat) => (
                       <SelectItem key={cat} value={cat}>
                         {cat}
