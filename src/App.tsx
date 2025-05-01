@@ -12,6 +12,9 @@ import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import ResetPassword from "./pages/Auth/ResetPassword";
 import Profile from "./pages/Profile/Profile";
+import BrowseProducts from "./pages/Browse/BrowseProducts";
+import ProductDetail from "./pages/Product/ProductDetail";
+import AddProduct from "./pages/Product/AddProduct";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +37,11 @@ const App = () => (
             
             {/* Profile Routes */}
             <Route path="/profile" element={<Profile />} />
+            
+            {/* Product Routes */}
+            <Route path="/browse" element={<BrowseProducts />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/add-product" element={<AddProduct />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

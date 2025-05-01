@@ -24,6 +24,101 @@ export type Database = {
         }
         Relationships: []
       }
+      product_images: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          image_url: string
+          product_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url: string
+          product_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          category: string
+          condition: string
+          created_at: string
+          currency: string
+          current_bid: number | null
+          description: string
+          end_time: string | null
+          id: string
+          is_auction: boolean
+          location: string | null
+          price: number
+          reserve_price: number | null
+          seller_id: string
+          shipping: string | null
+          start_price: number | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          condition: string
+          created_at?: string
+          currency?: string
+          current_bid?: number | null
+          description: string
+          end_time?: string | null
+          id?: string
+          is_auction?: boolean
+          location?: string | null
+          price: number
+          reserve_price?: number | null
+          seller_id: string
+          shipping?: string | null
+          start_price?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          condition?: string
+          created_at?: string
+          currency?: string
+          current_bid?: number | null
+          description?: string
+          end_time?: string | null
+          id?: string
+          is_auction?: boolean
+          location?: string | null
+          price?: number
+          reserve_price?: number | null
+          seller_id?: string
+          shipping?: string | null
+          start_price?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
