@@ -1,8 +1,9 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import { fetchProducts, ProductSearchParams, Product } from '@/services/productService';
+import { fetchProducts, ProductSearchParams, mapProductToCardProps } from '@/services/productService';
 import SearchBar from './components/SearchBar';
 import FilterSidebar, { FilterValues } from './components/FilterSidebar';
 import ProductResults from './components/ProductResults';
@@ -35,7 +36,7 @@ const BrowseProducts = () => {
     location: searchParams.get('location') || undefined,
     freeShippingOnly: searchParams.get('freeShipping') === 'true',
     localPickupOnly: searchParams.get('localPickup') === 'true',
-    sortOrder: searchParams.get('sort') || 'bestMatch'
+    sortOrder: (searchParams.get('sort') || 'newest') as 'price_asc' | 'price_desc' | 'newest' | 'oldest' | 'bestMatch'
   };
 
   // State for filters
@@ -44,31 +45,32 @@ const BrowseProducts = () => {
   const [searchQuery, setSearchQuery] = useState(initialFilters.searchQuery || '');
 
   // Query for products
-  const { data: products = [], isLoading } = useQuery({
+  const { data: productsData = { products: [], count: 0 }, isLoading } = useQuery({
     queryKey: ['products', filters],
     queryFn: async () => {
       // Convert filters to API parameters
-      const apiParams: ProductSearchParams = {
-        category: filters.category === 'all' ? undefined : filters.category,
-        isAuction: filters.listingType === 'all' ? undefined : filters.listingType === 'auction',
-        searchQuery: filters.searchQuery || undefined,
-        priceMin: filters.priceMin,
-        priceMax: filters.priceMax,
+      const apiParams: any = {
+        category_id: filters.category === 'all' ? undefined : filters.category,
+        is_auction: filters.listingType === 'all' ? undefined : filters.listingType === 'auction',
+        query: filters.searchQuery || undefined,
+        price_min: filters.priceMin,
+        price_max: filters.priceMax,
         condition: filters.condition && filters.condition.length > 0 ? filters.condition : undefined,
-        location: filters.location,
-        freeShippingOnly: filters.freeShippingOnly,
-        localPickupOnly: filters.localPickupOnly,
-        sortOrder: filters.sortOrder
+        location: filters.location ? [filters.location] : undefined,
+        with_shipping: filters.freeShippingOnly,
+        sort_by: filters.sortOrder === 'bestMatch' ? 'newest' : filters.sortOrder
       };
       
-      const result = await fetchProducts(50, 0, apiParams);
-      return result.map(mapProductToCardProps);
+      return fetchProducts(50, 0, apiParams);
     }
   });
 
+  // Map products to card props
+  const products = productsData.products.map(mapProductToCardProps);
+
   // Handle search form submission
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent navigating to product detail
     setFilters(prev => ({ ...prev, searchQuery }));
     updateSearchParams({ ...filters, searchQuery });
   };

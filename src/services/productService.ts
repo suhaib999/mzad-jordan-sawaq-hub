@@ -37,6 +37,7 @@ export interface ProductImage {
 
 export interface ProductWithImages extends Product {
   images: ProductImage[];
+  main_image_url?: string;
 }
 
 export interface ProductCardProps {
@@ -96,9 +97,9 @@ export const mapProductToCardProps = (product: ProductWithImages): ProductCardPr
 };
 
 export const fetchProducts = async (
-  filterParams: ProductFilterParams = {},
-  page = 1,
-  pageSize = 12
+  limit?: number,
+  offset?: number,
+  filterParams: ProductFilterParams = {}
 ): Promise<{ products: ProductWithImages[]; count: number }> => {
   try {
     const { 
@@ -171,8 +172,13 @@ export const fetchProducts = async (
     }
 
     // Apply pagination
-    const start = (page - 1) * pageSize;
-    queryBuilder = queryBuilder.range(start, start + pageSize - 1);
+    if (limit !== undefined) {
+      if (offset !== undefined) {
+        queryBuilder = queryBuilder.range(offset, offset + limit - 1);
+      } else {
+        queryBuilder = queryBuilder.limit(limit);
+      }
+    }
 
     const { data: products, error, count } = await queryBuilder;
 
@@ -181,8 +187,20 @@ export const fetchProducts = async (
       return { products: [], count: 0 };
     }
 
+    // Add main_image_url to each product for easy access
+    const productsWithMainImage = products.map((product: any) => {
+      const images = product.images || [];
+      const sortedImages = [...images].sort((a: any, b: any) => a.display_order - b.display_order);
+      const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
+      
+      return {
+        ...product,
+        main_image_url: mainImageUrl
+      };
+    });
+
     return { 
-      products: products as ProductWithImages[], 
+      products: productsWithMainImage as ProductWithImages[], 
       count: count || 0
     };
   } catch (error) {
@@ -207,7 +225,19 @@ export const fetchProductsBySellerId = async (sellerId: string): Promise<Product
       return [];
     }
 
-    return data as ProductWithImages[];
+    // Add main_image_url to each product
+    const productsWithMainImage = data.map((product: any) => {
+      const images = product.images || [];
+      const sortedImages = [...images].sort((a: any, b: any) => a.display_order - b.display_order);
+      const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
+      
+      return {
+        ...product,
+        main_image_url: mainImageUrl
+      };
+    });
+
+    return productsWithMainImage as ProductWithImages[];
   } catch (error) {
     console.error('Error in fetchProductsBySellerId:', error);
     return [];
@@ -230,7 +260,15 @@ export const fetchProductById = async (id: string): Promise<ProductWithImages | 
       return null;
     }
 
-    return data as ProductWithImages;
+    // Add main_image_url
+    const images = data.images || [];
+    const sortedImages = [...images].sort((a: any, b: any) => a.display_order - b.display_order);
+    const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
+    
+    return {
+      ...data,
+      main_image_url: mainImageUrl
+    } as ProductWithImages;
   } catch (error) {
     console.error('Error in fetchProductById:', error);
     return null;

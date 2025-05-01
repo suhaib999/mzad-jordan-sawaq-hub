@@ -7,22 +7,24 @@ import { placeholderFeaturedProducts, placeholderAuctionProducts } from '@/data/
 
 const ProductSections = () => {
   // Fetch featured (non-auction) products
-  const { data: featuredProducts = [], isLoading: isFeaturedLoading } = useQuery({
+  const { data: featuredProductsData = {products: [], count: 0}, isLoading: isFeaturedLoading } = useQuery({
     queryKey: ['featuredProducts'],
     queryFn: async () => {
-      const products = await fetchProducts(5, 0, { isAuction: false });
-      return products.map(mapProductToCardProps);
+      return fetchProducts(5, 0, { is_auction: false });
     }
   });
 
   // Fetch auction products
-  const { data: auctionProducts = [], isLoading: isAuctionLoading } = useQuery({
+  const { data: auctionProductsData = {products: [], count: 0}, isLoading: isAuctionLoading } = useQuery({
     queryKey: ['auctionProducts'],
     queryFn: async () => {
-      const products = await fetchProducts(5, 0, { isAuction: true });
-      return products.map(mapProductToCardProps);
+      return fetchProducts(5, 0, { is_auction: true });
     }
   });
+
+  // Map products to card props
+  const featuredProducts = featuredProductsData.products.map(mapProductToCardProps);
+  const auctionProducts = auctionProductsData.products.map(mapProductToCardProps);
 
   // Show placeholder data while loading
   const showPlaceholders = isFeaturedLoading || isAuctionLoading || (featuredProducts.length === 0 && auctionProducts.length === 0);

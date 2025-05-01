@@ -60,7 +60,7 @@ const CartPage: React.FC = () => {
                       <div key={item.id} className="p-4 flex flex-col sm:flex-row items-start gap-4">
                         <div className="w-full sm:w-24 h-24 shrink-0">
                           <img 
-                            src={item.product.main_image_url} 
+                            src={item.product.main_image_url || ''} 
                             alt={item.product.title} 
                             className="w-full h-full object-cover rounded-md"
                           />
