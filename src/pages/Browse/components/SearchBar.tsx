@@ -2,7 +2,7 @@
 import { FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { SearchIcon, Filter } from 'lucide-react';
+import { SearchIcon, ListFilter } from 'lucide-react';
 
 type SearchBarProps = {
   searchQuery: string;
@@ -37,7 +37,7 @@ const SearchBar = ({
         className="md:hidden"
         onClick={onToggleFilters}
       >
-        <Filter size={18} />
+        <ListFilter size={18} />
       </Button>
       
       <Button type="submit">Search</Button>
