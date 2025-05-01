@@ -308,6 +308,21 @@ const AddProduct = () => {
       setActiveTab("images");
       return;
     }
+
+    // For auction listings, validate required fields
+    if (values.listingType === "auction") {
+      if (!values.startPrice) {
+        toast.error("Please set a starting price for your auction");
+        setActiveTab("details");
+        return;
+      }
+      
+      if (!values.endDate || !values.endTime) {
+        toast.error("Please set an end date and time for your auction");
+        setActiveTab("details");
+        return;
+      }
+    }
     
     try {
       const productId = uuidv4();
@@ -350,7 +365,7 @@ const AddProduct = () => {
         id: productId,
         title: enhancedTitle,
         description: values.description,
-        price: Number(values.price),
+        price: values.listingType === "fixed" ? Number(values.price) : null,
         currency: values.currency,
         condition: values.condition,
         category_id: values.categoryId,
@@ -402,9 +417,11 @@ const AddProduct = () => {
   
   // Update listingType state when the form field changes
   const watchListingType = form.watch("listingType");
-  if (watchListingType !== listingType) {
-    setListingType(watchListingType as "fixed" | "auction");
-  }
+  useEffect(() => {
+    if (watchListingType !== listingType) {
+      setListingType(watchListingType as "fixed" | "auction");
+    }
+  }, [watchListingType]);
 
   // Update selected category when it changes in the form
   useEffect(() => {
