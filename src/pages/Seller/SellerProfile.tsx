@@ -71,6 +71,7 @@ export const SellerProfile = () => {
   const positivePercentage = feedbackStats?.positivePercentage || 100;
   const totalFeedback = feedbackStats?.total || 0;
   const salesCount = totalFeedback || 245; // Use feedback count or fallback
+  const sellerRating = (positivePercentage / 100) * 5; // Calculate a 5-star rating from the percentage
 
   const renderStars = () => {
     const stars = [];
@@ -109,7 +110,7 @@ export const SellerProfile = () => {
                   <h1 className="text-2xl font-bold">{displayName}</h1>
                   <div className="flex items-center mt-1">
                     {renderStars()}
-                    <span className="ml-2 text-lg font-medium">{(positivePercentage/100 * 5).toFixed(1)}</span>
+                    <span className="ml-2 text-lg font-medium">{sellerRating.toFixed(1)}</span>
                     <span className="ml-2 text-gray-500">({salesCount}+ sales)</span>
                   </div>
                   <div className="mt-1 text-sm text-gray-600">

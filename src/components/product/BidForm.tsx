@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
-import { placeBid, getMinimumBidAmount } from '@/services/biddingService';
+import { placeBid, getMinimumBidAmount, fetchBidHistory } from '@/services/biddingService';
 import { ProductWithImages } from '@/services/product/types';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -22,10 +22,15 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
   const navigate = useNavigate();
   
   const currentBid = product.current_bid || product.start_price || 0;
-  const minBid = getMinimumBidAmount(product.current_bid, product.start_price);
+  const minBid = getMinimumBidAmount(currentBid, product.start_price);
   
   const [bidAmount, setBidAmount] = useState<string>(minBid.toFixed(2));
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Update bid amount whenever the product or minBid changes
+  useEffect(() => {
+    setBidAmount(minBid.toFixed(2));
+  }, [minBid, product.id]);
 
   const incrementBid = () => {
     const current = parseFloat(bidAmount);

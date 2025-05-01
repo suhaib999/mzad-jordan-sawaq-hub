@@ -26,6 +26,12 @@ export const ProductPricing: React.FC<ProductPricingProps> = ({
           Current bid: {(currentBid || startPrice || 0).toFixed(2)} {currency}
         </div>
         
+        {startPrice && currentBid && currentBid > startPrice && (
+          <div className="text-sm text-gray-500">
+            Started at: {startPrice.toFixed(2)} {currency}
+          </div>
+        )}
+        
         {endTime && (
           <div className="mt-2">
             <AuctionCountdown endTime={endTime} />
