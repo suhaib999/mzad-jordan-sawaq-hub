@@ -71,12 +71,13 @@ const ProductDetail = () => {
   // Initial data fetch
   useEffect(() => {
     fetchProductData();
-    // Set up a refresh interval to keep bids updated
+    
+    // Set up a refresh interval to keep bids updated - shorter interval for better UX
     const refreshInterval = setInterval(() => {
       if (id) {
         fetchProductData();
       }
-    }, 30000); // Refresh every 30 seconds
+    }, 10000); // Refresh every 10 seconds (reduced from 30s)
 
     return () => clearInterval(refreshInterval);
   }, [id]);
@@ -86,7 +87,7 @@ const ProductDetail = () => {
     if (product) {
       console.log(`Updating product with new bid amount: ${newBidAmount}`);
       
-      // Update local state immediately
+      // Update local state immediately for responsive UI
       setProduct(prevProduct => {
         if (!prevProduct) return null;
         return {
@@ -96,7 +97,10 @@ const ProductDetail = () => {
       });
       
       // Also refetch product data to ensure we have the latest from the server
-      fetchProductData();
+      // with a slight delay to ensure the DB update has propagated
+      setTimeout(() => {
+        fetchProductData();
+      }, 500);
     }
   };
 

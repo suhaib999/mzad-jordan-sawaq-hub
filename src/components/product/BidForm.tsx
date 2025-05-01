@@ -113,6 +113,11 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
           queryKey: ['bids', product.id]
         });
         
+        // Force refetch instead of just invalidating
+        queryClient.fetchQuery({
+          queryKey: ['product', product.id]
+        });
+        
         // Update product bid amount in parent component with the server-returned value
         if (onBidPlaced && result.currentBid) {
           onBidPlaced(result.currentBid);
