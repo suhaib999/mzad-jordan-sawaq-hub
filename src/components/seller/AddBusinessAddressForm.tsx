@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,7 +8,7 @@ import { updateProfile } from '@/services/profileService';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin } from "lucide-react";
+import { MapPin, Search } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -69,6 +70,8 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
   const { toast } = useToast();
   const [showMap, setShowMap] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [citySearch, setCitySearch] = useState('');
+  const [filteredCities, setFilteredCities] = useState(jordanianCities);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -82,6 +85,18 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
       longitude: "",
     }
   });
+
+  // Filter cities based on search input
+  useEffect(() => {
+    if (!citySearch) {
+      setFilteredCities(jordanianCities);
+    } else {
+      const filtered = jordanianCities.filter(city => 
+        city.toLowerCase().includes(citySearch.toLowerCase())
+      );
+      setFilteredCities(filtered);
+    }
+  }, [citySearch]);
 
   // Add wheel event listener to handle scrolling in the dropdown
   useEffect(() => {
@@ -171,6 +186,14 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
     setShowMap(false);
   };
 
+  // Clear the search when the dropdown closes
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setCitySearch('');
+      setFilteredCities(jordanianCities);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[500px]">
@@ -205,6 +228,7 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
+                      onOpenChange={handleOpenChange}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -212,16 +236,31 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <div className="p-2 border-b">
+                          <div className="relative">
+                            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              placeholder="Search city..."
+                              value={citySearch}
+                              onChange={(e) => setCitySearch(e.target.value)}
+                              className="pl-8"
+                            />
+                          </div>
+                        </div>
                         <div 
                           ref={scrollAreaRef} 
                           className="h-[200px] overflow-y-auto"
                           style={{ touchAction: 'none' }} // Prevent touch scrolling which might interfere
                         >
-                          {jordanianCities.map((city) => (
-                            <div key={city} className="city-item">
-                              <SelectItem value={city}>{city}</SelectItem>
-                            </div>
-                          ))}
+                          {filteredCities.length > 0 ? (
+                            filteredCities.map((city) => (
+                              <div key={city} className="city-item">
+                                <SelectItem value={city}>{city}</SelectItem>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="p-2 text-center text-muted-foreground">No cities found</div>
+                          )}
                         </div>
                       </SelectContent>
                     </Select>
