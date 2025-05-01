@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -98,34 +97,31 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
     }
   }, [citySearch]);
 
-  // Add wheel event listener to handle scrolling in the dropdown
+  // We're simplifying the wheel event handling by relying on proper CSS height
   useEffect(() => {
     const scrollableArea = scrollAreaRef.current;
     
     if (!scrollableArea) return;
     
     const handleWheel = (event: WheelEvent) => {
-      const element = scrollableArea;
-      
       // Check if we can scroll in the direction the user is trying to scroll
       const isScrollingUp = event.deltaY < 0;
       const isScrollingDown = event.deltaY > 0;
       
-      const isAtTop = element.scrollTop === 0;
-      const isAtBottom = Math.abs(element.scrollHeight - element.clientHeight - element.scrollTop) < 1;
+      const isAtTop = scrollableArea.scrollTop === 0;
+      const isAtBottom = Math.abs(scrollableArea.scrollHeight - scrollableArea.clientHeight - scrollableArea.scrollTop) < 1;
       
-      // If we're at the top and trying to scroll up, or at the bottom and trying to scroll down,
-      // then let the event propagate (default behavior)
+      // If at the boundaries, let the event propagate (default behavior)
       if ((isScrollingUp && isAtTop) || (isScrollingDown && isAtBottom)) {
         return;
       }
       
-      // Otherwise, we want to handle the scroll ourselves
+      // Otherwise, handle the scroll ourselves
       event.preventDefault();
       event.stopPropagation();
       
       // Manually scroll the element
-      element.scrollTop += event.deltaY;
+      scrollableArea.scrollTop += event.deltaY;
     };
     
     scrollableArea.addEventListener('wheel', handleWheel, { passive: false });
@@ -250,7 +246,10 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
                         <div 
                           ref={scrollAreaRef} 
                           className="h-[200px] overflow-y-auto"
-                          style={{ touchAction: 'none' }} // Prevent touch scrolling which might interfere
+                          style={{ 
+                            touchAction: 'none',
+                            height: '100%' // Applied the suggested fix
+                          }}
                         >
                           {filteredCities.length > 0 ? (
                             filteredCities.map((city) => (
