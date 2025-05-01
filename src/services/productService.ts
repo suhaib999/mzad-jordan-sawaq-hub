@@ -97,13 +97,6 @@ export const mapProductToCardProps = (product: ProductWithImages): ProductCardPr
   };
 };
 
-// Simplified interface for product query response
-interface ProductQueryResponse {
-  data: any[] | null;
-  error: any;
-  count: number | null;
-}
-
 export const fetchProducts = async (
   limit: number | undefined,
   offset: number | undefined,
@@ -122,11 +115,17 @@ export const fetchProducts = async (
       sort_by
     } = filterParams;
 
-    // Use string literal for query to avoid type complexity
-    const queryString = "*,images:product_images(*)";
-
-    // Apply filters step by step to avoid complex type inference
-    let queryBuilder = supabase.from('products').select(queryString, { count: 'exact' });
+    // Start with a basic query and build it up
+    let queryBuilder = supabase.from('products');
+    
+    // We'll store the count separately to avoid type issues
+    const countQuery = await queryBuilder
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'active')
+      .then(result => result.count || 0);
+      
+    // Now build the actual data query
+    queryBuilder = supabase.from('products').select('*, images:product_images(*)');
     
     // Add filters
     queryBuilder = queryBuilder.eq('status', 'active');
@@ -190,10 +189,7 @@ export const fetchProducts = async (
     }
 
     // Execute query
-    const response = await queryBuilder;
-    
-    const { data, error } = response;
-    const count = response.count || 0;
+    const { data, error } = await queryBuilder;
 
     if (error) {
       console.error('Error fetching products:', error);
@@ -218,7 +214,7 @@ export const fetchProducts = async (
 
     return { 
       products: productsWithMainImage as ProductWithImages[], 
-      count 
+      count: countQuery
     };
   } catch (error) {
     console.error('Error in fetchProducts:', error);
@@ -228,15 +224,10 @@ export const fetchProducts = async (
 
 export const fetchProductsBySellerId = async (sellerId: string): Promise<ProductWithImages[]> => {
   try {
-    // Simplified query approach
-    const queryString = `
-      *,
-      images:product_images(*)
-    `;
-    
+    // Simple query approach to avoid type complexity
     const { data, error } = await supabase
       .from('products')
-      .select(queryString)
+      .select('*, images:product_images(*)')
       .eq('seller_id', sellerId)
       .order('created_at', { ascending: false });
 
@@ -270,15 +261,10 @@ export const fetchProductsBySellerId = async (sellerId: string): Promise<Product
 
 export const fetchProductById = async (id: string): Promise<ProductWithImages | null> => {
   try {
-    // Simplified query approach
-    const queryString = `
-      *,
-      images:product_images(*)
-    `;
-    
+    // Simple query approach to avoid type complexity
     const { data, error } = await supabase
       .from('products')
-      .select(queryString)
+      .select('*, images:product_images(*)')
       .eq('id', id)
       .single();
 
