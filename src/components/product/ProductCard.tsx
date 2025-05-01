@@ -1,9 +1,12 @@
 
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from "@/hooks/use-toast";
 import { useCart } from '@/contexts/CartContext';
 import { fetchProductById } from '@/services/product';
+import { cn } from '@/lib/utils';
 
 export interface ProductCardProps {
   id: string;
@@ -33,6 +36,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   location
 }) => {
   const { addToCart } = useCart();
+  const { toast } = useToast();
+  const [isFavorite, setIsFavorite] = useState(false);
   
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigating to product detail
@@ -49,6 +54,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
     }
   };
   
+  const toggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigating to product detail
+    e.stopPropagation();
+    
+    setIsFavorite(!isFavorite);
+    
+    toast({
+      title: isFavorite ? "Removed from favorites" : "Added to favorites",
+      description: isFavorite ? `${title} has been removed from your favorites` : `${title} has been added to your favorites`,
+      duration: 3000,
+    });
+  };
+  
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
       <div className="relative">
@@ -62,9 +80,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <Button 
           variant="ghost" 
           size="icon"
-          className="absolute top-2 right-2 bg-white/70 hover:bg-white rounded-full h-8 w-8"
+          onClick={toggleFavorite}
+          className={cn(
+            "absolute top-2 right-2 bg-white/70 hover:bg-white rounded-full h-8 w-8",
+            isFavorite ? "text-red-500" : "text-gray-400"
+          )}
         >
-          <Heart size={18} />
+          <Heart size={18} fill={isFavorite ? "currentColor" : "none"} />
         </Button>
         
         {isAuction && (

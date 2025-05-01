@@ -15,9 +15,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="md:hidden">
-        <Navbar />
-      </div>
+      <Navbar />
       
       <div className="flex flex-1 overflow-hidden">
         {/* Mobile sidebar backdrop */}
@@ -30,18 +28,17 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         
         {/* Sidebar */}
         <div className={cn(
-          "fixed z-30 h-full md:static md:h-auto transition-transform duration-300 ease-in-out md:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed z-30 h-full md:relative transition-all duration-300 ease-in-out shadow-lg",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          "md:w-64", // Set width for desktop
+          "md:transition-[width] md:duration-300",
+          !sidebarOpen && "md:w-16" // Collapsed width for desktop
         )}>
-          <SidebarNav />
+          <SidebarNav collapsed={!sidebarOpen} />
         </div>
         
         {/* Main content */}
         <div className="flex flex-col flex-1 w-full overflow-x-hidden">
-          <div className="hidden md:block">
-            <Navbar />
-          </div>
-          
           {/* Mobile sidebar toggle button */}
           <button 
             className="fixed bottom-4 right-4 z-10 p-2 rounded-full bg-mzad-primary text-white shadow-lg md:hidden"
@@ -50,7 +47,15 @@ const MainLayout = ({ children }: MainLayoutProps) => {
             {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
           
-          <main className="flex-grow">
+          {/* Desktop sidebar toggle button */}
+          <button
+            className="hidden md:flex absolute left-4 top-4 z-40 p-2 rounded-md bg-white dark:bg-gray-800 shadow-md hover:bg-gray-100 dark:hover:bg-gray-700"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            <Menu size={20} />
+          </button>
+          
+          <main className="flex-grow p-4 pt-16 md:pt-4">
             {children}
           </main>
           
