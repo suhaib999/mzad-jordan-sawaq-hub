@@ -26,7 +26,8 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import MapLocationPicker from './MapLocationPicker';
 
 // List of Jordanian cities for the dropdown
@@ -138,6 +139,7 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Add Business Address</DialogTitle>
+          <DialogDescription>Enter your business address details below</DialogDescription>
         </DialogHeader>
         
         <Form {...form}>
@@ -173,9 +175,11 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {jordanianCities.map((city) => (
-                          <SelectItem key={city} value={city}>{city}</SelectItem>
-                        ))}
+                        <ScrollArea className="h-[200px]">
+                          {jordanianCities.map((city) => (
+                            <SelectItem key={city} value={city}>{city}</SelectItem>
+                          ))}
+                        </ScrollArea>
                       </SelectContent>
                     </Select>
                     <FormMessage />
