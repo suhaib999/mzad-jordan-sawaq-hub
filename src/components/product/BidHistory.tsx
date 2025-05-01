@@ -43,16 +43,19 @@ export const BidHistory: React.FC<BidHistoryProps> = ({ productId, currency }) =
   return (
     <ScrollArea className="h-[250px]">
       <div className="space-y-2">
-        {bids.map((bid) => (
-          <div key={bid.id} className="border-b border-gray-100 py-3 last:border-b-0">
+        {bids.map((bid, index) => (
+          <div 
+            key={bid.id} 
+            className={`border-b border-gray-100 py-3 last:border-b-0 ${index === 0 ? 'bg-green-50 rounded-md p-2' : ''}`}
+          >
             <div className="flex justify-between">
               <div className="flex items-center">
-                <User className="h-4 w-4 mr-2 text-gray-500" />
-                <span className="text-sm font-medium">
-                  Bidder {bid.bidder_id.substring(0, 5)}...
+                <User className={`h-4 w-4 mr-2 ${index === 0 ? 'text-green-600' : 'text-gray-500'}`} />
+                <span className={`text-sm ${index === 0 ? 'font-bold text-green-700' : 'font-medium'}`}>
+                  {index === 0 ? 'Highest bidder' : `Bidder ${bid.bidder_id.substring(0, 5)}...`}
                 </span>
               </div>
-              <span className="text-sm font-bold">
+              <span className={`text-sm ${index === 0 ? 'font-bold text-green-700' : 'font-bold'}`}>
                 {bid.amount.toFixed(2)} {currency}
               </span>
             </div>

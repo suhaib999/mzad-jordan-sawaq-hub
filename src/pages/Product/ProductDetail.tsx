@@ -10,6 +10,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { AuctionCountdown } from '@/components/product/AuctionCountdown';
 import { BidForm } from '@/components/product/BidForm';
 import { BidHistory } from '@/components/product/BidHistory';
+import { SellerInfo } from '@/components/product/SellerInfo';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 
@@ -19,6 +20,7 @@ const ProductDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { addToCart } = useCart();
   const [recentlyViewedProducts, setRecentlyViewedProducts] = useLocalStorage<string[]>('recentlyViewedProducts', []);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const handleAddToCart = () => {
     if (product) {
@@ -26,7 +28,7 @@ const ProductDetail = () => {
     }
   };
 
-  // Update recently viewed products
+  // Update recently viewed products - separate from product fetching
   useEffect(() => {
     if (id) {
       setRecentlyViewedProducts(prev => {
@@ -54,6 +56,7 @@ const ProductDetail = () => {
         const productData = await fetchProductById(id);
         if (productData) {
           setProduct(productData);
+          setSelectedImage(productData.main_image_url);
         } else {
           console.error("Product not found");
         }
@@ -90,17 +93,38 @@ const ProductDetail = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Product image */}
         <div>
-          <img src={product.main_image_url} alt={product.title} className="w-full rounded-lg" />
+          <div className="aspect-square overflow-hidden rounded-lg border border-gray-200">
+            <img 
+              src={selectedImage || product.main_image_url} 
+              alt={product.title} 
+              className="w-full h-full object-contain"
+            />
+          </div>
           
-          {/* Additional product images could be added here */}
-          <div className="flex gap-2 mt-4">
-            {product.images && product.images.slice(0, 4).map((image, index) => (
+          {/* Additional product images */}
+          <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+            <div 
+              onClick={() => setSelectedImage(product.main_image_url)}
+              className={`w-20 h-20 rounded cursor-pointer border-2 ${selectedImage === product.main_image_url ? 'border-mzad-primary' : 'border-gray-200'}`}
+            >
               <img 
-                key={image.id} 
-                src={image.image_url} 
-                alt={`${product.title} - image ${index + 1}`}
-                className="w-20 h-20 object-cover rounded cursor-pointer"
+                src={product.main_image_url} 
+                alt={`${product.title} - main`}
+                className="w-full h-full object-cover rounded"
               />
+            </div>
+            {product.images && product.images.slice(0, 4).map((image, index) => (
+              <div
+                key={image.id} 
+                onClick={() => setSelectedImage(image.image_url)}
+                className={`w-20 h-20 rounded cursor-pointer border-2 ${selectedImage === image.image_url ? 'border-mzad-primary' : 'border-gray-200'}`}
+              >
+                <img 
+                  src={image.image_url} 
+                  alt={`${product.title} - image ${index + 1}`}
+                  className="w-full h-full object-cover rounded"
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -117,6 +141,11 @@ const ProductDetail = () => {
           </div>
           
           <div className="text-gray-600 mb-4">Condition: {product.condition}</div>
+          
+          {/* Seller information */}
+          {product.seller_id && (
+            <SellerInfo sellerId={product.seller_id} />
+          )}
           
           {/* Pricing information */}
           {product.is_auction ? (
@@ -168,6 +197,29 @@ const ProductDetail = () => {
               Add to Cart
             </Button>
           )}
+          
+          {/* Additional product details */}
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold mb-2">Item Specifics</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-sm">
+                <span className="text-gray-500">Condition:</span> {product.condition}
+              </div>
+              {product.location && (
+                <div className="text-sm">
+                  <span className="text-gray-500">Location:</span> {product.location}
+                </div>
+              )}
+              {product.shipping && (
+                <div className="text-sm">
+                  <span className="text-gray-500">Shipping:</span> {product.shipping}
+                </div>
+              )}
+              <div className="text-sm">
+                <span className="text-gray-500">Item ID:</span> {product.id.substring(0, 8)}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       

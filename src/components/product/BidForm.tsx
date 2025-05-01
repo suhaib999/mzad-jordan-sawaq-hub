@@ -9,6 +9,7 @@ import { placeBid, getMinimumBidAmount } from '@/services/biddingService';
 import { ProductWithImages } from '@/services/product/types';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { Plus, Minus } from 'lucide-react';
 
 interface BidFormProps {
   product: ProductWithImages;
@@ -25,6 +26,17 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
   
   const [bidAmount, setBidAmount] = useState<string>(minBid.toFixed(2));
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const incrementBid = () => {
+    const current = parseFloat(bidAmount);
+    setBidAmount((current + 0.5).toFixed(2));
+  };
+
+  const decrementBid = () => {
+    const current = parseFloat(bidAmount);
+    const newAmount = Math.max(minBid, current - 0.5);
+    setBidAmount(newAmount.toFixed(2));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,6 +94,16 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
       <div>
         <Label htmlFor="bidAmount">Your Bid ({product.currency})</Label>
         <div className="flex mt-1.5">
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="icon"
+            onClick={decrementBid}
+            disabled={parseFloat(bidAmount) <= minBid}
+            className="rounded-r-none"
+          >
+            <Minus className="h-4 w-4" />
+          </Button>
           <Input
             id="bidAmount"
             type="number"
@@ -89,18 +111,20 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
             min={minBid}
             value={bidAmount}
             onChange={(e) => setBidAmount(e.target.value)}
-            className="flex-1"
+            className="flex-1 rounded-none text-center"
             disabled={isSubmitting}
           />
           <Button 
-            type="submit" 
-            className="ml-2 bg-mzad-primary hover:bg-mzad-secondary" 
-            disabled={isSubmitting || !session?.user}
+            type="button" 
+            variant="outline" 
+            size="icon"
+            onClick={incrementBid}
+            className="rounded-l-none"
           >
-            {isSubmitting ? 'Placing Bid...' : 'Place Bid'}
+            <Plus className="h-4 w-4" />
           </Button>
         </div>
-        <div className="flex justify-between mt-1.5">
+        <div className="flex justify-between mt-2">
           <p className="text-xs text-gray-500">
             Minimum bid: {minBid.toFixed(2)} {product.currency}
           </p>
@@ -110,6 +134,13 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
             </p>
           )}
         </div>
+        <Button 
+          type="submit" 
+          className="w-full mt-3 bg-mzad-primary hover:bg-mzad-secondary" 
+          disabled={isSubmitting || !session?.user}
+        >
+          {isSubmitting ? 'Placing Bid...' : 'Place Bid'}
+        </Button>
       </div>
     </form>
   );

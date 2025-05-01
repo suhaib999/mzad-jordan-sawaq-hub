@@ -59,14 +59,15 @@ export const AuctionCountdown: React.FC<AuctionCountdownProps> = ({
   const isEnded = timeRemaining === 'Auction ended';
   
   return (
-    <div className={`flex items-center ${isEnded ? 'text-red-500' : isEnding ? 'text-red-600' : 'text-amber-600'}`}>
+    <div className={`flex items-center p-2 rounded-md ${isEnded ? 'bg-red-50' : isEnding ? 'bg-red-50' : 'bg-amber-50'}`}>
       {isEnding ? 
-        <Timer className="h-4 w-4 mr-1.5 animate-pulse" /> : 
-        <Clock className="h-4 w-4 mr-1.5" />
+        <Timer className="h-5 w-5 mr-2 animate-pulse text-red-600" /> : 
+        <Clock className="h-5 w-5 mr-2 text-amber-600" />
       }
-      <span className={`font-medium ${isEnding && !isEnded ? 'animate-pulse' : ''}`}>
+      <span className={`font-medium ${isEnding && !isEnded ? 'text-red-600 animate-pulse' : isEnded ? 'text-red-600' : 'text-amber-700'}`}>
         {isEnded ? 'Auction ended' : `Time left: ${timeRemaining}`}
       </span>
     </div>
   );
 };
+
