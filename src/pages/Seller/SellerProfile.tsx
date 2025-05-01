@@ -12,9 +12,12 @@ import Layout from '@/components/layout/Layout';
 import ProductGrid from '@/components/product/ProductGrid';
 import { fetchProfile } from '@/services/profileService';
 import { fetchProductsBySellerId } from '@/services/product';
+import { mapProductToCardProps } from '@/services/product/mappers';
+import { toast } from 'sonner';
 
 export const SellerProfile = () => {
   const { sellerId } = useParams<{ sellerId: string }>();
+  const [isFollowing, setIsFollowing] = React.useState(false);
   
   const { data: sellerProfile, isLoading: isLoadingProfile } = useQuery({
     queryKey: ['profile', sellerId],
@@ -27,6 +30,20 @@ export const SellerProfile = () => {
     queryFn: () => fetchProductsBySellerId(sellerId || ''),
     enabled: !!sellerId,
   });
+
+  const handleFollowClick = () => {
+    setIsFollowing(!isFollowing);
+    if (!isFollowing) {
+      toast.success(`You are now following ${displayName}`, {
+        description: "You'll receive updates when they list new items",
+        duration: 3000,
+      });
+    } else {
+      toast.info(`You've unfollowed ${displayName}`, {
+        duration: 2000,
+      });
+    }
+  };
 
   if (!sellerId) {
     return (
@@ -95,8 +112,11 @@ export const SellerProfile = () => {
                   <MessageCircle className="mr-2" />
                   Contact
                 </Button>
-                <Button variant="outline">
-                  Follow
+                <Button 
+                  variant={isFollowing ? "default" : "outline"}
+                  onClick={handleFollowClick}
+                >
+                  {isFollowing ? 'Following' : 'Follow'}
                 </Button>
               </div>
             </div>
@@ -132,7 +152,7 @@ export const SellerProfile = () => {
                   <div className="animate-spin h-8 w-8 border-4 border-mzad-primary border-t-transparent rounded-full"></div>
                 </div>
               ) : sellerProducts && sellerProducts.length > 0 ? (
-                <ProductGrid products={sellerProducts} />
+                <ProductGrid products={sellerProducts.map(product => mapProductToCardProps(product))} />
               ) : (
                 <div className="text-center py-12 bg-gray-50 rounded-lg">
                   <Package className="mx-auto h-12 w-12 text-gray-400" />
