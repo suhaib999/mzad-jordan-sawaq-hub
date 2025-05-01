@@ -5,18 +5,34 @@ import { User, Heart, Bell, Settings, HelpCircle, LogOut } from 'lucide-react';
 
 type MobileMenuProps = {
   onClose: () => void;
+  isLoggedIn: boolean;
+  onSignOut: () => void;
 };
 
-const MobileMenu: React.FC<MobileMenuProps> = ({ onClose }) => {
+const MobileMenu: React.FC<MobileMenuProps> = ({ onClose, isLoggedIn, onSignOut }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
       <div className="bg-white h-full w-4/5 max-w-sm p-4 overflow-y-auto">
         <div className="flex flex-col h-full">
           <div className="py-6 border-b">
-            <Link to="/login" onClick={onClose} className="flex items-center space-x-3 px-4 py-3 rounded-md hover:bg-gray-100">
-              <User size={24} />
-              <span className="font-medium">Sign In / Register</span>
-            </Link>
+            {isLoggedIn ? (
+              <div className="px-4 py-3">
+                <Link to="/profile" onClick={onClose} className="flex items-center space-x-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-mzad-primary text-white flex items-center justify-center text-lg font-medium">
+                    U
+                  </div>
+                  <div>
+                    <div className="font-medium">My Account</div>
+                    <div className="text-sm text-gray-500">View profile</div>
+                  </div>
+                </Link>
+              </div>
+            ) : (
+              <Link to="/auth/login" onClick={onClose} className="flex items-center space-x-3 px-4 py-3 rounded-md hover:bg-gray-100">
+                <User size={24} />
+                <span className="font-medium">Sign In / Register</span>
+              </Link>
+            )}
           </div>
 
           <nav className="py-4 flex-1">
@@ -45,6 +61,16 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ onClose }) => {
                   <span>Notifications</span>
                 </Link>
               </li>
+              {isLoggedIn && (
+                <>
+                  <li>
+                    <Link to="/my-listings" onClick={onClose} className="block px-4 py-3 rounded-md hover:bg-gray-100">My Listings</Link>
+                  </li>
+                  <li>
+                    <Link to="/my-bids" onClick={onClose} className="block px-4 py-3 rounded-md hover:bg-gray-100">My Bids</Link>
+                  </li>
+                </>
+              )}
             </ul>
           </nav>
 
@@ -57,10 +83,18 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ onClose }) => {
               <HelpCircle size={20} />
               <span>Help & Contact</span>
             </Link>
-            <button className="flex items-center space-x-3 px-4 py-3 rounded-md hover:bg-gray-100 w-full text-left">
-              <LogOut size={20} />
-              <span>Sign Out</span>
-            </button>
+            {isLoggedIn && (
+              <button 
+                onClick={() => {
+                  onSignOut();
+                  onClose();
+                }}
+                className="flex items-center space-x-3 px-4 py-3 rounded-md hover:bg-gray-100 w-full text-left"
+              >
+                <LogOut size={20} />
+                <span>Sign Out</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

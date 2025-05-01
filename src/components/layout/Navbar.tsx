@@ -1,15 +1,27 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, User, ShoppingCart, Menu, X, Heart, Bell } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, User, ShoppingCart, Menu, X, Heart, Bell, LogOut } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import MobileMenu from './MobileMenu';
 import LanguageSwitcher from './LanguageSwitcher';
+import { useAuth } from '@/contexts/AuthContext';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -19,6 +31,13 @@ const Navbar = () => {
     e.preventDefault();
     // Handle search logic
     console.log('Searching for:', searchQuery);
+    // Redirect to search results page with query parameter
+    navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
   };
 
   return (
@@ -71,12 +90,52 @@ const Navbar = () => {
                 <ShoppingCart size={20} />
               </Button>
             </Link>
-            <Link to="/login">
-              <Button variant="outline" className="flex items-center">
-                <User size={18} className="mr-2" />
-                Login
-              </Button>
-            </Link>
+            
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>
+                        {user.email?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="cursor-pointer w-full">
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/my-listings" className="cursor-pointer w-full">
+                      My Listings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/my-bids" className="cursor-pointer w-full">
+                      My Bids
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/auth/login">
+                <Button variant="outline" className="flex items-center">
+                  <User size={18} className="mr-2" />
+                  Login
+                </Button>
+              </Link>
+            )}
+            
             <Link to="/sell">
               <Button className="bg-mzad-secondary hover:bg-mzad-secondary/90">Sell</Button>
             </Link>
@@ -121,7 +180,7 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu */}
-      {isMenuOpen && <MobileMenu onClose={toggleMenu} />}
+      {isMenuOpen && <MobileMenu onClose={toggleMenu} isLoggedIn={!!user} onSignOut={handleSignOut} />}
     </header>
   );
 };
