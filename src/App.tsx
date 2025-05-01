@@ -1,4 +1,3 @@
-
 import { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Index from './pages/Index';
@@ -26,28 +25,11 @@ import './i18n'; // Import i18n configuration
 
 const queryClient = new QueryClient();
 
-// Routes that should use the MainLayout with sidebar
-const mainLayoutRoutes = [
-  '/profile',
-  '/my-listings',
-  '/draft-listings',
-  '/favorite-listings',
-  '/recently-viewed',
-  '/following-listings',
-  '/job-applications',
-  '/saved-searches',
-  '/recent-searches',
-  '/products',
-  '/invite-friends',
-  '/chats',
-  '/notifications'
-];
-
 function AppRoutes(): ReactNode {
   return (
     <div className="flex flex-col min-h-screen">
       <Routes>
-        <Route path="/" element={<MainLayout><Index /></MainLayout>} />
+        <Route path="/" element={<Index />} />
         <Route path="/auth" element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
