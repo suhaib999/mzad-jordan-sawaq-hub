@@ -60,6 +60,15 @@ const config = {
         "mzad-accent": "#f97316",
         "mzad-dark": "#1e293b",
         "mzad-light": "#f8fafc",
+        // Soft background colors for category icons
+        "soft-blue": "#D3E4FD",
+        "soft-green": "#F2FCE2",
+        "soft-yellow": "#FEF7CD",
+        "soft-orange": "#FDE1D3",
+        "soft-pink": "#FFDEE2",
+        "soft-purple": "#E5DEFF",
+        "soft-peach": "#FEC6A1",
+        "soft-gray": "#F1F0FB",
       },
       borderRadius: {
         lg: "var(--radius)",
