@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { jordanCities } from './neighborhoods';
 
 interface CitySearchDropdownProps {
@@ -41,7 +42,7 @@ const CitySearchDropdown: React.FC<CitySearchDropdownProps> = ({
         <SelectTrigger className={`w-full ${error ? "border-red-500" : ""}`}>
           <SelectValue placeholder="Select city" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="max-h-[300px]">
           <div className="p-2 sticky top-0 bg-background z-10">
             <Input
               placeholder="Search cities..."
@@ -50,11 +51,13 @@ const CitySearchDropdown: React.FC<CitySearchDropdownProps> = ({
               className="mb-1"
             />
           </div>
-          <div className="max-h-[300px] overflow-y-auto">
-            {filteredCities.map((city) => (
-              <SelectItem key={city} value={city}>{city}</SelectItem>
-            ))}
-          </div>
+          <ScrollArea className="h-[220px]">
+            <div className="p-1">
+              {filteredCities.map((city) => (
+                <SelectItem key={city} value={city}>{city}</SelectItem>
+              ))}
+            </div>
+          </ScrollArea>
         </SelectContent>
       </Select>
     </div>
