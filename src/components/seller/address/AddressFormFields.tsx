@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { AddressFormValues } from './addressFormSchema';
 import CitySearchDropdown from './CitySearchDropdown';
 import LocationPickerButton from './LocationPickerButton';
+import NeighborhoodDropdown from './NeighborhoodDropdown';
 
 interface AddressFormFieldsProps {
   form: UseFormReturn<AddressFormValues>;
@@ -19,6 +20,8 @@ interface AddressFormFieldsProps {
 }
 
 const AddressFormFields: React.FC<AddressFormFieldsProps> = ({ form, onMapOpen }) => {
+  const city = form.watch('city');
+  
   return (
     <div className="space-y-4">
       <FormField
@@ -61,7 +64,12 @@ const AddressFormFields: React.FC<AddressFormFieldsProps> = ({ form, onMapOpen }
             <FormItem>
               <FormLabel>Neighborhood</FormLabel>
               <FormControl>
-                <Input placeholder="Enter neighborhood" {...field} />
+                <NeighborhoodDropdown
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={!!form.formState.errors.neighborhood}
+                  city={city}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
