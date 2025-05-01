@@ -1,7 +1,7 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,19 +27,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { X, Plus, Upload, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-const categories = [
-  "Electronics",
-  "Fashion",
-  "Home & Garden",
-  "Vehicles",
-  "Collectibles",
-  "Toys & Games",
-  "Sports",
-  "Real Estate",
-  "Services",
-  "Other"
-];
+import CategorySelectDialog from '@/components/category/CategorySelectDialog';
+import CategoryDisplay from '@/components/category/CategoryDisplay';
+import { Category, findCategoryById } from '@/data/categories';
 
 const conditions = [
   "New",
@@ -68,7 +58,7 @@ const jordanianCities = [
 const formSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters").max(100, "Title cannot exceed 100 characters"),
   description: z.string().min(20, "Description must be at least 20 characters").max(2000, "Description cannot exceed 2000 characters"),
-  category: z.string().min(1, "Please select a category"),
+  categoryId: z.string().min(1, "Please select a category"),
   condition: z.string().min(1, "Please select a condition"),
   location: z.string().optional(),
   listingType: z.enum(["fixed", "auction"]),
@@ -108,13 +98,15 @@ const AddProduct = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [listingType, setListingType] = useState<"fixed" | "auction">("fixed");
+  const [categorySelectOpen, setCategorySelectOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       description: "",
-      category: "",
+      categoryId: "",
       condition: "",
       location: "",
       listingType: "fixed",
@@ -206,6 +198,12 @@ const AddProduct = () => {
     return uploadedImages;
   };
 
+  const handleCategorySelect = (category: Category) => {
+    setSelectedCategory(category);
+    form.setValue('categoryId', category.id);
+    form.trigger('categoryId');
+  };
+
   const onSubmit = async (values: FormValues) => {
     if (!session?.user) {
       toast.error("You must be logged in to create a listing");
@@ -240,7 +238,7 @@ const AddProduct = () => {
         price: Number(values.price),
         currency: values.currency,
         condition: values.condition,
-        category: values.category,
+        category_id: values.categoryId,
         seller_id: session.user.id,
         location: values.location || null,
         shipping: values.shipping || null,
@@ -286,6 +284,17 @@ const AddProduct = () => {
     setListingType(watchListingType as "fixed" | "auction");
   }
 
+  // Update selected category when it changes in the form
+  useEffect(() => {
+    const categoryId = form.watch('categoryId');
+    if (categoryId && (!selectedCategory || selectedCategory.id !== categoryId)) {
+      const category = findCategoryById(categoryId);
+      if (category) {
+        setSelectedCategory(category);
+      }
+    }
+  }, [form.watch('categoryId')]);
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
@@ -302,7 +311,37 @@ const AddProduct = () => {
               <TabsContent value="details">
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 gap-6">
+                    <div className="space-y-6">
+                      <FormField
+                        control={form.control}
+                        name="categoryId"
+                        render={({ field }) => (
+                          <FormItem className="mb-6">
+                            <FormLabel>Category*</FormLabel>
+                            <FormControl>
+                              <div className="mb-1">
+                                <CategoryDisplay 
+                                  categoryId={field.value || null} 
+                                  onClick={() => setCategorySelectOpen(true)}
+                                  onClear={() => {
+                                    field.onChange('');
+                                    setSelectedCategory(null);
+                                  }}
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+
+                            <CategorySelectDialog
+                              open={categorySelectOpen}
+                              onOpenChange={setCategorySelectOpen}
+                              onCategorySelect={handleCategorySelect}
+                              initialCategoryId={field.value || undefined}
+                            />
+                          </FormItem>
+                        )}
+                      />
+                      
                       <FormField
                         control={form.control}
                         name="title"
@@ -335,63 +374,33 @@ const AddProduct = () => {
                         )}
                       />
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="category"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Category*</FormLabel>
-                              <Select 
-                                onValueChange={field.onChange} 
-                                value={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select category" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {categories.map((category) => (
-                                    <SelectItem key={category} value={category}>
-                                      {category}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="condition"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Condition*</FormLabel>
-                              <Select 
-                                onValueChange={field.onChange} 
-                                value={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select condition" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {conditions.map((condition) => (
-                                    <SelectItem key={condition} value={condition}>
-                                      {condition}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                      <FormField
+                        control={form.control}
+                        name="condition"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Condition*</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              value={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select condition" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {conditions.map((condition) => (
+                                  <SelectItem key={condition} value={condition}>
+                                    {condition}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       
                       <FormField
                         control={form.control}
