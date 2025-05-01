@@ -3,7 +3,6 @@ import { useState } from 'react';
 import Footer from './Footer';
 import SidebarNav from './SidebarNav';
 import TopNav from './TopNav';
-import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MainLayoutProps {
@@ -39,25 +38,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         
         {/* Main content */}
         <div className="flex flex-col flex-1 w-full overflow-x-hidden">
-          {/* Mobile sidebar toggle button */}
-          <button 
-            className="fixed bottom-4 right-4 z-10 p-2 rounded-full bg-mzad-primary text-white shadow-lg md:hidden"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-          >
-            {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-          
-          {/* Desktop sidebar toggle button */}
-          <button
-            className="hidden md:flex absolute left-4 top-4 z-40 p-2 rounded-md bg-white dark:bg-gray-800 shadow-md hover:bg-gray-100 dark:hover:bg-gray-700"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-          >
-            <Menu size={20} />
-          </button>
-          
-          <main className="flex-grow p-4 pt-16 md:pt-4">
+          <main className="flex-grow p-4">
             {children}
           </main>
           

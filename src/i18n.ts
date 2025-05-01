@@ -19,7 +19,6 @@ i18n
           profile: 'Profile',
           daily_deals: 'Daily Deals',
           brand_outlet: 'Brand Outlet',
-          gift_cards: 'Gift Cards',
           help_contact: 'Help & Contact',
           watchlist: 'Watchlist',
           my_account: 'My Account',
