@@ -31,7 +31,7 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
   useEffect(() => {
     const loadInitialBidAmount = async () => {
       try {
-        // Get the current minimum bid based on the latest bid from the product
+        // Get the current minimum bid based on the product's current bid
         const minimumBid = getMinimumBidAmount(currentBid, product.start_price);
         setMinBid(minimumBid);
         setBidAmount(minimumBid.toFixed(2));
@@ -96,12 +96,14 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
         // Make sure to use the returned bid amount from the server
         const newBidAmount = result.currentBid || amount;
         
+        console.log(`Bid placed successfully. New bid amount: ${newBidAmount}`);
+        
         // Update minimum bid after successful bid
         const newMinBid = getMinimumBidAmount(newBidAmount, null);
         setMinBid(newMinBid);
         setBidAmount(newMinBid.toFixed(2));
         
-        // Invalidate cache to refresh product data and bid history
+        // Force invalidate all related queries to refresh data
         queryClient.invalidateQueries({
           queryKey: ['product', product.id]
         });
@@ -113,6 +115,7 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
         // Update product bid amount in parent component with the server-returned value
         if (onBidPlaced && result.currentBid) {
           onBidPlaced(result.currentBid);
+          console.log(`Notifying parent component of new bid: ${result.currentBid}`);
         }
       } else {
         toast.error(result.message);

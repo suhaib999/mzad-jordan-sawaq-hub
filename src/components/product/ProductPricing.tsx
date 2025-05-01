@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AuctionCountdown } from '@/components/product/AuctionCountdown';
 
 interface ProductPricingProps {
@@ -21,6 +21,13 @@ export const ProductPricing: React.FC<ProductPricingProps> = ({
 }) => {
   // Display the highest of current bid or starting price for auctions
   const displayBidAmount = currentBid || startPrice || 0;
+  
+  // Log for debugging
+  useEffect(() => {
+    if (isAuction) {
+      console.log(`ProductPricing - Rendering with: currentBid=${currentBid}, startPrice=${startPrice}, displaying=${displayBidAmount}`);
+    }
+  }, [isAuction, currentBid, startPrice, displayBidAmount]);
 
   if (isAuction) {
     return (

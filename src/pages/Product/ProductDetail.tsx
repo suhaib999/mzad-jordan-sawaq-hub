@@ -46,29 +46,31 @@ const ProductDetail = () => {
   }, [id, setRecentlyViewedProducts]);
 
   // Fetch product data
+  const fetchProductData = async () => {
+    if (!id) {
+      console.error("Product ID is missing.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const productData = await fetchProductById(id);
+      if (productData) {
+        console.log("Fetched product data:", productData);
+        setProduct(productData);
+      } else {
+        console.error("Product not found");
+      }
+    } catch (error) {
+      console.error("Failed to fetch product:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Initial data fetch
   useEffect(() => {
-    const fetchProductData = async () => {
-      if (!id) {
-        console.error("Product ID is missing.");
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        const productData = await fetchProductById(id);
-        if (productData) {
-          setProduct(productData);
-        } else {
-          console.error("Product not found");
-        }
-      } catch (error) {
-        console.error("Failed to fetch product:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchProductData();
   }, [id]);
 
@@ -76,6 +78,8 @@ const ProductDetail = () => {
   const handleBidPlaced = (newBidAmount: number) => {
     if (product) {
       console.log(`Updating product with new bid amount: ${newBidAmount}`);
+      
+      // Update local state immediately
       setProduct(prevProduct => {
         if (!prevProduct) return null;
         return {
@@ -83,6 +87,9 @@ const ProductDetail = () => {
           current_bid: newBidAmount
         };
       });
+      
+      // Also refetch product data to ensure we have the latest from the server
+      fetchProductData();
     }
   };
 

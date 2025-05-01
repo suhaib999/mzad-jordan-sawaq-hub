@@ -27,6 +27,8 @@ export const placeBid = async (
   amount: number
 ): Promise<BidResponse> => {
   try {
+    console.log(`Attempting to place bid of ${amount} on product ${productId} by bidder ${bidderId}`);
+    
     // First, get the current highest bid for this product
     const { data: product, error: productError } = await supabase
       .from('products')
@@ -41,6 +43,8 @@ export const placeBid = async (
         message: 'Error fetching product information' 
       };
     }
+
+    console.log('Product data from database:', product);
 
     // Check if auction ended
     const endTime = product.end_time ? new Date(product.end_time) : null;
@@ -62,6 +66,8 @@ export const placeBid = async (
     // Determine minimum acceptable bid
     const currentBid = product.current_bid || product.start_price || 0;
     const minimumBid = getMinimumBidAmount(currentBid, product.start_price);
+    
+    console.log(`Current bid from DB: ${currentBid}, Minimum bid: ${minimumBid}, User bid: ${amount}`);
 
     // Perform strict bid validation
     if (amount < minimumBid) {
@@ -82,6 +88,8 @@ export const placeBid = async (
     const highestBidAmount = latestBids && latestBids.length > 0 
       ? latestBids[0].amount 
       : (product.start_price || 0);
+    
+    console.log(`Latest highest bid from bids table: ${highestBidAmount}`);
       
     if (amount <= highestBidAmount) {
       return {
@@ -111,6 +119,7 @@ export const placeBid = async (
 
     // Type assertion since we know the structure
     const newBid = bidData as unknown as Bid;
+    console.log('New bid created:', newBid);
 
     // Update the product's current bid
     const { error: updateError } = await supabase
@@ -128,6 +137,8 @@ export const placeBid = async (
         message: 'Bid placed but product not updated' 
       };
     }
+
+    console.log(`Product ${productId} updated with new current_bid: ${amount}`);
 
     return { 
       success: true, 
