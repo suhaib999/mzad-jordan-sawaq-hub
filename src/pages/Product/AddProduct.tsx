@@ -375,7 +375,7 @@ const AddProduct = () => {
         }
       }
       
-      // Insert product data - remove fields that don't exist in the database
+      // Insert product data - match the actual schema fields in Supabase
       const productData = {
         id: productId,
         title: enhancedTitle,
@@ -383,8 +383,7 @@ const AddProduct = () => {
         price: values.listingType === "fixed" ? Number(values.price) : null,
         currency: values.currency,
         condition: values.condition,
-        category_id: values.categoryId,
-        category: categoryPath,
+        category: categoryPath,  // Use 'category' instead of 'category_id'
         seller_id: session.user.id,
         location: values.location || null,
         shipping: values.shipping || null,

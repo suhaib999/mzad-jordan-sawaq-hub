@@ -2,11 +2,11 @@
 import { ProductFilterParams } from './types';
 
 // Helper function to apply filters
-export function applyFilters(query: any, filterParams: ProductFilterParams) {
+export const applyFilters = (query: any, filterParams: ProductFilterParams) => {
   let result = query.eq('status', 'active');
   
   const { 
-    category_id, 
+    category, 
     condition, 
     price_min, 
     price_max, 
@@ -16,8 +16,8 @@ export function applyFilters(query: any, filterParams: ProductFilterParams) {
     query: searchQuery
   } = filterParams;
 
-  if (category_id) {
-    result = result.eq('category_id', category_id);
+  if (category) {
+    result = result.eq('category', category);
   }
 
   if (condition && condition.length > 0) {
@@ -50,10 +50,10 @@ export function applyFilters(query: any, filterParams: ProductFilterParams) {
 
   // Apply sorting
   return applySorting(result, filterParams.sort_by);
-}
+};
 
 // Helper function to apply sorting
-export function applySorting(query: any, sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'oldest') {
+export const applySorting = (query: any, sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'oldest') => {
   switch (sortBy) {
     case 'price_asc':
       return query.order('price', { ascending: true });
@@ -65,10 +65,10 @@ export function applySorting(query: any, sortBy?: 'price_asc' | 'price_desc' | '
     default:
       return query.order('created_at', { ascending: false });
   }
-}
+};
 
 // Helper function to apply pagination
-export function applyPagination(query: any, limit?: number, offset?: number) {
+export const applyPagination = (query: any, limit?: number, offset?: number) => {
   if (limit !== undefined) {
     if (offset !== undefined) {
       return query.range(offset, offset + limit - 1);
@@ -77,4 +77,4 @@ export function applyPagination(query: any, limit?: number, offset?: number) {
     }
   }
   return query;
-}
+};

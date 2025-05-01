@@ -8,7 +8,6 @@ export interface Product {
   price: number;
   currency: string;
   condition: string;
-  category_id?: string;
   category?: string;
   seller_id: string;
   location?: string;
@@ -47,7 +46,7 @@ export interface ProductCardProps {
 }
 
 export interface ProductFilterParams {
-  category_id?: string;
+  category?: string;
   condition?: string[];
   price_min?: number;
   price_max?: number;
@@ -62,7 +61,7 @@ export interface ProductFilterParams {
 
 export interface ProductSearchParams {
   query?: string;
-  categoryId?: string;
+  category?: string;
   condition?: string[];
   priceMin?: number;
   priceMax?: number;
