@@ -71,8 +71,8 @@ export const placeBid = async (
       };
     }
 
-    // Insert the new bid
-    const { data: newBid, error: bidError } = await supabase
+    // Insert the new bid using type assertion to work with Supabase's typing system
+    const { data: bidData, error: bidError } = await supabase
       .from('bids')
       .insert({
         product_id: productId,
@@ -89,6 +89,9 @@ export const placeBid = async (
         message: 'Error placing bid' 
       };
     }
+
+    // Type assertion since we know the structure
+    const newBid = bidData as unknown as Bid;
 
     // Update the product's current bid
     const { error: updateError } = await supabase
@@ -110,7 +113,7 @@ export const placeBid = async (
     return { 
       success: true, 
       message: 'Bid placed successfully', 
-      newBid: newBid as Bid,
+      newBid: newBid,
       currentBid: amount
     };
   } catch (error) {
@@ -138,7 +141,8 @@ export const fetchBidHistory = async (productId: string): Promise<Bid[]> => {
       return [];
     }
 
-    return data as Bid[];
+    // Type assertion since we know the structure
+    return (data || []) as unknown as Bid[];
   } catch (error) {
     console.error('Error in fetchBidHistory:', error);
     return [];

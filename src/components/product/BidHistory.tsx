@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { fetchBidHistory } from '@/services/biddingService';
+import { fetchBidHistory, Bid } from '@/services/biddingService';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Clock, User } from 'lucide-react';
 
@@ -10,7 +10,7 @@ interface BidHistoryProps {
 }
 
 export const BidHistory: React.FC<BidHistoryProps> = ({ productId, currency }) => {
-  const [bids, setBids] = useState<any[]>([]);
+  const [bids, setBids] = useState<Bid[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
