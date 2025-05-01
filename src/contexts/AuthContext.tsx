@@ -11,6 +11,8 @@ type AuthContextType = {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, username: string, fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
+  updateUserMetadata: (metadata: { [key: string]: any }) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -110,8 +112,70 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updatePassword = async (password: string) => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      toast({
+        title: "Password updated",
+        description: "Your password has been updated successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Password update failed",
+        description: error.message || "Failed to update password. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateUserMetadata = async (metadata: { [key: string]: any }) => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.updateUser({
+        data: metadata
+      });
+      if (error) throw error;
+      
+      // Update the user state with the new metadata
+      if (user) {
+        setUser({
+          ...user,
+          user_metadata: { ...user.user_metadata, ...metadata }
+        });
+      }
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been updated.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Profile update failed",
+        description: error.message || "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, isLoading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      isLoading, 
+      signIn, 
+      signUp, 
+      signOut, 
+      updatePassword,
+      updateUserMetadata 
+    }}>
       {children}
     </AuthContext.Provider>
   );
