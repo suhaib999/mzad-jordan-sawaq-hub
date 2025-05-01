@@ -22,15 +22,25 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
   const navigate = useNavigate();
   
   const currentBid = product.current_bid || product.start_price || 0;
-  const minBid = getMinimumBidAmount(currentBid, product.start_price);
-  
+  const [minBid, setMinBid] = useState<number>(getMinimumBidAmount(currentBid, product.start_price));
   const [bidAmount, setBidAmount] = useState<string>(minBid.toFixed(2));
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Update bid amount whenever the product or minBid changes
+  // Load initial bid amount on mount and when product changes
   useEffect(() => {
-    setBidAmount(minBid.toFixed(2));
-  }, [minBid, product.id]);
+    const loadInitialBidAmount = async () => {
+      try {
+        // Get the current minimum bid based on the latest bid
+        const minimumBid = getMinimumBidAmount(currentBid, product.start_price);
+        setMinBid(minimumBid);
+        setBidAmount(minimumBid.toFixed(2));
+      } catch (error) {
+        console.error('Error calculating initial bid amount:', error);
+      }
+    };
+    
+    loadInitialBidAmount();
+  }, [product.id, currentBid, product.start_price]);
 
   const incrementBid = () => {
     const current = parseFloat(bidAmount);
@@ -69,6 +79,7 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
         
         // Update minimum bid after successful bid
         const newMinBid = getMinimumBidAmount(amount, null);
+        setMinBid(newMinBid);
         setBidAmount(newMinBid.toFixed(2));
         
         // Invalidate cache to refresh product data and bid history

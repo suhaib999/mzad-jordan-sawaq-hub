@@ -71,7 +71,7 @@ export const placeBid = async (
       };
     }
 
-    // Insert the new bid using type assertion to work with Supabase's typing system
+    // Insert the new bid
     const { data: bidData, error: bidError } = await supabase
       .from('bids')
       .insert({

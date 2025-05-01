@@ -19,11 +19,14 @@ export const ProductPricing: React.FC<ProductPricingProps> = ({
   currency,
   endTime
 }) => {
+  // Display the highest of current bid or starting price for auctions
+  const displayBidAmount = currentBid || startPrice || 0;
+
   if (isAuction) {
     return (
       <div className="space-y-2 mb-6">
         <div className="text-xl font-bold text-mzad-primary">
-          Current bid: {(currentBid || startPrice || 0).toFixed(2)} {currency}
+          Current bid: {displayBidAmount.toFixed(2)} {currency}
         </div>
         
         {startPrice && currentBid && currentBid > startPrice && (
