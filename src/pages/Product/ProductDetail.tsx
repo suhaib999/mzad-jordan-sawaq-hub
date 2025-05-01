@@ -4,15 +4,20 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/layout/Layout';
 import { fetchProductById } from '@/services/productService';
+import { getMinimumBidAmount } from '@/services/biddingService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Heart, Share2, Clock, MapPin, Tag, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BidForm } from '@/components/product/BidForm';
+import { BidHistory } from '@/components/product/BidHistory';
+import { AuctionCountdown } from '@/components/product/AuctionCountdown';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [auctionEnded, setAuctionEnded] = useState(false);
   
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', id],
@@ -26,7 +31,13 @@ const ProductDetail = () => {
   useEffect(() => {
     // Reset image index when product changes
     setCurrentImageIndex(0);
-  }, [product?.id]);
+    
+    // Check if auction has ended
+    if (product?.is_auction && product.end_time) {
+      const endTime = new Date(product.end_time);
+      setAuctionEnded(endTime <= new Date());
+    }
+  }, [product?.id, product?.is_auction, product?.end_time]);
 
   if (isLoading) {
     return (
@@ -87,6 +98,10 @@ const ProductDetail = () => {
       dateStyle: 'medium',
       timeStyle: 'short'
     }).format(date);
+  };
+
+  const handleAuctionEnd = () => {
+    setAuctionEnded(true);
   };
 
   return (
@@ -180,27 +195,42 @@ const ProductDetail = () => {
               </div>
             </div>
 
+            {/* Auction or Buy Now Section */}
             <div className="bg-mzad-accent/10 p-4 rounded-md">
               {product.is_auction ? (
                 <div>
-                  <div className="flex items-baseline">
-                    <span className="text-sm">Current Bid:</span>
-                    <span className="text-2xl font-bold text-mzad-primary ml-2">
-                      {product.current_bid ? formatPrice(Number(product.current_bid)) : formatPrice(Number(product.start_price))} {product.currency}
-                    </span>
+                  {/* Auction Status */}
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-sm">Current Bid:</span>
+                      <span className="text-2xl font-bold text-mzad-primary">
+                        {product.current_bid ? formatPrice(Number(product.current_bid)) : formatPrice(Number(product.start_price))} {product.currency}
+                      </span>
+                    </div>
+                    
+                    {/* Auction Countdown */}
+                    {product.end_time && (
+                      <div className="mt-1">
+                        <AuctionCountdown 
+                          endTime={product.end_time} 
+                          onEnd={handleAuctionEnd}
+                        />
+                      </div>
+                    )}
                   </div>
                   
-                  {product.end_time && (
-                    <div className="mt-2 text-sm flex items-center">
-                      <Clock className="h-4 w-4 mr-1.5" />
-                      <span>Ends: {formatDateTime(product.end_time)}</span>
-                    </div>
-                  )}
-                  
-                  <div className="mt-4 flex flex-col sm:flex-row gap-2">
-                    <Button className="flex-1">Place Bid</Button>
+                  {/* Bid Form or Auction Ended Notice */}
+                  <div className="mt-4">
+                    {auctionEnded ? (
+                      <div className="bg-red-50 border border-red-200 p-3 rounded-md text-center text-red-700">
+                        <p className="font-medium">This auction has ended</p>
+                      </div>
+                    ) : (
+                      <BidForm product={product} />
+                    )}
+                    
                     {Number(product.price) > 0 && (
-                      <Button variant="secondary" className="flex-1">
+                      <Button variant="secondary" className="w-full mt-3">
                         Buy Now: {formatPrice(Number(product.price))} {product.currency}
                       </Button>
                     )}
@@ -220,6 +250,7 @@ const ProductDetail = () => {
               )}
             </div>
             
+            {/* Product Details Card */}
             <Card>
               <CardContent className="p-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -252,10 +283,12 @@ const ProductDetail = () => {
               </CardContent>
             </Card>
             
+            {/* Tabs Section */}
             <Tabs defaultValue="description">
               <TabsList className="w-full">
                 <TabsTrigger value="description" className="flex-1">Description</TabsTrigger>
                 <TabsTrigger value="seller" className="flex-1">Seller</TabsTrigger>
+                {product.is_auction && <TabsTrigger value="bids" className="flex-1">Bid History</TabsTrigger>}
                 <TabsTrigger value="shipping" className="flex-1">Shipping</TabsTrigger>
               </TabsList>
               
@@ -278,6 +311,12 @@ const ProductDetail = () => {
                   </div>
                 </div>
               </TabsContent>
+              
+              {product.is_auction && (
+                <TabsContent value="bids" className="mt-4">
+                  <BidHistory productId={product.id} currency={product.currency} />
+                </TabsContent>
+              )}
               
               <TabsContent value="shipping" className="mt-4">
                 <div className="space-y-2">
