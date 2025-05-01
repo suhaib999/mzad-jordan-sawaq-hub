@@ -21,6 +21,7 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
   const { session } = useAuth();
   const navigate = useNavigate();
   
+  // Make sure we use the actual current_bid from the product
   const currentBid = product.current_bid || product.start_price || 0;
   const [minBid, setMinBid] = useState<number>(getMinimumBidAmount(currentBid, product.start_price));
   const [bidAmount, setBidAmount] = useState<string>(minBid.toFixed(2));
@@ -30,10 +31,12 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
   useEffect(() => {
     const loadInitialBidAmount = async () => {
       try {
-        // Get the current minimum bid based on the latest bid
+        // Get the current minimum bid based on the latest bid from the product
         const minimumBid = getMinimumBidAmount(currentBid, product.start_price);
         setMinBid(minimumBid);
         setBidAmount(minimumBid.toFixed(2));
+        
+        console.log(`Setting initial bid: ${minimumBid.toFixed(2)} based on current bid: ${currentBid}`);
       } catch (error) {
         console.error('Error calculating initial bid amount:', error);
       }
@@ -90,8 +93,11 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
       if (result.success) {
         toast.success(result.message);
         
+        // Make sure to use the returned bid amount from the server
+        const newBidAmount = result.currentBid || amount;
+        
         // Update minimum bid after successful bid
-        const newMinBid = getMinimumBidAmount(amount, null);
+        const newMinBid = getMinimumBidAmount(newBidAmount, null);
         setMinBid(newMinBid);
         setBidAmount(newMinBid.toFixed(2));
         
@@ -104,7 +110,7 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
           queryKey: ['bids', product.id]
         });
         
-        // Update product bid amount in parent component
+        // Update product bid amount in parent component with the server-returned value
         if (onBidPlaced && result.currentBid) {
           onBidPlaced(result.currentBid);
         }
