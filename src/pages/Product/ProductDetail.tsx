@@ -3,17 +3,20 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchProductById } from '@/services/product';
 import { ProductWithImages } from '@/services/product/types';
-import { Button } from '@/components/ui/button';
-import { ShoppingCart, Gavel } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { AuctionCountdown } from '@/components/product/AuctionCountdown';
-import { BidForm } from '@/components/product/BidForm';
-import { BidHistory } from '@/components/product/BidHistory';
-import { SellerInfo } from '@/components/product/SellerInfo';
+import { Gavel } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import Layout from '@/components/layout/Layout';
+import { BidHistory } from '@/components/product/BidHistory';
+import { SellerInfo } from '@/components/product/SellerInfo';
+import { ProductImageGallery } from '@/components/product/ProductImageGallery';
+import { ProductPricing } from '@/components/product/ProductPricing';
+import { ProductActions } from '@/components/product/ProductActions';
+import { ProductSpecs } from '@/components/product/ProductSpecs';
+import { ProductDetailSkeleton } from '@/components/product/ProductDetailSkeleton';
+import { ProductError } from '@/components/product/ProductError';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,7 +24,6 @@ const ProductDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { addToCart } = useCart();
   const [recentlyViewedProducts, setRecentlyViewedProducts] = useLocalStorage<string[]>('recentlyViewedProducts', []);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const handleAddToCart = () => {
     if (product) {
@@ -57,7 +59,6 @@ const ProductDetail = () => {
         const productData = await fetchProductById(id);
         if (productData) {
           setProduct(productData);
-          setSelectedImage(productData.main_image_url);
         } else {
           console.error("Product not found");
         }
@@ -82,62 +83,23 @@ const ProductDetail = () => {
   };
 
   if (isLoading) {
-    return (
-      <Layout>
-        <div className="flex justify-center items-center min-h-[50vh]">Loading product details...</div>
-      </Layout>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   if (!product) {
-    return (
-      <Layout>
-        <div className="flex justify-center items-center min-h-[50vh]">Product not found</div>
-      </Layout>
-    );
+    return <ProductError />;
   }
 
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Product image */}
-          <div>
-            <div className="aspect-square overflow-hidden rounded-lg border border-gray-200">
-              <img 
-                src={selectedImage || product.main_image_url} 
-                alt={product.title} 
-                className="w-full h-full object-contain"
-              />
-            </div>
-            
-            {/* Additional product images */}
-            <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
-              <div 
-                onClick={() => setSelectedImage(product.main_image_url)}
-                className={`w-20 h-20 rounded cursor-pointer border-2 ${selectedImage === product.main_image_url ? 'border-mzad-primary' : 'border-gray-200'}`}
-              >
-                <img 
-                  src={product.main_image_url} 
-                  alt={`${product.title} - main`}
-                  className="w-full h-full object-cover rounded"
-                />
-              </div>
-              {product.images && product.images.slice(0, 4).map((image, index) => (
-                <div
-                  key={image.id} 
-                  onClick={() => setSelectedImage(image.image_url)}
-                  className={`w-20 h-20 rounded cursor-pointer border-2 ${selectedImage === image.image_url ? 'border-mzad-primary' : 'border-gray-200'}`}
-                >
-                  <img 
-                    src={image.image_url} 
-                    alt={`${product.title} - image ${index + 1}`}
-                    className="w-full h-full object-cover rounded"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Product image gallery */}
+          <ProductImageGallery 
+            mainImageUrl={product.main_image_url || ''} 
+            images={product.images} 
+            title={product.title}
+          />
           
           {/* Product details */}
           <div>
@@ -158,23 +120,14 @@ const ProductDetail = () => {
             )}
             
             {/* Pricing information */}
-            {product.is_auction ? (
-              <div className="space-y-2 mb-6">
-                <div className="text-xl font-bold text-mzad-primary">
-                  Current bid: {(product.current_bid || product.start_price || 0).toFixed(2)} {product.currency}
-                </div>
-                
-                {product.end_time && (
-                  <div className="mt-2">
-                    <AuctionCountdown endTime={product.end_time} />
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-xl font-semibold text-mzad-primary mb-4">
-                {product.price.toFixed(2)} {product.currency}
-              </div>
-            )}
+            <ProductPricing 
+              isAuction={product.is_auction}
+              currentBid={product.current_bid}
+              startPrice={product.start_price}
+              price={product.price}
+              currency={product.currency}
+              endTime={product.end_time}
+            />
             
             {product.location && (
               <div className="text-sm text-gray-500 mb-4">
@@ -191,45 +144,19 @@ const ProductDetail = () => {
             <p className="text-gray-700 mb-6">{product.description}</p>
             
             {/* Action buttons */}
-            {product.is_auction ? (
-              <Card className="p-4 border-mzad-secondary mb-6">
-                <BidForm 
-                  product={product} 
-                  onBidPlaced={handleBidPlaced} 
-                />
-              </Card>
-            ) : (
-              <Button 
-                className="w-full bg-mzad-secondary text-white hover:bg-mzad-primary"
-                onClick={handleAddToCart}
-              >
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Add to Cart
-              </Button>
-            )}
+            <ProductActions 
+              product={product} 
+              onAddToCart={handleAddToCart} 
+              onBidPlaced={handleBidPlaced}
+            />
             
             {/* Additional product details */}
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold mb-2">Item Specifics</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-sm">
-                  <span className="text-gray-500">Condition:</span> {product.condition}
-                </div>
-                {product.location && (
-                  <div className="text-sm">
-                    <span className="text-gray-500">Location:</span> {product.location}
-                  </div>
-                )}
-                {product.shipping && (
-                  <div className="text-sm">
-                    <span className="text-gray-500">Shipping:</span> {product.shipping}
-                  </div>
-                )}
-                <div className="text-sm">
-                  <span className="text-gray-500">Item ID:</span> {product.id.substring(0, 8)}
-                </div>
-              </div>
-            </div>
+            <ProductSpecs 
+              condition={product.condition}
+              location={product.location}
+              shipping={product.shipping}
+              id={product.id}
+            />
           </div>
         </div>
         
