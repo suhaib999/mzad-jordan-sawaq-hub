@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -7,6 +6,7 @@ export type ProfileUpdateData = {
   full_name?: string;
   phone_number?: string;
   address?: string;
+  location?: string; // Added location property
 };
 
 export type ProfileWithAvatar = {
@@ -16,6 +16,7 @@ export type ProfileWithAvatar = {
   avatar_url: string | null;
   phone_number: string | null;
   address: string | null;
+  location: string | null; // Added location property
 };
 
 export const fetchProfile = async (userId: string): Promise<ProfileWithAvatar | null> => {
