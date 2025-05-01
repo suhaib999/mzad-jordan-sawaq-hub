@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Footer from './Footer';
 import SidebarNav from './SidebarNav';
+import TopNav from './TopNav';
 import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -14,6 +15,8 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <TopNav />
+      
       <div className="flex flex-1 overflow-hidden">
         {/* Mobile sidebar backdrop */}
         {sidebarOpen && (

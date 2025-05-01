@@ -21,7 +21,6 @@ import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/layout/Layout';
 import MainLayout from './components/layout/MainLayout';
-import Navbar from './components/layout/Navbar';
 import './App.css';
 import './i18n'; // Import i18n configuration
 
@@ -47,7 +46,6 @@ const mainLayoutRoutes = [
 function AppRoutes(): ReactNode {
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
       <Routes>
         <Route path="/" element={<MainLayout><Index /></MainLayout>} />
         <Route path="/auth" element={<AuthLayout />}>
@@ -75,6 +73,10 @@ function AppRoutes(): ReactNode {
         <Route path="/recent-searches" element={<MainLayout><div className="container mx-auto p-8"><h1 className="text-2xl font-bold mb-4">Recent Searches</h1><p>Your recent searches will appear here</p></div></MainLayout>} />
         <Route path="/products" element={<MainLayout><div className="container mx-auto p-8"><h1 className="text-2xl font-bold mb-4">Products</h1><p>Product catalog coming soon</p></div></MainLayout>} />
         <Route path="/invite-friends" element={<MainLayout><div className="container mx-auto p-8"><h1 className="text-2xl font-bold mb-4">Invite Friends</h1><p>Invite your friends to join</p></div></MainLayout>} />
+        <Route path="/daily-deals" element={<Layout><div className="container mx-auto p-8"><h1 className="text-2xl font-bold mb-4">Daily Deals</h1><p>Check out our daily deals</p></div></Layout>} />
+        <Route path="/outlet" element={<Layout><div className="container mx-auto p-8"><h1 className="text-2xl font-bold mb-4">Brand Outlet</h1><p>Brand outlet with discounted items</p></div></Layout>} />
+        <Route path="/gift-cards" element={<Layout><div className="container mx-auto p-8"><h1 className="text-2xl font-bold mb-4">Gift Cards</h1><p>Purchase gift cards</p></div></Layout>} />
+        <Route path="/help" element={<Layout><div className="container mx-auto p-8"><h1 className="text-2xl font-bold mb-4">Help & Contact</h1><p>Need help? Contact us</p></div></Layout>} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
