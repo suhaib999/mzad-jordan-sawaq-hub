@@ -134,3 +134,4 @@ export const fetchProductById = async (id: string): Promise<ProductWithImages | 
     return null;
   }
 };
+

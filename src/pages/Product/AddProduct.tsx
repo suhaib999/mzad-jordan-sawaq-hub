@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -114,6 +115,7 @@ const AddProduct = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [activeTab, setActiveTab] = useState("details");
   const [completionScore, setCompletionScore] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -195,26 +197,31 @@ const AddProduct = () => {
       const fileName = `${productId}/${uuidv4()}.${fileExt}`;
       const filePath = `${fileName}`;
       
-      const { error: uploadError, data } = await supabase.storage
-        .from('product_images')
-        .upload(filePath, file);
+      try {
+        const { error: uploadError, data } = await supabase.storage
+          .from('product_images')
+          .upload(filePath, file);
+          
+        if (uploadError) {
+          toast.error(`Error uploading ${file.name}: ${uploadError.message}`);
+          continue;
+        }
         
-      if (uploadError) {
-        toast.error(`Error uploading ${file.name}: ${uploadError.message}`);
-        continue;
+        const { data: { publicUrl } } = supabase.storage
+          .from('product_images')
+          .getPublicUrl(filePath);
+          
+        uploadedImages.push({
+          product_id: productId,
+          image_url: publicUrl,
+          display_order: i
+        });
+        
+        setUploadProgress(Math.round(((i + 1) / images.length) * 100));
+      } catch (error) {
+        console.error("Upload error:", error);
+        toast.error(`Error uploading image: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
-      
-      const { data: { publicUrl } } = supabase.storage
-        .from('product_images')
-        .getPublicUrl(filePath);
-        
-      uploadedImages.push({
-        product_id: productId,
-        image_url: publicUrl,
-        display_order: i
-      });
-      
-      setUploadProgress(Math.round(((i + 1) / images.length) * 100));
     }
     
     setIsUploading(false);
@@ -297,34 +304,43 @@ const AddProduct = () => {
   }, [form.watch]);
 
   const onSubmit = async (values: FormValues) => {
-    if (!session?.user) {
-      toast.error("You must be logged in to create a listing");
-      navigate('/auth/login');
-      return;
+    if (isSubmitting) {
+      return; // Prevent double submission
     }
     
-    if (images.length === 0) {
-      toast.error("Please add at least one product image");
-      setActiveTab("images");
-      return;
-    }
-
-    // For auction listings, validate required fields
-    if (values.listingType === "auction") {
-      if (!values.startPrice) {
-        toast.error("Please set a starting price for your auction");
-        setActiveTab("details");
+    setIsSubmitting(true);
+    
+    try {
+      if (!session?.user) {
+        toast.error("You must be logged in to create a listing");
+        navigate('/auth/login');
         return;
       }
       
-      if (!values.endDate || !values.endTime) {
-        toast.error("Please set an end date and time for your auction");
-        setActiveTab("details");
+      if (images.length === 0) {
+        toast.error("Please add at least one product image");
+        setActiveTab("images");
+        setIsSubmitting(false);
         return;
       }
-    }
-    
-    try {
+
+      // For auction listings, validate required fields
+      if (values.listingType === "auction") {
+        if (!values.startPrice) {
+          toast.error("Please set a starting price for your auction");
+          setActiveTab("details");
+          setIsSubmitting(false);
+          return;
+        }
+        
+        if (!values.endDate || !values.endTime) {
+          toast.error("Please set an end date and time for your auction");
+          setActiveTab("details");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      
       const productId = uuidv4();
       
       // Prepare end time for auctions
@@ -382,15 +398,18 @@ const AddProduct = () => {
         model: values.model || null,
         storage: values.storage || null,
         color: values.color || null,
-        screen_size: values.screen_size || null, // Added screen size field
+        screen_size: values.screen_size || null,
         delivery_available: values.isDeliveryAvailable === 'yes'
       };
+      
+      console.log("Submitting product data:", productData);
       
       const { error: productError } = await supabase
         .from('products')
         .insert(productData);
         
       if (productError) {
+        console.error("Product insert error:", productError);
         throw new Error(productError.message);
       }
       
@@ -398,11 +417,14 @@ const AddProduct = () => {
       const uploadedImages = await uploadImages(productId);
       
       if (uploadedImages.length > 0) {
+        console.log("Uploading image data:", uploadedImages);
+        
         const { error: imagesError } = await supabase
           .from('product_images')
           .insert(uploadedImages);
           
         if (imagesError) {
+          console.error("Image insert error:", imagesError);
           toast.error(`Error saving image details: ${imagesError.message}`);
         }
       }
@@ -411,7 +433,10 @@ const AddProduct = () => {
       navigate(`/product/${productId}`);
       
     } catch (error) {
+      console.error("Form submission error:", error);
       toast.error(`Error creating listing: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -949,13 +974,13 @@ const AddProduct = () => {
                   <CardFooter className="border-t pt-6 flex justify-end">
                     <Button 
                       type="submit"
-                      disabled={isUploading}
+                      disabled={isSubmitting || isUploading}
                       className="bg-mzad-primary hover:bg-mzad-primary/90"
                     >
-                      {isUploading ? (
+                      {isSubmitting || isUploading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Uploading...
+                          {isUploading ? 'Uploading...' : 'Processing...'}
                         </>
                       ) : (
                         'List Item'
