@@ -21,12 +21,6 @@ export interface Product {
   status: string;
   created_at: string;
   updated_at: string;
-  brand?: string;
-  model?: string;
-  storage?: string;
-  color?: string;
-  delivery_available?: boolean;
-  screen_size?: string;
 }
 
 export interface ProductImage {

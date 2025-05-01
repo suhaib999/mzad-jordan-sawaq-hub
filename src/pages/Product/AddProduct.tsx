@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -97,7 +96,7 @@ const formSchema = z.object({
   model: z.string().optional(),
   storage: z.string().optional(),
   color: z.string().optional(),
-  screen_size: z.string().optional(), // Added screen size field
+  screen_size: z.string().optional(),
   isDeliveryAvailable: z.enum(["yes", "no"]).optional(),
 });
 
@@ -137,7 +136,7 @@ const AddProduct = () => {
       model: "",
       storage: "",
       color: "",
-      screen_size: "", // Added default for screen size
+      screen_size: "",
       isDeliveryAvailable: undefined,
     },
     mode: "onChange"
@@ -376,7 +375,7 @@ const AddProduct = () => {
         }
       }
       
-      // Insert product data
+      // Insert product data - remove fields that don't exist in the database
       const productData = {
         id: productId,
         title: enhancedTitle,
@@ -394,12 +393,7 @@ const AddProduct = () => {
         current_bid: values.listingType === "auction" ? Number(values.startPrice) : null,
         reserve_price: values.listingType === "auction" && values.reservePrice ? Number(values.reservePrice) : null,
         end_time: endTime,
-        brand: values.brand || null,
-        model: values.model || null,
-        storage: values.storage || null,
-        color: values.color || null,
-        screen_size: values.screen_size || null,
-        delivery_available: values.isDeliveryAvailable === 'yes'
+        status: 'active'
       };
       
       console.log("Submitting product data:", productData);
