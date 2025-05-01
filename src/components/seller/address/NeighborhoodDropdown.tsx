@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { ammanNeighborhoods } from './neighborhoods';
+import { cityNeighborhoods } from './neighborhoods';
 
 interface NeighborhoodDropdownProps {
   value: string;
@@ -25,30 +25,44 @@ const NeighborhoodDropdown: React.FC<NeighborhoodDropdownProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredNeighborhoods, setFilteredNeighborhoods] = useState<string[]>([]);
-  const [isAmman, setIsAmman] = useState(false);
+  const [hasCityNeighborhoods, setHasCityNeighborhoods] = useState(false);
+  const [cityNeighborhoodsList, setCityNeighborhoodsList] = useState<string[]>([]);
 
-  // Check if selected city is Amman
+  // Check if selected city has predefined neighborhoods
   useEffect(() => {
-    setIsAmman(city === 'Amman');
+    if (!city) {
+      setHasCityNeighborhoods(false);
+      return;
+    }
+    
+    // Check if we have neighborhoods for this city
+    const neighborhoods = cityNeighborhoods[city];
+    if (neighborhoods && neighborhoods.length > 0) {
+      setCityNeighborhoodsList(neighborhoods);
+      setHasCityNeighborhoods(true);
+    } else {
+      setHasCityNeighborhoods(false);
+    }
+    
     setSearchTerm('');
   }, [city]);
 
   // Filter neighborhoods based on search term
   useEffect(() => {
-    if (!isAmman) return;
+    if (!hasCityNeighborhoods || !cityNeighborhoodsList) return;
     
     if (!searchTerm) {
-      setFilteredNeighborhoods(ammanNeighborhoods);
+      setFilteredNeighborhoods(cityNeighborhoodsList);
     } else {
-      const filtered = ammanNeighborhoods.filter(neighborhood =>
+      const filtered = cityNeighborhoodsList.filter(neighborhood =>
         neighborhood.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredNeighborhoods(filtered);
     }
-  }, [searchTerm, isAmman]);
+  }, [searchTerm, hasCityNeighborhoods, cityNeighborhoodsList]);
 
-  if (!isAmman) {
-    // Show regular input if not Amman
+  if (!hasCityNeighborhoods) {
+    // Show regular input if city has no predefined neighborhoods
     return (
       <Input
         placeholder="Enter neighborhood"
@@ -59,7 +73,7 @@ const NeighborhoodDropdown: React.FC<NeighborhoodDropdownProps> = ({
     );
   }
 
-  // Show dropdown for Amman neighborhoods
+  // Show dropdown for city neighborhoods
   return (
     <div className="relative">
       <Select value={value} onValueChange={onChange}>
