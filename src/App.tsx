@@ -17,6 +17,7 @@ import CartPage from './pages/Cart/CartPage';
 import SellerDashboard from './pages/Seller/SellerDashboard';
 import SellerAccount from './pages/Seller/SellerAccount';
 import SellerSubscriptions from './pages/Seller/SellerSubscriptions';
+import SellerProfile from './pages/Seller/SellerProfile';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "./components/ui/toaster";
 import { AuthProvider } from './contexts/AuthContext';
@@ -46,6 +47,8 @@ function AppRoutes(): ReactNode {
       <Route path="/seller/dashboard" element={<SellerDashboard />} />
       <Route path="/seller/account" element={<SellerAccount />} />
       <Route path="/seller/subscriptions" element={<SellerSubscriptions />} />
+      <Route path="/seller/profile/:sellerId" element={<SellerProfile />} />
+      <Route path="/seller/profile/:sellerId/items" element={<SellerProfile />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
