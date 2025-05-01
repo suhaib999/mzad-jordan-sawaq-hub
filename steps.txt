@@ -1,0 +1,293 @@
+User Registration & Authentication
+- **Customer Registration/Login**
+- Fields: Full name, email, mobile (+962), password, address, optional national ID
+- Verification: Email and SMS OTP verification
+- Security: Password recovery, 2FA, session management
+
+- **Seller Registration/Login**
+- Additional fields: Business name, registration number, tax ID, business address
+- Verification process: Document upload, business license verification
+- Enhanced security protocols for merchant accounts
+
+- **User Profiles**
+- Customer features: Personal info, address book, payment methods, purchase history, wish lists
+- Seller features: Store customization, business info, return policies, shipping policies
+
+### Marketplace Core
+
+- **Product Listing System**
+- Detailed listing interface with rich text editor
+- Multiple image/video uploads with editing tools
+- Category-specific attributes ebay like
+- Bulk listing capabilities with template saving
+- Inventory management with alerts and tracking
+
+- **Search & Discovery**
+- Advanced search with filters (price, location, condition, etc.)
+- Arabic and English search capabilities
+- Category browsing with Jordan-specific categories
+- Personalized recommendations
+- Recently viewed items
+
+- **Auction & Sales Models**
+- Fixed price listings with quantity management
+- Timed auctions with automatic bidding and sniping protection
+- Best Offer functionality with auto-accept thresholds
+- Reserve price options
+- Combined models (Auction + Buy Now)
+
+## Transaction Systems
+
+### Payment Processing
+- **Payment Methods**
+- Credit/Debit cards (Visa, Mastercard, American Express)
+- Local Jordanian methods (JoMoPay, eFAWATEERcom, Dinarak, Zain Cash)
+- Cash on delivery (popular in Jordan)
+- Bank transfers
+- PayPal (if available)
+
+- **Secure Processing**
+- PCI compliance
+- 3D Secure authentication
+- Escrow system for high-value items
+- Transparent fee structure
+- Multi-currency support (JOD primary)
+
+- **Tax Management**
+- Automatic Jordanian sales tax calculation
+- Tax reporting tools for sellers
+- Compliant invoice generation
+
+### Shopping Experience
+- **Cart & Checkout**
+- Persistent shopping cart
+- One-page checkout process
+- Guest checkout option
+- Address validation
+- Order summary with all costs breakdown
+
+- **Order Management**
+- Comprehensive order tracking
+- Status notifications
+- Order history with reordering capabilities
+- Cancellation workflow
+
+### Shipping & Logistics
+- **Shipping Options**
+- Integration with local carriers (Aramex, DHL, Jordan Post)
+- International shipping capabilities
+- Delivery timeframe options
+- Local pickup arrangements
+
+- **Tracking Integration**
+- Real-time package tracking
+- Delivery notifications
+- Proof of delivery
+- Shipping calculation based on weight, distance and value
+
+## Communication Systems
+
+### Messaging Platform
+- **Chat Windows**
+- Real-time messaging between buyers and sellers
+- Message history and search
+- File/image attachment support
+- Read receipts
+- Mobile notifications
+
+- **Automated Communications**
+- System notifications for bids, purchases, shipping
+- Customizable templates for sellers
+- Multi-language support
+
+- **Q&A System**
+- Public questions and answers on listings
+- Upvoting helpful answers
+- FAQ management
+
+### Feedback & Ratings
+- **Rating System**
+- 5-star ratings across multiple categories
+- Seller performance metrics
+- Verified purchase badges
+- Photo/video reviews
+
+- **Dispute Resolution**
+- Structured case opening workflow
+- Evidence submission
+- Platform-mediated resolution
+- Appeals process
+
+## Administration & Operations
+
+### Admin Controls
+- **User Management**
+- Customer and seller account administration
+- Verification workflows
+- Account status controls
+- Suspension/banning capabilities
+
+- **Content Moderation**
+- Listing review
+- Prohibited items filtering
+- Review approval
+- Message monitoring
+
+- **Analytics Dashboard**
+- Sales and revenue tracking
+- User growth metrics
+- Marketplace health indicators
+- Custom report generation
+
+### Localization Features
+- **Jordan-Specific Elements**
+- Bilingual interface (Arabic/English) with RTL support
+- Local payment methods
+- Jordanian shipping providers
+- Compliance with local e-commerce regulations
+- Local calendar and holiday awareness
+
+## Technical Elements
+
+- **Mobile Experience**
+- Responsive web design
+- Native mobile apps (iOS/Android)
+- Touch-friendly interfaces
+- Push notifications
+
+- **Security Measures**
+- Fraud detection
+- End-to-end encrypted messaging
+- Suspicious activity monitoring
+- Secure data storage
+
+- **Performance Optimization**
+- Fast page loading
+- Image optimization
+- Caching strategies
+- CDN implementation
+
+## Monetization & Growth
+
+- **Revenue Models**
+- Commission on sales (5-10%)
+- Premium listing fees
+- Seller subscription tiers
+- Promoted listings
+- Banner advertising
+
+- **Marketing Tools**
+- SEO optimization for Jordan
+- Email marketing automation
+- Social media integration
+- Loyalty program
+- Referral system 
+
+Building “Mzadkumsooq”: The Premier Auction & Marketplace for Jordan
+Seller Fee & Post-Sale Enforcement
+2% Seller Fee on Successful Auctions
+Automated Fee Calculation: Upon buyer confirmation of a received product, the platform automatically calculates a 2% transaction fee for the seller for auctions less than 1000 jod if more then 1%, based on the final auction price.
+
+Invoice Generation: An invoice is generated and visible in the seller’s dashboard.
+
+Fee Payment Enforcement & Account Restrictions
+Posting Restrictions:
+
+If a seller has any unpaid 2% fees, they are automatically blocked from posting any new auctions or regular listings.
+
+The “Add Product” and “Start Auction” buttons are disabled, with a clear message about outstanding dues.
+
+Reviews & Reputation:
+
+All reviews and ratings on the seller’s page become temporarily hidden until outstanding fees are paid.
+
+New reviews cannot be posted/received during this period.
+
+Upon payment, all previous reviews are instantly restored.
+
+Persistent Payment Reminder:
+
+Every time the seller accesses their dashboard or tries to interact with the platform, a prominent modal/message appears reminding them to settle their unpaid fees.
+
+Listing Visibility:
+
+If the seller fails to pay dues within 24 hours from the first notification:
+
+All active listings (auctions and regular) are automatically hidden from buyers.
+
+After payment, all listings are restored without loss of data.
+
+Auction Status:
+
+Active auctions become invalid (bidding disabled and labeled as “Paused: Seller delinquent”) until fee payment is complete.
+
+After fee settlement, auctions resume or relist as needed.
+
+Buyer & Seller Transaction Confirmations
+Post-Auction Confirmation Workflow
+Buyer Notification: 24 hours after winning, the buyer receives an automatic message: “Have you received your product? Yes/No.”
+
+Seller Notification: Once the buyer confirms receipt, the seller is notified with: “Has the buyer paid for the order? Yes/No.”
+
+Mutual Confirmation & Record-Keeping:
+
+If both confirm, the transaction is marked “Complete” and stored for both parties for reference and dispute resolution.
+
+If either reports a problem, a dispute workflow is triggered for admin intervention.
+
+Seller Posting Limitations
+Daily Post Quotas
+Default Limit:
+
+Sellers may create up to 5 posts (auction or regular) per day.
+
+Verification Upgrade:
+
+Upon messaging and manual verification by the Mzadkumsooq team, sellers can be upgraded to a 25 post per day limit.
+
+Verification status is visible in the seller profile.
+
+Marketplace Core (Summary for Implementation)
+User Registration & Authentication
+Full support for Jordanian user data and verification.
+
+Business document uploads for sellers.
+
+Listings, Search, & Auctions
+Ebay-style product listing and category structures.
+
+Auctions with auto-bidding, sniping prevention, and reserve prices.
+
+Combined Auction + Buy Now options.
+
+Payments, Shipping, & Communication
+Jordanian payment providers plus cards and cash on delivery.
+
+Platform escrow for transaction protection.
+
+Direct messaging and automated notification system.
+
+Additional Implementation Notes
+Localization: Bilingual Arabic/English, RTL support, and Jordan-specific categories.
+
+Security: 2FA, PCI compliance, encrypted messaging.
+
+Mobile: PWA and/or native mobile apps with push notifications.
+
+Monetization Structure
+Auction Seller Fee: Mandatory 2% on every confirmed auction sale, fully enforced by platform automation.
+
+Other Revenue: Premium listings, seller subscriptions, promoted listings, advertising.
+
+Example Workflow for Team
+Auction ends – Buyer wins.
+
+Buyer gets confirmation message after 24 hours to confirm receipt.
+
+If confirmed, seller gets message to confirm payment.
+
+Once both confirm, system issues 2% fee invoice to seller.
+
+If unpaid, all seller restrictions and listing hiding rules apply.
+
+Admin dashboard highlights delinquent sellers for monitoring.
