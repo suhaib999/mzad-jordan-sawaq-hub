@@ -103,18 +103,6 @@ export const fetchProducts = async (
   filterParams: ProductFilterParams = {}
 ): Promise<{ products: ProductWithImages[]; count: number }> => {
   try {
-    const { 
-      category_id, 
-      condition, 
-      price_min, 
-      price_max, 
-      location, 
-      is_auction, 
-      with_shipping,
-      query,
-      sort_by
-    } = filterParams;
-
     // First execute a count query separately to avoid type issues
     const countQuery = await supabase
       .from('products')
@@ -123,74 +111,19 @@ export const fetchProducts = async (
     
     const countValue = countQuery.count || 0;
 
-    // Then build a separate query for fetching the data
-    let dataQuery = supabase
+    // Build and execute the data query
+    const query = supabase
       .from('products')
       .select('*, images:product_images(*)');
     
     // Add filters one by one
-    dataQuery = dataQuery.eq('status', 'active');
-
-    // Apply additional filters
-    if (category_id) {
-      dataQuery = dataQuery.eq('category_id', category_id);
-    }
-
-    if (condition && condition.length > 0) {
-      dataQuery = dataQuery.in('condition', condition);
-    }
-
-    if (price_min !== undefined) {
-      dataQuery = dataQuery.gte('price', price_min);
-    }
-
-    if (price_max !== undefined) {
-      dataQuery = dataQuery.lte('price', price_max);
-    }
-
-    if (location && location.length > 0) {
-      dataQuery = dataQuery.in('location', location);
-    }
-
-    if (is_auction !== undefined) {
-      dataQuery = dataQuery.eq('is_auction', is_auction);
-    }
-
-    if (with_shipping) {
-      dataQuery = dataQuery.not('shipping', 'is', null);
-    }
-
-    if (query) {
-      dataQuery = dataQuery.ilike('title', `%${query}%`);
-    }
-
-    // Apply sorting
-    switch (sort_by) {
-      case 'price_asc':
-        dataQuery = dataQuery.order('price', { ascending: true });
-        break;
-      case 'price_desc':
-        dataQuery = dataQuery.order('price', { ascending: false });
-        break;
-      case 'oldest':
-        dataQuery = dataQuery.order('created_at', { ascending: true });
-        break;
-      case 'newest':
-      default:
-        dataQuery = dataQuery.order('created_at', { ascending: false });
-    }
-
+    const filteredQuery = applyFilters(query, filterParams);
+    
     // Apply pagination
-    if (limit !== undefined) {
-      if (offset !== undefined) {
-        dataQuery = dataQuery.range(offset, offset + limit - 1);
-      } else {
-        dataQuery = dataQuery.limit(limit);
-      }
-    }
-
-    // Execute the data query
-    const { data, error } = await dataQuery;
+    const paginatedQuery = applyPagination(filteredQuery, limit, offset);
+    
+    // Execute the query
+    const { data, error } = await paginatedQuery;
 
     if (error) {
       console.error('Error fetching products:', error);
@@ -202,19 +135,10 @@ export const fetchProducts = async (
     }
 
     // Process the data
-    const productsWithMainImage = data.map((product: any) => {
-      const images = product.images || [];
-      const sortedImages = [...images].sort((a, b) => a.display_order - b.display_order);
-      const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
-      
-      return {
-        ...product,
-        main_image_url: mainImageUrl
-      };
-    });
+    const productsWithMainImage = processProductData(data);
 
     return { 
-      products: productsWithMainImage as ProductWithImages[], 
+      products: productsWithMainImage, 
       count: countValue
     };
   } catch (error) {
@@ -222,6 +146,98 @@ export const fetchProducts = async (
     return { products: [], count: 0 };
   }
 };
+
+// Helper function to apply filters
+function applyFilters(query: any, filterParams: ProductFilterParams) {
+  let result = query.eq('status', 'active');
+  
+  const { 
+    category_id, 
+    condition, 
+    price_min, 
+    price_max, 
+    location, 
+    is_auction, 
+    with_shipping,
+    query: searchQuery
+  } = filterParams;
+
+  if (category_id) {
+    result = result.eq('category_id', category_id);
+  }
+
+  if (condition && condition.length > 0) {
+    result = result.in('condition', condition);
+  }
+
+  if (price_min !== undefined) {
+    result = result.gte('price', price_min);
+  }
+
+  if (price_max !== undefined) {
+    result = result.lte('price', price_max);
+  }
+
+  if (location && location.length > 0) {
+    result = result.in('location', location);
+  }
+
+  if (is_auction !== undefined) {
+    result = result.eq('is_auction', is_auction);
+  }
+
+  if (with_shipping) {
+    result = result.not('shipping', 'is', null);
+  }
+
+  if (searchQuery) {
+    result = result.ilike('title', `%${searchQuery}%`);
+  }
+
+  // Apply sorting
+  return applySorting(result, filterParams.sort_by);
+}
+
+// Helper function to apply sorting
+function applySorting(query: any, sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'oldest') {
+  switch (sortBy) {
+    case 'price_asc':
+      return query.order('price', { ascending: true });
+    case 'price_desc':
+      return query.order('price', { ascending: false });
+    case 'oldest':
+      return query.order('created_at', { ascending: true });
+    case 'newest':
+    default:
+      return query.order('created_at', { ascending: false });
+  }
+}
+
+// Helper function to apply pagination
+function applyPagination(query: any, limit?: number, offset?: number) {
+  if (limit !== undefined) {
+    if (offset !== undefined) {
+      return query.range(offset, offset + limit - 1);
+    } else {
+      return query.limit(limit);
+    }
+  }
+  return query;
+}
+
+// Helper function to process product data
+function processProductData(data: any[]): ProductWithImages[] {
+  return data.map(product => {
+    const images = product.images || [];
+    const sortedImages = [...images].sort((a: ProductImage, b: ProductImage) => a.display_order - b.display_order);
+    const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
+    
+    return {
+      ...product,
+      main_image_url: mainImageUrl
+    };
+  });
+}
 
 export const fetchProductsBySellerId = async (sellerId: string): Promise<ProductWithImages[]> => {
   try {
@@ -242,18 +258,7 @@ export const fetchProductsBySellerId = async (sellerId: string): Promise<Product
     }
 
     // Process with simplified typing
-    const productsWithMainImage = data.map((product: any) => {
-      const images = product.images || [];
-      const sortedImages = [...images].sort((a, b) => a.display_order - b.display_order);
-      const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
-      
-      return {
-        ...product,
-        main_image_url: mainImageUrl
-      };
-    });
-
-    return productsWithMainImage as ProductWithImages[];
+    return processProductData(data);
   } catch (error) {
     console.error('Error in fetchProductsBySellerId:', error);
     return [];
@@ -281,13 +286,13 @@ export const fetchProductById = async (id: string): Promise<ProductWithImages | 
     // Process the product
     const product = data;
     const images = product.images || [];
-    const sortedImages = [...images].sort((a, b) => a.display_order - b.display_order);
+    const sortedImages = [...images].sort((a: ProductImage, b: ProductImage) => a.display_order - b.display_order);
     const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
     
     return {
       ...product,
       main_image_url: mainImageUrl
-    } as ProductWithImages;
+    };
   } catch (error) {
     console.error('Error in fetchProductById:', error);
     return null;
