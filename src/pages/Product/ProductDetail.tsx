@@ -75,9 +75,13 @@ const ProductDetail = () => {
   // Callback to update UI after a bid is placed
   const handleBidPlaced = (newBidAmount: number) => {
     if (product) {
-      setProduct({
-        ...product,
-        current_bid: newBidAmount
+      console.log(`Updating product with new bid amount: ${newBidAmount}`);
+      setProduct(prevProduct => {
+        if (!prevProduct) return null;
+        return {
+          ...prevProduct,
+          current_bid: newBidAmount
+        };
       });
     }
   };

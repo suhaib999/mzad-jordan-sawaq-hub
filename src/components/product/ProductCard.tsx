@@ -54,6 +54,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const formattedTimeRemaining = endTime ? formatTimeRemaining(endTime) : '';
   const isEnded = formattedTimeRemaining === 'Auction ended';
   
+  // For auctions, display the current bid or starting price
+  const displayPrice = isAuction ? (currentBid || price) : price;
+  
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
       <div className="relative">
@@ -91,7 +94,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <div className="mb-1">
               <span className="text-sm text-gray-500">Current Bid:</span>
               <span className="text-lg font-bold text-mzad-primary ml-1">
-                {(currentBid || price).toFixed(2)} {currency}
+                {displayPrice.toFixed(2)} {currency}
               </span>
             </div>
             {endTime && (

@@ -104,8 +104,9 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
           queryKey: ['bids', product.id]
         });
         
-        if (onBidPlaced) {
-          onBidPlaced(amount);
+        // Update product bid amount in parent component
+        if (onBidPlaced && result.currentBid) {
+          onBidPlaced(result.currentBid);
         }
       } else {
         toast.error(result.message);
