@@ -41,6 +41,39 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          buyer_id: string
+          comment: string
+          created_at: string
+          id: string
+          product_id: string
+          rating: string
+          seller_id: string
+          transaction_id: string
+        }
+        Insert: {
+          buyer_id: string
+          comment: string
+          created_at?: string
+          id?: string
+          product_id: string
+          rating: string
+          seller_id: string
+          transaction_id: string
+        }
+        Update: {
+          buyer_id?: string
+          comment?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          rating?: string
+          seller_id?: string
+          transaction_id?: string
+        }
+        Relationships: []
+      }
       login: {
         Row: {
           created_at: string
@@ -181,6 +214,36 @@ export type Database = {
           phone_number?: string | null
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          buyer_id: string
+          created_at: string
+          id: string
+          product_id: string
+          seller_id: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          buyer_id: string
+          created_at?: string
+          id?: string
+          product_id: string
+          seller_id: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          seller_id?: string
+          status?: string
         }
         Relationships: []
       }
