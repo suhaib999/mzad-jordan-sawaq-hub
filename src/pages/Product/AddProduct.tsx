@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -230,6 +229,10 @@ const AddProduct = () => {
         endTime = endDate.toISOString();
       }
       
+      // Get category information
+      const selectedCat = selectedCategory ? findCategoryById(selectedCategory.id) : null;
+      const categoryPath = selectedCat ? selectedCat.name : '';
+      
       // Insert product data
       const productData = {
         id: productId,
@@ -239,6 +242,7 @@ const AddProduct = () => {
         currency: values.currency,
         condition: values.condition,
         category_id: values.categoryId,
+        category: categoryPath,
         seller_id: session.user.id,
         location: values.location || null,
         shipping: values.shipping || null,

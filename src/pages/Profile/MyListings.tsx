@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -9,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { ProductWithImages } from '@/services/productService';
+import { fetchProductsBySellerId, ProductWithImages } from '@/services/productService';
 import RequireAuth from '@/components/auth/RequireAuth';
 import ListingCard from '@/components/product/ListingCard';
 import EmptyListingState from '@/components/product/EmptyListingState';

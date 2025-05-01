@@ -1,20 +1,20 @@
-import { supabase } from '@/integrations/supabase/client';
-import { CardProps } from '@/components/ui/card';
 
-export const mapProductToCardProps = (product: any): CardProps => ({
-  id: product.id,
-  title: product.title,
-  imageUrl: product.imageUrl,
-  description: product.description,
-  price: product.price,
-  condition: product.condition,
-  location: product.location,
-  isAuction: product.is_auction,
-  startPrice: product.start_price,
-  currentBid: product.current_bid,
-  endTime: product.end_time,
-  href: `/product/${product.id}`,
-});
+import { supabase } from '@/integrations/supabase/client';
+
+export interface ProductCardProps {
+  id: string;
+  title: string;
+  price: number;
+  imageUrl: string;
+  description?: string;
+  condition: string;
+  location?: string;
+  isAuction?: boolean;
+  startPrice?: number;
+  currentBid?: number;
+  endTime?: string;
+  href: string;
+}
 
 export interface Product {
   id: string;
@@ -24,6 +24,7 @@ export interface Product {
   condition: string;
   currency: string;
   category_id?: string;
+  category?: string;
   seller_id: string;
   created_at: string;
   is_auction: boolean;
@@ -33,7 +34,20 @@ export interface Product {
   location?: string;
   shipping?: string;
   reserve_price?: number;
+  images?: ProductImage[];
+  status?: string;
 }
+
+export interface ProductImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  display_order: number;
+}
+
+export type ProductWithImages = Product & {
+  images: ProductImage[];
+};
 
 export interface ProductSearchParams {
   isAuction?: boolean;
@@ -48,6 +62,21 @@ export interface ProductSearchParams {
   localPickupOnly?: boolean;
 }
 
+export const mapProductToCardProps = (product: any): ProductCardProps => ({
+  id: product.id,
+  title: product.title,
+  imageUrl: product.imageUrl || (product.images && product.images[0]?.image_url) || "https://via.placeholder.com/300x200",
+  description: product.description,
+  price: product.price,
+  condition: product.condition,
+  location: product.location,
+  isAuction: product.is_auction,
+  startPrice: product.start_price,
+  currentBid: product.current_bid,
+  endTime: product.end_time,
+  href: `/product/${product.id}`,
+});
+
 export const fetchProducts = async (
   limit: number = 20,
   offset: number = 0,
@@ -56,7 +85,7 @@ export const fetchProducts = async (
   try {
     let query = supabase
       .from('products')
-      .select('*')
+      .select('*, images:product_images(*)')
       .order('created_at', { ascending: false });
     
     // Apply filters if provided
@@ -131,7 +160,7 @@ export const fetchProductById = async (id: string): Promise<Product | null> => {
   try {
     const { data, error } = await supabase
       .from('products')
-      .select('*')
+      .select('*, images:product_images(*)')
       .eq('id', id)
       .single();
 
@@ -151,7 +180,7 @@ export const fetchProductsBySellerId = async (sellerId: string): Promise<Product
   try {
     const { data, error } = await supabase
       .from('products')
-      .select('*')
+      .select('*, images:product_images(*)')
       .eq('seller_id', sellerId)
       .order('created_at', { ascending: false });
 

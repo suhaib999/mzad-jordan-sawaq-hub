@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import { fetchProducts, mapProductToCardProps, ProductFilterParams } from '@/services/productService';
+import { fetchProducts, ProductSearchParams, Product } from '@/services/productService';
 import SearchBar from './components/SearchBar';
 import FilterSidebar, { FilterValues } from './components/FilterSidebar';
 import ProductResults from './components/ProductResults';
@@ -49,7 +48,7 @@ const BrowseProducts = () => {
     queryKey: ['products', filters],
     queryFn: async () => {
       // Convert filters to API parameters
-      const apiParams: ProductFilterParams = {
+      const apiParams: ProductSearchParams = {
         category: filters.category === 'all' ? undefined : filters.category,
         isAuction: filters.listingType === 'all' ? undefined : filters.listingType === 'auction',
         searchQuery: filters.searchQuery || undefined,
