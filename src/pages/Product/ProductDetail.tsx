@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchProductById } from '@/services/product';
@@ -72,6 +71,14 @@ const ProductDetail = () => {
   // Initial data fetch
   useEffect(() => {
     fetchProductData();
+    // Set up a refresh interval to keep bids updated
+    const refreshInterval = setInterval(() => {
+      if (id) {
+        fetchProductData();
+      }
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(refreshInterval);
   }, [id]);
 
   // Callback to update UI after a bid is placed

@@ -88,6 +88,7 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
     setIsSubmitting(true);
     
     try {
+      console.log(`Placing bid: ${amount} on product: ${product.id}`);
       const result = await placeBid(product.id, session.user.id, amount);
       
       if (result.success) {
