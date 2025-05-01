@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -23,12 +24,19 @@ import {
 } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-import { X, Plus, Upload, Loader2 } from 'lucide-react';
+import { X, Plus, Upload, Loader2, Info, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CategorySelectDialog from '@/components/category/CategorySelectDialog';
 import CategoryDisplay from '@/components/category/CategoryDisplay';
 import { Category, findCategoryById } from '@/data/categories';
+import PhoneSpecsSelector from '@/components/product/PhoneSpecsSelector';
+import { Progress } from '@/components/ui/progress';
+import { 
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const conditions = [
   "New",
@@ -84,7 +92,12 @@ const formSchema = z.object({
       message: "End date must be in the future",
     }
   ),
-  endTime: z.string().optional()
+  endTime: z.string().optional(),
+  brand: z.string().optional(),
+  model: z.string().optional(),
+  storage: z.string().optional(),
+  color: z.string().optional(),
+  isDeliveryAvailable: z.enum(["yes", "no"]).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -99,6 +112,8 @@ const AddProduct = () => {
   const [listingType, setListingType] = useState<"fixed" | "auction">("fixed");
   const [categorySelectOpen, setCategorySelectOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [activeTab, setActiveTab] = useState("details");
+  const [completionScore, setCompletionScore] = useState(0);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -115,8 +130,14 @@ const AddProduct = () => {
       startPrice: "",
       reservePrice: "",
       endDate: "",
-      endTime: ""
+      endTime: "",
+      brand: "",
+      model: "",
+      storage: "",
+      color: "",
+      isDeliveryAvailable: undefined,
     },
+    mode: "onChange"
   });
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,6 +165,7 @@ const AddProduct = () => {
       
       setImages(newImages);
       setImageUrls(newImageUrls);
+      updateCompletionScore();
     }
   };
 
@@ -157,6 +179,7 @@ const AddProduct = () => {
     
     setImages(newImages);
     setImageUrls(newImageUrls);
+    updateCompletionScore();
   };
 
   const uploadImages = async (productId: string) => {
@@ -201,7 +224,71 @@ const AddProduct = () => {
     setSelectedCategory(category);
     form.setValue('categoryId', category.id);
     form.trigger('categoryId');
+    updateCompletionScore();
   };
+
+  // Calculate and update the completion score
+  const updateCompletionScore = () => {
+    const formValues = form.getValues();
+    let score = 0;
+    let totalFields = 0;
+
+    // Required fields
+    const requiredFields = ['title', 'description', 'categoryId', 'condition'];
+    requiredFields.forEach(field => {
+      totalFields++;
+      if (formValues[field as keyof FormValues]) {
+        score++;
+      }
+    });
+
+    // Check if images are added
+    totalFields++;
+    if (images.length > 0) {
+      score++;
+    }
+
+    // Pricing based on listing type
+    totalFields++;
+    if (formValues.listingType === 'fixed' && formValues.price) {
+      score++;
+    } else if (formValues.listingType === 'auction' && 
+              formValues.startPrice && 
+              formValues.endDate && 
+              formValues.endTime) {
+      score++;
+    }
+
+    // Optional fields that are nice to have
+    const optionalFields = ['location', 'shipping'];
+    optionalFields.forEach(field => {
+      totalFields += 0.5;
+      if (formValues[field as keyof FormValues]) {
+        score += 0.5;
+      }
+    });
+
+    // Device-specific fields if category is related to phones
+    if (selectedCategory && selectedCategory.name.toLowerCase().includes('phone')) {
+      const deviceFields = ['brand', 'model', 'storage', 'color'];
+      deviceFields.forEach(field => {
+        totalFields++;
+        if (formValues[field as keyof FormValues]) {
+          score++;
+        }
+      });
+    }
+
+    // Calculate percentage
+    const percentage = Math.min(100, Math.round((score / totalFields) * 100));
+    setCompletionScore(percentage);
+  };
+
+  // Update when form values change
+  useEffect(() => {
+    const subscription = form.watch(() => updateCompletionScore());
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
 
   const onSubmit = async (values: FormValues) => {
     if (!session?.user) {
@@ -212,6 +299,7 @@ const AddProduct = () => {
     
     if (images.length === 0) {
       toast.error("Please add at least one product image");
+      setActiveTab("images");
       return;
     }
     
@@ -233,10 +321,24 @@ const AddProduct = () => {
       const selectedCat = selectedCategory ? findCategoryById(selectedCategory.id) : null;
       const categoryPath = selectedCat ? selectedCat.name : '';
       
+      // Format title based on phone model if applicable
+      let enhancedTitle = values.title;
+      if (values.brand && values.model && values.storage) {
+        // Only enhance if title doesn't already have this info
+        if (!enhancedTitle.toLowerCase().includes(values.brand.toLowerCase()) && 
+            !enhancedTitle.toLowerCase().includes(values.model.toLowerCase())) {
+          const modelName = values.model.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+          enhancedTitle = `${values.brand} ${modelName} ${values.storage} ${values.color || ''}`.trim();
+          if (values.title) {
+            enhancedTitle = `${enhancedTitle} - ${values.title}`;
+          }
+        }
+      }
+      
       // Insert product data
       const productData = {
         id: productId,
-        title: values.title,
+        title: enhancedTitle,
         description: values.description,
         price: Number(values.price),
         currency: values.currency,
@@ -251,6 +353,11 @@ const AddProduct = () => {
         current_bid: values.listingType === "auction" ? Number(values.startPrice) : null,
         reserve_price: values.listingType === "auction" && values.reservePrice ? Number(values.reservePrice) : null,
         end_time: endTime,
+        brand: values.brand || null,
+        model: values.model || null,
+        storage: values.storage || null,
+        color: values.color || null,
+        delivery_available: values.isDeliveryAvailable === 'yes'
       };
       
       const { error: productError } = await supabase
@@ -301,13 +408,36 @@ const AddProduct = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Create a Listing</h1>
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
+        <h1 className="text-2xl font-bold mb-2">Create a Listing</h1>
         
-        <Tabs defaultValue="details" className="space-y-4">
+        <div className="bg-white rounded-lg shadow-sm border mb-6 p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-sm">{completionScore}% Complete</span>
+              <div className="text-xs text-gray-500">(higher score attracts more views)</div>
+            </div>
+          </div>
+          <Progress value={completionScore} className="h-2" />
+          <p className="text-xs text-gray-500 mt-2">
+            Complete all the details in your listing to achieve a better quality score and increase visibility.
+          </p>
+        </div>
+        
+        <Tabs defaultValue="details" className="space-y-4" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="details">Product Details</TabsTrigger>
-            <TabsTrigger value="images">Product Images</TabsTrigger>
+            <TabsTrigger value="details" className="relative">
+              Product Details
+              {completionScore < 70 && activeTab !== "details" && (
+                <span className="absolute top-0 right-2 h-2 w-2 bg-red-500 rounded-full"></span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="images" className="relative">
+              Product Images
+              {images.length === 0 && activeTab !== "images" && (
+                <span className="absolute top-0 right-2 h-2 w-2 bg-red-500 rounded-full"></span>
+              )}
+            </TabsTrigger>
           </TabsList>
           
           <Form {...form}>
@@ -316,12 +446,23 @@ const AddProduct = () => {
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-6">
+                      {/* Category Selection */}
+                      <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
+                        <div className="flex">
+                          <Info className="h-5 w-5 mr-2" />
+                          <div className="text-sm text-blue-700">
+                            <p className="font-medium">Choose the most specific category</p>
+                            <p>This helps buyers find your item more easily</p>
+                          </div>
+                        </div>
+                      </div>
+                      
                       <FormField
                         control={form.control}
                         name="categoryId"
                         render={({ field }) => (
                           <FormItem className="mb-6">
-                            <FormLabel>Category*</FormLabel>
+                            <FormLabel className="text-base font-medium">Category*</FormLabel>
                             <FormControl>
                               <div className="mb-1">
                                 <CategoryDisplay 
@@ -346,127 +487,116 @@ const AddProduct = () => {
                         )}
                       />
                       
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Title*</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g. Samsung Galaxy S23 Ultra 256GB - Black" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      {/* Device-specific fields */}
+                      {selectedCategory && (
+                        <PhoneSpecsSelector 
+                          categoryPath={selectedCategory.name}
+                        />
+                      )}
                       
-                      <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Description*</FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="Describe your product in detail..." 
-                                className="min-h-32" 
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="condition"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Condition*</FormLabel>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              value={field.value}
-                            >
+                      {/* Listing Details */}
+                      <div className="pt-4 border-t">
+                        <h3 className="text-lg font-medium mb-4">Listing Details</h3>
+                        
+                        <FormField
+                          control={form.control}
+                          name="title"
+                          render={({ field }) => (
+                            <FormItem className="mb-4">
+                              <FormLabel className="text-base">Title*</FormLabel>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select condition" />
-                                </SelectTrigger>
+                                <Input placeholder="e.g. Samsung Galaxy S23 Ultra 256GB - Black" {...field} />
                               </FormControl>
-                              <SelectContent>
-                                {conditions.map((condition) => (
-                                  <SelectItem key={condition} value={condition}>
-                                    {condition}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="location"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Location</FormLabel>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              value={field.value || ""}
-                            >
+                              <FormDescription>
+                                A clear, concise title will attract more buyers
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem className="mb-4">
+                              <FormLabel className="text-base">Description*</FormLabel>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select location (optional)" />
-                                </SelectTrigger>
+                                <Textarea 
+                                  placeholder="Describe your product in detail..." 
+                                  className="min-h-32" 
+                                  {...field} 
+                                />
                               </FormControl>
-                              <SelectContent>
-                                {jordanianCities.map((city) => (
-                                  <SelectItem key={city} value={city}>
-                                    {city}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                              <FormDescription>
+                                Include important details like features, condition issues, and why you're selling
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="condition"
+                          render={({ field }) => (
+                            <FormItem className="mb-4">
+                              <FormLabel className="text-base">Condition*</FormLabel>
+                              <FormControl>
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                  className="flex flex-wrap gap-2"
+                                >
+                                  {conditions.map((condition) => (
+                                    <div key={condition} className="flex items-center border rounded-md p-2 hover:bg-gray-50">
+                                      <RadioGroupItem value={condition} id={`condition-${condition}`} className="mr-2" />
+                                      <Label htmlFor={`condition-${condition}`} className="cursor-pointer">{condition}</Label>
+                                    </div>
+                                  ))}
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
                 
                 <Card className="mt-6">
                   <CardContent className="pt-6">
-                    <FormField
-                      control={form.control}
-                      name="listingType"
-                      render={({ field }) => (
-                        <FormItem className="space-y-3">
-                          <FormLabel>Listing Type*</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              value={field.value}
-                              className="flex flex-col space-y-1"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="fixed" id="fixed" />
-                                <Label htmlFor="fixed">Fixed Price</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="auction" id="auction" />
-                                <Label htmlFor="auction">Auction</Label>
-                              </div>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="mt-6 space-y-6">
+                    <div className="space-y-6">
+                      <FormField
+                        control={form.control}
+                        name="listingType"
+                        render={({ field }) => (
+                          <FormItem className="space-y-3">
+                            <FormLabel className="text-base font-medium">Listing Type*</FormLabel>
+                            <FormControl>
+                              <RadioGroup
+                                onValueChange={field.onChange}
+                                value={field.value}
+                                className="flex flex-col space-y-1"
+                              >
+                                <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-gray-50">
+                                  <RadioGroupItem value="fixed" id="fixed" />
+                                  <Label htmlFor="fixed" className="font-medium cursor-pointer">Fixed Price</Label>
+                                  <span className="text-sm text-gray-500 ml-2">Sell to the first buyer who pays your price</span>
+                                </div>
+                                <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-gray-50">
+                                  <RadioGroupItem value="auction" id="auction" />
+                                  <Label htmlFor="auction" className="font-medium cursor-pointer">Auction</Label>
+                                  <span className="text-sm text-gray-500 ml-2">Let buyers bid and sell to the highest bidder</span>
+                                </div>
+                              </RadioGroup>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
                       {/* Fixed price fields */}
                       <div className={listingType === "fixed" ? "block" : "hidden"}>
                         <div className="grid grid-cols-2 gap-4">
@@ -477,33 +607,20 @@ const AddProduct = () => {
                               <FormItem>
                                 <FormLabel>Price*</FormLabel>
                                 <FormControl>
-                                  <Input type="number" step="0.01" min="0" placeholder="0.00" {...field} />
+                                  <div className="flex">
+                                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
+                                      JOD
+                                    </span>
+                                    <Input 
+                                      type="number" 
+                                      step="0.01" 
+                                      min="0" 
+                                      placeholder="0.00" 
+                                      className="rounded-l-none"
+                                      {...field} 
+                                    />
+                                  </div>
                                 </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="currency"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Currency</FormLabel>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  defaultValue={field.value}
-                                  disabled
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select currency" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="JOD">JOD - Jordanian Dinar</SelectItem>
-                                  </SelectContent>
-                                </Select>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -521,8 +638,23 @@ const AddProduct = () => {
                               <FormItem>
                                 <FormLabel>Starting Price*</FormLabel>
                                 <FormControl>
-                                  <Input type="number" step="0.01" min="0" placeholder="0.00" {...field} />
+                                  <div className="flex">
+                                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
+                                      JOD
+                                    </span>
+                                    <Input 
+                                      type="number" 
+                                      step="0.01" 
+                                      min="0" 
+                                      placeholder="0.00" 
+                                      className="rounded-l-none"
+                                      {...field} 
+                                    />
+                                  </div>
                                 </FormControl>
+                                <FormDescription>
+                                  The price bidding will start from
+                                </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -535,7 +667,19 @@ const AddProduct = () => {
                               <FormItem>
                                 <FormLabel>Reserve Price (Optional)</FormLabel>
                                 <FormControl>
-                                  <Input type="number" step="0.01" min="0" placeholder="0.00" {...field} />
+                                  <div className="flex">
+                                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
+                                      JOD
+                                    </span>
+                                    <Input 
+                                      type="number" 
+                                      step="0.01" 
+                                      min="0" 
+                                      placeholder="0.00" 
+                                      className="rounded-l-none"
+                                      {...field} 
+                                    />
+                                  </div>
                                 </FormControl>
                                 <FormDescription>
                                   Minimum price you're willing to accept
@@ -554,36 +698,23 @@ const AddProduct = () => {
                               <FormItem>
                                 <FormLabel>Buy Now Price (Optional)</FormLabel>
                                 <FormControl>
-                                  <Input type="number" step="0.01" min="0" placeholder="0.00" {...field} />
+                                  <div className="flex">
+                                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
+                                      JOD
+                                    </span>
+                                    <Input 
+                                      type="number" 
+                                      step="0.01" 
+                                      min="0" 
+                                      placeholder="0.00" 
+                                      className="rounded-l-none"
+                                      {...field} 
+                                    />
+                                  </div>
                                 </FormControl>
                                 <FormDescription>
                                   Price to instantly buy the item
                                 </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="currency"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Currency</FormLabel>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  defaultValue={field.value}
-                                  disabled
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select currency" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="JOD">JOD - Jordanian Dinar</SelectItem>
-                                  </SelectContent>
-                                </Select>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -620,16 +751,85 @@ const AddProduct = () => {
                           />
                         </div>
                       </div>
-                      
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="mt-6">
+                  <CardContent className="pt-6">
+                    <h3 className="text-lg font-medium mb-4">Shipping & Location</h3>
+                    
+                    <div className="space-y-6">
+                      <FormField
+                        control={form.control}
+                        name="isDeliveryAvailable"
+                        render={({ field }) => (
+                          <FormItem className="space-y-3">
+                            <FormLabel>Do you provide delivery?*</FormLabel>
+                            <FormControl>
+                              <RadioGroup
+                                onValueChange={field.onChange}
+                                value={field.value || ''}
+                                className="flex gap-4"
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="yes" id="delivery-yes" />
+                                  <Label htmlFor="delivery-yes">Yes</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="no" id="delivery-no" />
+                                  <Label htmlFor="delivery-no">No</Label>
+                                </div>
+                              </RadioGroup>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    
                       <FormField
                         control={form.control}
                         name="shipping"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Shipping Options (Optional)</FormLabel>
+                            <FormLabel>Shipping Options</FormLabel>
                             <FormControl>
                               <Input placeholder="e.g. Free Shipping, +10 JOD Shipping, Local Pickup Only" {...field} />
                             </FormControl>
+                            <FormDescription>
+                              Specify shipping costs or options for buyers
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="location"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Location</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              value={field.value || ""}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select your city" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {jordanianCities.map((city) => (
+                                  <SelectItem key={city} value={city}>
+                                    {city}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              This is where the item is located for pickup
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -643,6 +843,16 @@ const AddProduct = () => {
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-4">
+                      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                        <div className="flex">
+                          <Info className="h-5 w-5 mr-2" />
+                          <div className="text-sm text-blue-700">
+                            <p className="font-medium">Clear photos sell faster</p>
+                            <p>Upload at least 4 photos from different angles to increase buyer interest</p>
+                          </div>
+                        </div>
+                      </div>
+
                       <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
                         <div className="text-center">
                           <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
@@ -669,7 +879,15 @@ const AddProduct = () => {
 
                       {imageUrls.length > 0 && (
                         <div>
-                          <h3 className="font-medium mb-2">Selected Images ({imageUrls.length}/10)</h3>
+                          <div className="flex justify-between items-center mb-2">
+                            <h3 className="font-medium">Selected Images ({imageUrls.length}/10)</h3>
+                            {imageUrls.length < 4 && (
+                              <span className="text-amber-600 text-sm flex items-center">
+                                <Info className="h-4 w-4 mr-1" />
+                                Add {4 - imageUrls.length} more photos for better results
+                              </span>
+                            )}
+                          </div>
                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                             {imageUrls.map((url, index) => (
                               <div key={index} className="relative group">
@@ -712,6 +930,24 @@ const AddProduct = () => {
                               </label>
                             )}
                           </div>
+                          
+                          {imageUrls.length >= 1 && imageUrls.length < 4 && (
+                            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-700">
+                              <div className="flex">
+                                <Info className="h-4 w-4 mr-2" />
+                                <p>Listings with 4+ photos get up to 70% more views on average</p>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {imageUrls.length >= 4 && (
+                            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
+                              <div className="flex">
+                                <ShieldCheck className="h-4 w-4 mr-2" />
+                                <p>Great job! Listings with multiple high-quality photos typically sell faster</p>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 

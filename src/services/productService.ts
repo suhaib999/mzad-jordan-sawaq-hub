@@ -1,41 +1,31 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-export interface ProductCardProps {
-  id: string;
-  title: string;
-  price: number;
-  imageUrl: string;
-  description?: string;
-  condition: string;
-  location?: string;
-  isAuction?: boolean;
-  startPrice?: number;
-  currentBid?: number;
-  endTime?: string;
-  href: string;
-}
-
 export interface Product {
   id: string;
   title: string;
   description: string;
   price: number;
-  condition: string;
   currency: string;
+  condition: string;
   category_id?: string;
   category?: string;
   seller_id: string;
-  created_at: string;
+  location?: string;
+  shipping?: string;
   is_auction: boolean;
   start_price?: number;
   current_bid?: number;
-  end_time?: string;
-  location?: string;
-  shipping?: string;
   reserve_price?: number;
-  images?: ProductImage[];
-  status?: string;
+  end_time?: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  brand?: string;
+  model?: string;
+  storage?: string;
+  color?: string;
+  delivery_available?: boolean;
 }
 
 export interface ProductImage {
@@ -45,153 +35,204 @@ export interface ProductImage {
   display_order: number;
 }
 
-export type ProductWithImages = Product & {
+export interface ProductWithImages extends Product {
   images: ProductImage[];
-};
+}
+
+export interface ProductCardProps {
+  id: string;
+  title: string;
+  price: number;
+  imageUrl: string;
+  condition: string;
+  isAuction: boolean;
+  location?: string;
+  endTime?: string;
+}
+
+export interface ProductFilterParams {
+  category_id?: string;
+  condition?: string[];
+  price_min?: number;
+  price_max?: number;
+  location?: string[];
+  is_auction?: boolean;
+  with_shipping?: boolean;
+  query?: string;
+  limit?: number;
+  offset?: number;
+  sort_by?: 'price_asc' | 'price_desc' | 'newest' | 'oldest';
+}
 
 export interface ProductSearchParams {
-  isAuction?: boolean;
-  category?: string;
+  query?: string;
+  categoryId?: string;
   condition?: string[];
   priceMin?: number;
   priceMax?: number;
-  location?: string;
-  seller_id?: string;
-  searchQuery?: string;
-  freeShippingOnly?: boolean;
-  localPickupOnly?: boolean;
+  location?: string[];
+  isAuction?: boolean;
+  withShipping?: boolean;
+  sortOrder?: 'price_asc' | 'price_desc' | 'newest' | 'oldest';
 }
 
-export const mapProductToCardProps = (product: any): ProductCardProps => ({
-  id: product.id,
-  title: product.title,
-  imageUrl: product.imageUrl || (product.images && product.images[0]?.image_url) || "https://via.placeholder.com/300x200",
-  description: product.description,
-  price: product.price,
-  condition: product.condition,
-  location: product.location,
-  isAuction: product.is_auction,
-  startPrice: product.start_price,
-  currentBid: product.current_bid,
-  endTime: product.end_time,
-  href: `/product/${product.id}`,
-});
+// Map product to card props
+export const mapProductToCardProps = (product: ProductWithImages): ProductCardProps => {
+  // Find the main image (display_order 0) or the first available image
+  const mainImage = product.images && product.images.length > 0
+    ? product.images.sort((a, b) => a.display_order - b.display_order)[0].image_url
+    : '';
+
+  return {
+    id: product.id,
+    title: product.title,
+    price: product.is_auction ? (product.current_bid || product.start_price || 0) : product.price,
+    imageUrl: mainImage,
+    condition: product.condition,
+    isAuction: product.is_auction,
+    location: product.location,
+    endTime: product.end_time,
+  };
+};
 
 export const fetchProducts = async (
-  limit: number = 20,
-  offset: number = 0,
-  params?: ProductSearchParams
-): Promise<Product[]> => {
+  filterParams: ProductFilterParams = {},
+  page = 1,
+  pageSize = 12
+): Promise<{ products: ProductWithImages[]; count: number }> => {
   try {
-    let query = supabase
+    const { 
+      category_id, 
+      condition, 
+      price_min, 
+      price_max, 
+      location, 
+      is_auction, 
+      with_shipping,
+      query,
+      sort_by
+    } = filterParams;
+
+    let queryBuilder = supabase
       .from('products')
-      .select('*, images:product_images(*)')
-      .order('created_at', { ascending: false });
-    
-    // Apply filters if provided
-    if (params) {
-      // Filter by auction/fixed price
-      if (params.isAuction !== undefined) {
-        query = query.eq('is_auction', params.isAuction);
-      }
-      
-      // Filter by category
-      if (params.category && params.category !== 'all') {
-        query = query.eq('category_id', params.category);
-      }
-      
-      // Filter by condition
-      if (params.condition && params.condition.length > 0) {
-        query = query.in('condition', params.condition);
-      }
-      
-      // Filter by price range
-      if (params.priceMin !== undefined && params.priceMin > 0) {
-        query = query.gte('price', params.priceMin);
-      }
-      
-      if (params.priceMax !== undefined && params.priceMax > 0) {
-        query = query.lte('price', params.priceMax);
-      }
-      
-      // Filter by location
-      if (params.location) {
-        query = query.eq('location', params.location);
-      }
+      .select(`
+        *,
+        images:product_images(*)
+      `, { count: 'exact' })
+      .eq('status', 'active');
 
-      // Filter by seller
-      if (params.seller_id) {
-        query = query.eq('seller_id', params.seller_id);
-      }
-
-      // Filter by search query (title search)
-      if (params.searchQuery) {
-        query = query.ilike('title', `%${params.searchQuery}%`);
-      }
-      
-      // Filter by shipping options
-      if (params.freeShippingOnly) {
-        query = query.ilike('shipping', '%Free%');
-      }
-      
-      if (params.localPickupOnly) {
-        query = query.ilike('shipping', '%Pickup%');
-      }
+    // Apply filters
+    if (category_id) {
+      queryBuilder = queryBuilder.eq('category_id', category_id);
     }
-    
+
+    if (condition && condition.length > 0) {
+      queryBuilder = queryBuilder.in('condition', condition);
+    }
+
+    if (price_min !== undefined) {
+      queryBuilder = queryBuilder.gte('price', price_min);
+    }
+
+    if (price_max !== undefined) {
+      queryBuilder = queryBuilder.lte('price', price_max);
+    }
+
+    if (location && location.length > 0) {
+      queryBuilder = queryBuilder.in('location', location);
+    }
+
+    if (is_auction !== undefined) {
+      queryBuilder = queryBuilder.eq('is_auction', is_auction);
+    }
+
+    if (with_shipping) {
+      queryBuilder = queryBuilder.not('shipping', 'is', null);
+    }
+
+    if (query) {
+      queryBuilder = queryBuilder.ilike('title', `%${query}%`);
+    }
+
+    // Apply sorting
+    switch (sort_by) {
+      case 'price_asc':
+        queryBuilder = queryBuilder.order('price', { ascending: true });
+        break;
+      case 'price_desc':
+        queryBuilder = queryBuilder.order('price', { ascending: false });
+        break;
+      case 'oldest':
+        queryBuilder = queryBuilder.order('created_at', { ascending: true });
+        break;
+      case 'newest':
+      default:
+        queryBuilder = queryBuilder.order('created_at', { ascending: false });
+    }
+
     // Apply pagination
-    query = query.range(offset, offset + limit - 1);
-    
-    const { data, error } = await query;
-    
+    const start = (page - 1) * pageSize;
+    queryBuilder = queryBuilder.range(start, start + pageSize - 1);
+
+    const { data: products, error, count } = await queryBuilder;
+
     if (error) {
       console.error('Error fetching products:', error);
-      return [];
+      return { products: [], count: 0 };
     }
-    
-    return data as Product[];
+
+    return { 
+      products: products as ProductWithImages[], 
+      count: count || 0
+    };
   } catch (error) {
-    console.error('Error fetching products:', error);
-    return [];
+    console.error('Error in fetchProducts:', error);
+    return { products: [], count: 0 };
   }
 };
 
-export const fetchProductById = async (id: string): Promise<Product | null> => {
+export const fetchProductsBySellerId = async (sellerId: string): Promise<ProductWithImages[]> => {
   try {
     const { data, error } = await supabase
       .from('products')
-      .select('*, images:product_images(*)')
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      console.error('Error fetching product by ID:', error);
-      return null;
-    }
-
-    return data as Product;
-  } catch (error) {
-    console.error('Error fetching product by ID:', error);
-    return null;
-  }
-};
-
-export const fetchProductsBySellerId = async (sellerId: string): Promise<Product[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*, images:product_images(*)')
+      .select(`
+        *,
+        images:product_images(*)
+      `)
       .eq('seller_id', sellerId)
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching products by seller ID:', error);
+      console.error('Error fetching products by seller:', error);
       return [];
     }
 
-    return data as Product[];
+    return data as ProductWithImages[];
   } catch (error) {
-    console.error('Error fetching products by seller ID:', error);
+    console.error('Error in fetchProductsBySellerId:', error);
     return [];
+  }
+};
+
+export const fetchProductById = async (id: string): Promise<ProductWithImages | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        images:product_images(*)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching product:', error);
+      return null;
+    }
+
+    return data as ProductWithImages;
+  } catch (error) {
+    console.error('Error in fetchProductById:', error);
+    return null;
   }
 };
