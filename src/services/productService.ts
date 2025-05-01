@@ -115,81 +115,82 @@ export const fetchProducts = async (
       sort_by
     } = filterParams;
 
-    // Start with a basic query and build it up
-    let queryBuilder = supabase.from('products');
-    
-    // We'll store the count separately to avoid type issues
-    const countQuery = await queryBuilder
+    // First execute a count query separately to avoid type issues
+    const countQuery = await supabase
+      .from('products')
       .select('*', { count: 'exact', head: true })
-      .eq('status', 'active')
-      .then(result => result.count || 0);
-      
-    // Now build the actual data query
-    queryBuilder = supabase.from('products').select('*, images:product_images(*)');
+      .eq('status', 'active');
     
-    // Add filters
-    queryBuilder = queryBuilder.eq('status', 'active');
+    const countValue = countQuery.count || 0;
 
-    // Apply filters
+    // Then build a separate query for fetching the data
+    let dataQuery = supabase
+      .from('products')
+      .select('*, images:product_images(*)');
+    
+    // Add filters one by one
+    dataQuery = dataQuery.eq('status', 'active');
+
+    // Apply additional filters
     if (category_id) {
-      queryBuilder = queryBuilder.eq('category_id', category_id);
+      dataQuery = dataQuery.eq('category_id', category_id);
     }
 
     if (condition && condition.length > 0) {
-      queryBuilder = queryBuilder.in('condition', condition);
+      dataQuery = dataQuery.in('condition', condition);
     }
 
     if (price_min !== undefined) {
-      queryBuilder = queryBuilder.gte('price', price_min);
+      dataQuery = dataQuery.gte('price', price_min);
     }
 
     if (price_max !== undefined) {
-      queryBuilder = queryBuilder.lte('price', price_max);
+      dataQuery = dataQuery.lte('price', price_max);
     }
 
     if (location && location.length > 0) {
-      queryBuilder = queryBuilder.in('location', location);
+      dataQuery = dataQuery.in('location', location);
     }
 
     if (is_auction !== undefined) {
-      queryBuilder = queryBuilder.eq('is_auction', is_auction);
+      dataQuery = dataQuery.eq('is_auction', is_auction);
     }
 
     if (with_shipping) {
-      queryBuilder = queryBuilder.not('shipping', 'is', null);
+      dataQuery = dataQuery.not('shipping', 'is', null);
     }
 
     if (query) {
-      queryBuilder = queryBuilder.ilike('title', `%${query}%`);
+      dataQuery = dataQuery.ilike('title', `%${query}%`);
     }
 
     // Apply sorting
     switch (sort_by) {
       case 'price_asc':
-        queryBuilder = queryBuilder.order('price', { ascending: true });
+        dataQuery = dataQuery.order('price', { ascending: true });
         break;
       case 'price_desc':
-        queryBuilder = queryBuilder.order('price', { ascending: false });
+        dataQuery = dataQuery.order('price', { ascending: false });
         break;
       case 'oldest':
-        queryBuilder = queryBuilder.order('created_at', { ascending: true });
+        dataQuery = dataQuery.order('created_at', { ascending: true });
         break;
       case 'newest':
       default:
-        queryBuilder = queryBuilder.order('created_at', { ascending: false });
+        dataQuery = dataQuery.order('created_at', { ascending: false });
     }
 
     // Apply pagination
     if (limit !== undefined) {
       if (offset !== undefined) {
-        queryBuilder = queryBuilder.range(offset, offset + limit - 1);
+        dataQuery = dataQuery.range(offset, offset + limit - 1);
       } else {
-        queryBuilder = queryBuilder.limit(limit);
+        dataQuery = dataQuery.limit(limit);
       }
     }
 
-    // Execute query
-    const { data, error } = await queryBuilder;
+    // Execute the data query
+    const { data, error } = await dataQuery;
 
     if (error) {
       console.error('Error fetching products:', error);
@@ -201,7 +202,7 @@ export const fetchProducts = async (
     }
 
     // Process the data
-    const productsWithMainImage = data.map((product) => {
+    const productsWithMainImage = data.map((product: any) => {
       const images = product.images || [];
       const sortedImages = [...images].sort((a, b) => a.display_order - b.display_order);
       const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
@@ -214,7 +215,7 @@ export const fetchProducts = async (
 
     return { 
       products: productsWithMainImage as ProductWithImages[], 
-      count: countQuery
+      count: countValue
     };
   } catch (error) {
     console.error('Error in fetchProducts:', error);
@@ -224,7 +225,7 @@ export const fetchProducts = async (
 
 export const fetchProductsBySellerId = async (sellerId: string): Promise<ProductWithImages[]> => {
   try {
-    // Simple query approach to avoid type complexity
+    // Execute the query
     const { data, error } = await supabase
       .from('products')
       .select('*, images:product_images(*)')
@@ -241,7 +242,7 @@ export const fetchProductsBySellerId = async (sellerId: string): Promise<Product
     }
 
     // Process with simplified typing
-    const productsWithMainImage = data.map((product) => {
+    const productsWithMainImage = data.map((product: any) => {
       const images = product.images || [];
       const sortedImages = [...images].sort((a, b) => a.display_order - b.display_order);
       const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
@@ -261,7 +262,7 @@ export const fetchProductsBySellerId = async (sellerId: string): Promise<Product
 
 export const fetchProductById = async (id: string): Promise<ProductWithImages | null> => {
   try {
-    // Simple query approach to avoid type complexity
+    // Execute the query
     const { data, error } = await supabase
       .from('products')
       .select('*, images:product_images(*)')
@@ -277,7 +278,7 @@ export const fetchProductById = async (id: string): Promise<ProductWithImages | 
       return null;
     }
 
-    // Process with simplified typing
+    // Process the product
     const product = data;
     const images = product.images || [];
     const sortedImages = [...images].sort((a, b) => a.display_order - b.display_order);
