@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -175,7 +174,7 @@ const AddBusinessAddressForm = ({ open, onClose }: AddBusinessAddressFormProps) 
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <ScrollArea className="h-[200px]">
+                        <ScrollArea className="h-[200px] overflow-y-auto">
                           {jordanianCities.map((city) => (
                             <SelectItem key={city} value={city}>{city}</SelectItem>
                           ))}
