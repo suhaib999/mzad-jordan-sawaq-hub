@@ -25,9 +25,8 @@ import { Menu, Sun, Moon } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/contexts/ThemeContext";
 import LanguageSwitcher from './LanguageSwitcher';
-
-// Import our CartButton
 import CartButton from '@/components/cart/CartButton';
+import SearchBox from '@/components/search/SearchBox';
 
 const Navbar = () => {
   const { t, i18n } = useTranslation();
@@ -54,6 +53,7 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-5">
+            <SearchBox />
             <NavLink to="/browse" className={({ isActive }) => isActive ? 'text-blue-500' : 'hover:text-gray-500 dark:text-gray-300'}>
               {t('browse')}
             </NavLink>
@@ -125,6 +125,10 @@ const Navbar = () => {
                   </SheetDescription>
                 </SheetHeader>
                 <div className="grid gap-4 py-4">
+                  <div className="w-full mb-2">
+                    <SearchBox />
+                  </div>
+                  
                   <Button variant="ghost" asChild className="justify-start">
                     <Link to="/browse">{t('browse')}</Link>
                   </Button>
