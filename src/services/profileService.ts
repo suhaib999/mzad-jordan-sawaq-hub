@@ -7,7 +7,7 @@ export type ProfileUpdateData = {
   full_name?: string;
   phone_number?: string;
   address?: string;
-  location?: string; // Added location property
+  location?: string;
 };
 
 export type ProfileWithAvatar = {
@@ -17,7 +17,7 @@ export type ProfileWithAvatar = {
   avatar_url: string | null;
   phone_number: string | null;
   address: string | null;
-  location: string | null; // Added location property
+  location: string | null;
 };
 
 export const fetchProfile = async (userId: string): Promise<ProfileWithAvatar | null> => {
@@ -33,7 +33,7 @@ export const fetchProfile = async (userId: string): Promise<ProfileWithAvatar | 
       return null;
     }
 
-    // Create a ProfileWithAvatar object with location (may be derived from address if location doesn't exist)
+    // Create a ProfileWithAvatar object with all fields directly from the database
     return {
       id: data.id,
       username: data.username,
@@ -41,7 +41,7 @@ export const fetchProfile = async (userId: string): Promise<ProfileWithAvatar | 
       avatar_url: data.avatar_url,
       phone_number: data.phone_number,
       address: data.address,
-      location: data.address // Using address as location since location doesn't exist in the database
+      location: data.location
     };
   } catch (error) {
     console.error('Error in fetchProfile:', error);

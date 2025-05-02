@@ -8,12 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { ProfileUpdateData, updateProfile } from '@/services/profileService';
+import { MapPin } from 'lucide-react';
 
 const profileSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters').max(50),
   full_name: z.string().min(2, 'Full name must be at least 2 characters').max(100),
   phone_number: z.string().optional(),
   address: z.string().optional(),
+  location: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -25,6 +27,7 @@ interface ProfileFormProps {
     full_name: string;
     phone_number?: string;
     address?: string;
+    location?: string;
   };
   onSuccess?: () => void;
 }
@@ -37,6 +40,7 @@ export function ProfileForm({ userId, initialValues, onSuccess }: ProfileFormPro
       full_name: initialValues.full_name || '',
       phone_number: initialValues.phone_number || '',
       address: initialValues.address || '',
+      location: initialValues.location || '',
     },
   });
 
@@ -127,6 +131,26 @@ export function ProfileForm({ userId, initialValues, onSuccess }: ProfileFormPro
                 <Input {...field} />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="location"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                Location
+              </FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="City, Country (e.g., Amman, Jordan)" />
+              </FormControl>
+              <FormMessage />
+              <p className="text-xs text-muted-foreground">
+                Your general location will be visible on your listings
+              </p>
             </FormItem>
           )}
         />
