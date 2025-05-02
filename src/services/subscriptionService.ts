@@ -62,30 +62,24 @@ export const subscriptionPlans: SubscriptionPlan[] = [
   },
 ];
 
+// Mock user subscriptions - in a real app, this would be stored in a database
+const mockUserSubscriptions: Record<string, SubscriptionStatus> = {};
+
 export const getSubscriptionStatus = async (
   userId: string
 ): Promise<SubscriptionStatus | null> => {
   try {
-    const { data, error } = await supabase
-      .from('user_subscriptions')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-
-    if (error || !data) {
-      return {
-        active: false,
-        plan: null,
-        current_period_end: null,
-        cancel_at_period_end: false,
-      };
+    // Check if we have a mock subscription for this user
+    if (mockUserSubscriptions[userId]) {
+      return mockUserSubscriptions[userId];
     }
 
+    // Default subscription for new users
     return {
-      active: data.status === 'active',
-      plan: data.plan,
-      current_period_end: data.current_period_end,
-      cancel_at_period_end: data.cancel_at_period_end,
+      active: false,
+      plan: null,
+      current_period_end: null,
+      cancel_at_period_end: false,
     };
   } catch (error) {
     console.error('Error fetching subscription status:', error);
@@ -99,6 +93,22 @@ export const startSubscription = async (planId: string): Promise<boolean> => {
   // In a real implementation, this would redirect to a payment page
   // or call a server endpoint to handle payment processing
   
-  // For demo purposes, we'll simulate success
+  // For demo purposes, we'll simulate success and store the subscription in the mock data
+  if (planId && supabase.auth.getUser) {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      const oneMonthLater = new Date();
+      oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+      
+      mockUserSubscriptions[user.id] = {
+        active: true,
+        plan: planId,
+        current_period_end: oneMonthLater.toISOString(),
+        cancel_at_period_end: false,
+      };
+    }
+  }
+  
   return true;
 };
