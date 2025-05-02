@@ -104,7 +104,7 @@ const ProfilePage = () => {
                     <AvatarUpload 
                       userId={user.id} 
                       currentAvatarUrl={profileData?.avatar_url || null} 
-                      onSuccess={handleProfileUpdate}
+                      onAvatarChange={handleProfileUpdate}
                     />
                   </CardContent>
                 </Card>
@@ -158,7 +158,7 @@ const ProfilePage = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <PasswordForm userId={user.id} />
+                    <PasswordForm />
                   </CardContent>
                 </Card>
               </TabsContent>
