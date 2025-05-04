@@ -1,6 +1,7 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AuctionCountdown } from '@/components/product/AuctionCountdown';
+import { fetchBidHistory } from '@/services/biddingService';
 
 interface ProductPricingProps {
   isAuction: boolean;
@@ -9,6 +10,7 @@ interface ProductPricingProps {
   price?: number;
   currency: string;
   endTime?: string;
+  productId: string; // Added productId to fetch bid history
 }
 
 export const ProductPricing: React.FC<ProductPricingProps> = ({
@@ -17,17 +19,35 @@ export const ProductPricing: React.FC<ProductPricingProps> = ({
   startPrice,
   price,
   currency,
-  endTime
+  endTime,
+  productId
 }) => {
-  // Display the highest of current bid or starting price for auctions
-  const displayBidAmount = currentBid || startPrice || 0;
+  const [highestBid, setHighestBid] = useState<number | null>(null);
   
-  // Log for debugging
+  // Fetch the highest bid from the database when component mounts
   useEffect(() => {
-    if (isAuction) {
-      console.log(`ProductPricing - Rendering with: currentBid=${currentBid}, startPrice=${startPrice}, displaying=${displayBidAmount}`);
+    if (isAuction && productId) {
+      fetchLatestHighestBid();
     }
-  }, [isAuction, currentBid, startPrice, displayBidAmount]);
+  }, [isAuction, productId]);
+  
+  // Function to fetch the latest highest bid
+  const fetchLatestHighestBid = async () => {
+    try {
+      const bids = await fetchBidHistory(productId);
+      if (bids && bids.length > 0) {
+        // Bids are already sorted by created_at desc from the API
+        const highestBidAmount = bids[0].amount;
+        setHighestBid(highestBidAmount);
+        console.log(`ProductPricing - Latest highest bid: ${highestBidAmount}`);
+      }
+    } catch (error) {
+      console.error('Error fetching latest highest bid in ProductPricing:', error);
+    }
+  };
+  
+  // Display the highest of database highest bid, current bid, or starting price for auctions
+  const displayBidAmount = highestBid || currentBid || startPrice || 0;
 
   if (isAuction) {
     return (

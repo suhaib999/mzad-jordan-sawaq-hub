@@ -69,23 +69,11 @@ const ProductDetail = () => {
     }
   };
 
-  // Initial data fetch
+  // Initial data fetch - no auto refresh
   useEffect(() => {
     fetchProductData();
-    
-    // Set up a refresh interval with much lower frequency and only for auction pages
-    const refreshInterval = setInterval(() => {
-      if (id && product?.is_auction) {
-        const endTime = product.end_time ? new Date(product.end_time) : null;
-        if (!endTime || endTime > new Date()) {
-          console.log("Automatic refresh - fetching latest product data");
-          fetchProductData();
-        }
-      }
-    }, 120000); // Refresh every 2 minutes (increased from 30s to be even less frequent)
-
-    return () => clearInterval(refreshInterval);
-  }, [id, product?.is_auction, product?.end_time]);
+    // No refresh interval - removed auto-refresh functionality
+  }, [id]);
 
   // Callback to update UI after a bid is placed
   const handleBidPlaced = (newBidAmount: number) => {
@@ -154,6 +142,7 @@ const ProductDetail = () => {
               price={product.price}
               currency={product.currency}
               endTime={product.end_time}
+              productId={product.id}
             />
             
             {product.location && (
