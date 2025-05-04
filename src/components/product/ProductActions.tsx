@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { BidForm } from '@/components/product/BidForm';
+import { WishlistButton } from './WishlistButton';
 
 interface ProductActionsProps {
   product: ProductWithImages;
@@ -19,22 +20,31 @@ export const ProductActions: React.FC<ProductActionsProps> = ({
 }) => {
   if (product.is_auction) {
     return (
-      <Card className="p-4 border-mzad-secondary mb-6">
-        <BidForm 
-          product={product} 
-          onBidPlaced={onBidPlaced} 
-        />
-      </Card>
+      <div className="space-y-4">
+        <div className="flex space-x-2 mb-2">
+          <WishlistButton productId={product.id} variant="detail" />
+        </div>
+        <Card className="p-4 border-mzad-secondary">
+          <BidForm 
+            product={product} 
+            onBidPlaced={onBidPlaced} 
+          />
+        </Card>
+      </div>
     );
   }
   
   return (
-    <Button 
-      className="w-full bg-mzad-secondary text-white hover:bg-mzad-primary"
-      onClick={onAddToCart}
-    >
-      <ShoppingCart className="mr-2 h-4 w-4" />
-      Add to Cart
-    </Button>
+    <div className="space-y-4">
+      <Button 
+        className="w-full bg-mzad-secondary text-white hover:bg-mzad-primary"
+        onClick={onAddToCart}
+      >
+        <ShoppingCart className="mr-2 h-4 w-4" />
+        Add to Cart
+      </Button>
+      
+      <WishlistButton productId={product.id} variant="detail" />
+    </div>
   );
 };

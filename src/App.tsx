@@ -14,6 +14,7 @@ import Profile from './pages/Profile/Profile';
 import MyListings from './pages/Profile/MyListings';
 import SellPage from './pages/Sell/SellPage';
 import CartPage from './pages/Cart/CartPage';
+import WishlistPage from './pages/Wishlist/WishlistPage';
 import SellerDashboard from './pages/Seller/SellerDashboard';
 import SellerAccount from './pages/Seller/SellerAccount';
 import SellerSubscriptions from './pages/Seller/SellerSubscriptions';
@@ -44,6 +45,7 @@ function AppRoutes(): ReactNode {
       <Route path="/my-listings" element={<MyListings />} />
       <Route path="/sell" element={<SellPage />} />
       <Route path="/cart" element={<CartPage />} />
+      <Route path="/wishlist" element={<WishlistPage />} />
       <Route path="/seller/dashboard" element={<SellerDashboard />} />
       <Route path="/seller/account" element={<SellerAccount />} />
       <Route path="/seller/subscriptions" element={<SellerSubscriptions />} />

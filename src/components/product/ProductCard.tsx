@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { useCart } from '@/contexts/CartContext';
 import { fetchProductById } from '@/services/product';
 import { Badge } from '@/components/ui/badge';
 import { formatTimeRemaining } from '@/services/biddingService';
+import { WishlistButton } from './WishlistButton';
 
 export interface ProductCardProps {
   id: string;
@@ -67,13 +67,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             className="w-full h-48 object-cover"
           />
         </Link>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          className="absolute top-2 right-2 bg-white/70 hover:bg-white rounded-full h-8 w-8"
-        >
-          <Heart size={18} />
-        </Button>
+        <WishlistButton productId={id} variant="card" />
         
         {isAuction && (
           <div className="absolute bottom-2 left-2">
