@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,14 +26,25 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
   const [bidAmount, setBidAmount] = useState<string>(minBid.toFixed(2));
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Load initial bid amount on mount and when product or current bid changes
+  // Keep track of the user's manual edits
+  const [userHasEditedBid, setUserHasEditedBid] = useState(false);
+  const previousBidRef = useRef<string>(bidAmount);
+
+  // Load initial bid amount ONLY when the component mounts or when product ID changes
+  // NOT when currentBid changes (prevents resetting during UI updates)
   useEffect(() => {
     const loadInitialBidAmount = async () => {
       try {
         // Get the current minimum bid based on the product's current bid
         const minimumBid = getMinimumBidAmount(currentBid, product.start_price);
         setMinBid(minimumBid);
-        setBidAmount(minimumBid.toFixed(2));
+        
+        // Only update the bid amount if the user hasn't edited it
+        // or if the product ID changes (meaning we're on a new product)
+        if (!userHasEditedBid) {
+          setBidAmount(minimumBid.toFixed(2));
+          previousBidRef.current = minimumBid.toFixed(2);
+        }
         
         console.log(`Setting initial bid: ${minimumBid.toFixed(2)} based on current bid: ${currentBid}`);
       } catch (error) {
@@ -43,17 +53,27 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
     };
     
     loadInitialBidAmount();
-  }, [product.id, currentBid, product.start_price]);
+  }, [product.id]); // Only depends on product.id, not currentBid
+
+  // Update minimum bid when current bid changes, but don't reset input value
+  useEffect(() => {
+    setMinBid(getMinimumBidAmount(currentBid, product.start_price));
+  }, [currentBid, product.start_price]);
 
   const incrementBid = () => {
     const current = parseFloat(bidAmount);
-    setBidAmount((current + 0.5).toFixed(2));
+    const newAmount = (current + 0.5).toFixed(2);
+    setBidAmount(newAmount);
+    setUserHasEditedBid(true);
+    previousBidRef.current = newAmount;
   };
 
   const decrementBid = () => {
     const current = parseFloat(bidAmount);
-    const newAmount = Math.max(minBid, current - 0.5);
-    setBidAmount(newAmount.toFixed(2));
+    const newAmount = Math.max(minBid, current - 0.5).toFixed(2);
+    setBidAmount(newAmount);
+    setUserHasEditedBid(true);
+    previousBidRef.current = newAmount;
   };
 
   const validateBidAmount = (amount: number): boolean => {
@@ -102,7 +122,11 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
         // Update minimum bid after successful bid
         const newMinBid = getMinimumBidAmount(newBidAmount, null);
         setMinBid(newMinBid);
+        
+        // Reset user edited flag after successful bid
+        setUserHasEditedBid(false);
         setBidAmount(newMinBid.toFixed(2));
+        previousBidRef.current = newMinBid.toFixed(2);
         
         // Force invalidate all related queries to refresh data
         queryClient.invalidateQueries({
@@ -138,6 +162,8 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setBidAmount(value);
+    setUserHasEditedBid(true);
+    previousBidRef.current = value;
   };
 
   return (

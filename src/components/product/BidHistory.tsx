@@ -15,7 +15,7 @@ export const BidHistory: React.FC<BidHistoryProps> = ({ productId, currency }) =
   const { data: bids, isLoading, error } = useQuery({
     queryKey: ['bids', productId],
     queryFn: () => fetchBidHistory(productId),
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds (increased from 10s)
   });
 
   const formatDate = (dateString: string) => {

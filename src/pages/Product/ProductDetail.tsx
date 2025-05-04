@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchProductById } from '@/services/product';
@@ -75,12 +76,19 @@ const ProductDetail = () => {
     // Set up a refresh interval to keep bids updated - shorter interval for better UX
     const refreshInterval = setInterval(() => {
       if (id) {
-        fetchProductData();
+        // Only fetch if we're on an auction page and it's still active
+        if (product?.is_auction) {
+          const endTime = product.end_time ? new Date(product.end_time) : null;
+          if (!endTime || endTime > new Date()) {
+            console.log("Automatic refresh - fetching latest product data");
+            fetchProductData();
+          }
+        }
       }
-    }, 10000); // Refresh every 10 seconds (reduced from 30s)
+    }, 30000); // Refresh every 30 seconds (increased from 10s to be less annoying)
 
     return () => clearInterval(refreshInterval);
-  }, [id]);
+  }, [id, product?.is_auction, product?.end_time]);
 
   // Callback to update UI after a bid is placed
   const handleBidPlaced = (newBidAmount: number) => {
@@ -100,7 +108,7 @@ const ProductDetail = () => {
       // with a slight delay to ensure the DB update has propagated
       setTimeout(() => {
         fetchProductData();
-      }, 500);
+      }, 1000);
     }
   };
 
