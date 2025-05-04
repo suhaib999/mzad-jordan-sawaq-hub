@@ -13,7 +13,7 @@ const HeroBanner = () => {
             </h1>
             <p className="text-xl mb-6">
               Jordan's premier online marketplace for auctions and direct sales.
-              Buy, sell, and discover amazing deals!
+              Buy, sell, and discover amazing deals NOW!
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="bg-white text-mzad-primary hover:bg-gray-100">
