@@ -73,19 +73,16 @@ const ProductDetail = () => {
   useEffect(() => {
     fetchProductData();
     
-    // Set up a refresh interval to keep bids updated - shorter interval for better UX
+    // Set up a refresh interval with much lower frequency and only for auction pages
     const refreshInterval = setInterval(() => {
-      if (id) {
-        // Only fetch if we're on an auction page and it's still active
-        if (product?.is_auction) {
-          const endTime = product.end_time ? new Date(product.end_time) : null;
-          if (!endTime || endTime > new Date()) {
-            console.log("Automatic refresh - fetching latest product data");
-            fetchProductData();
-          }
+      if (id && product?.is_auction) {
+        const endTime = product.end_time ? new Date(product.end_time) : null;
+        if (!endTime || endTime > new Date()) {
+          console.log("Automatic refresh - fetching latest product data");
+          fetchProductData();
         }
       }
-    }, 30000); // Refresh every 30 seconds (increased from 10s to be less annoying)
+    }, 120000); // Refresh every 2 minutes (increased from 30s to be even less frequent)
 
     return () => clearInterval(refreshInterval);
   }, [id, product?.is_auction, product?.end_time]);

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchBidHistory, Bid } from '@/services/biddingService';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -15,7 +15,7 @@ export const BidHistory: React.FC<BidHistoryProps> = ({ productId, currency }) =
   const { data: bids, isLoading, error } = useQuery({
     queryKey: ['bids', productId],
     queryFn: () => fetchBidHistory(productId),
-    refetchInterval: 30000, // Refresh every 30 seconds (increased from 10s)
+    refetchInterval: 60000, // Reduced refresh frequency to once per minute
   });
 
   const formatDate = (dateString: string) => {

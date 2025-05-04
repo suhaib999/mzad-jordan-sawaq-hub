@@ -25,6 +25,7 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
   const [minBid, setMinBid] = useState<number>(getMinimumBidAmount(currentBid, product.start_price));
   const [bidAmount, setBidAmount] = useState<string>(minBid.toFixed(2));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [highestBidFromDB, setHighestBidFromDB] = useState<number | null>(null);
 
   // Keep track of the user's manual edits
   const [userHasEditedBid, setUserHasEditedBid] = useState(false);
@@ -53,12 +54,41 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
     };
     
     loadInitialBidAmount();
+    
+    // Also fetch the latest bid history to get the most up-to-date highest bid
+    fetchLatestHighestBid();
   }, [product.id]); // Only depends on product.id, not currentBid
 
   // Update minimum bid when current bid changes, but don't reset input value
   useEffect(() => {
     setMinBid(getMinimumBidAmount(currentBid, product.start_price));
   }, [currentBid, product.start_price]);
+
+  // Fetch the latest highest bid from the database
+  const fetchLatestHighestBid = async () => {
+    try {
+      const bids = await fetchBidHistory(product.id);
+      if (bids && bids.length > 0) {
+        // Bids are already sorted by created_at desc from the API
+        const highestBid = bids[0].amount;
+        setHighestBidFromDB(highestBid);
+        
+        // Calculate new minimum bid based on the highest bid from DB
+        const newMinBid = getMinimumBidAmount(highestBid, product.start_price);
+        setMinBid(newMinBid);
+        
+        // Only update bid amount if user hasn't manually edited it
+        if (!userHasEditedBid) {
+          setBidAmount(newMinBid.toFixed(2));
+          previousBidRef.current = newMinBid.toFixed(2);
+        }
+        
+        console.log(`Latest highest bid from database: ${highestBid}`);
+      }
+    } catch (error) {
+      console.error('Error fetching latest highest bid:', error);
+    }
+  };
 
   const incrementBid = () => {
     const current = parseFloat(bidAmount);
@@ -127,6 +157,9 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
         setUserHasEditedBid(false);
         setBidAmount(newMinBid.toFixed(2));
         previousBidRef.current = newMinBid.toFixed(2);
+        
+        // Fetch the latest highest bid after placing a bid
+        await fetchLatestHighestBid();
         
         // Force invalidate all related queries to refresh data
         queryClient.invalidateQueries({
@@ -205,6 +238,11 @@ export const BidForm: React.FC<BidFormProps> = ({ product, onBidPlaced }) => {
           <p className="text-xs text-gray-500">
             Minimum bid: {minBid.toFixed(2)} {product.currency}
           </p>
+          {highestBidFromDB && (
+            <p className="text-xs text-amber-600 font-medium">
+              Current highest: {highestBidFromDB.toFixed(2)} {product.currency}
+            </p>
+          )}
           {!session?.user && (
             <p className="text-xs text-amber-600">
               Sign in required to bid
