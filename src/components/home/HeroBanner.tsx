@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
@@ -12,8 +11,7 @@ const HeroBanner = () => {
               Welcome to MzadKumSooq
             </h1>
             <p className="text-xl mb-6">
-              Jordan's premier online marketplace for auctions and direct sales.
-              Buy, sell, and discover amazing deals NOW!
+              Jordan's premier online marketplace for auctions and direct sales. Buy, sell, and discover amazing deals now2
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="bg-white text-mzad-primary hover:bg-gray-100">
