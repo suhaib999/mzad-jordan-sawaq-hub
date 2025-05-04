@@ -13,8 +13,16 @@ export interface WishlistItem {
 // Add a product to the user's wishlist
 export const addToWishlist = async (productId: string): Promise<boolean> => {
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      console.error('No authenticated user found');
+      return false;
+    }
+    
     const { error } = await supabase.from('wishlists').insert({
-      product_id: productId
+      product_id: productId,
+      user_id: user.id
     });
 
     if (error) {
@@ -32,10 +40,17 @@ export const addToWishlist = async (productId: string): Promise<boolean> => {
 // Remove a product from the user's wishlist
 export const removeFromWishlist = async (productId: string): Promise<boolean> => {
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      console.error('No authenticated user found');
+      return false;
+    }
+    
     const { error } = await supabase
       .from('wishlists')
       .delete()
-      .match({ product_id: productId });
+      .match({ product_id: productId, user_id: user.id });
 
     if (error) {
       console.error('Error removing from wishlist:', error);
@@ -52,10 +67,17 @@ export const removeFromWishlist = async (productId: string): Promise<boolean> =>
 // Check if a product is in the user's wishlist
 export const isInWishlist = async (productId: string): Promise<boolean> => {
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return false;
+    }
+    
     const { data, error } = await supabase
       .from('wishlists')
       .select('*')
       .eq('product_id', productId)
+      .eq('user_id', user.id)
       .maybeSingle();
 
     if (error) {
@@ -73,9 +95,16 @@ export const isInWishlist = async (productId: string): Promise<boolean> => {
 // Get all wishlist items for the current user
 export const getWishlist = async (): Promise<ProductWithImages[]> => {
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return [];
+    }
+    
     const { data, error } = await supabase
       .from('wishlists')
       .select('product_id')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error || !data) {
