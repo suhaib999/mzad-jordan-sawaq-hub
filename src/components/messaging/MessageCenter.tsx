@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -127,10 +126,14 @@ const MessageCenter: React.FC = () => {
     queryKey: ['conversations', currentUserId],
     queryFn: fetchConversations,
     enabled: !!currentUserId,
-    onSuccess: (data) => {
-      setConversations(data);
-    }
   });
+
+  // Update conversations when data is fetched
+  useEffect(() => {
+    if (conversationsData) {
+      setConversations(conversationsData);
+    }
+  }, [conversationsData]);
 
   // Get messages when a conversation is selected
   useEffect(() => {
@@ -360,7 +363,7 @@ const MessageCenter: React.FC = () => {
           </div>
           
           <ScrollArea className="flex-1 p-4">
-            {messages.map((message, i) => (
+            {messages.map((message) => (
               <div key={message.id} className="mb-4">
                 <div
                   className={`flex ${

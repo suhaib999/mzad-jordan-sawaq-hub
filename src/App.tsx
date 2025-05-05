@@ -61,7 +61,7 @@ function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             
             {/* Protected routes */}
-            <Route element={<RequireAuth />}>
+            <Route path="/" element={<RequireAuth />}>
               <Route path="/profile" element={<Profile />} />
               <Route path="/my-listings" element={<MyListings />} />
               <Route path="/wishlist" element={<WishlistPage />} />
