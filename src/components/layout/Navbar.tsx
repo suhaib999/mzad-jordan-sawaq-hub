@@ -138,7 +138,7 @@ const Navbar = ({ toggleMobileMenu }: { toggleMobileMenu: () => void }) => {
               <CartButton />
               <div className="hidden sm:block">
                 <Button className="bg-mzad-primary">
-                  <Link to="/auth/login" className="flex items-center">
+                  <Link to="/login" className="flex items-center">
                     <LogIn className="mr-1 h-4 w-4" />
                     <span>{t('signIn')}</span>
                   </Link>

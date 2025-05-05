@@ -58,10 +58,13 @@ function App() {
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/browse" element={<BrowseProducts />} />
               
-              {/* Auth routes */}
+              {/* Auth routes - Update to include both /auth/ prefix and direct paths */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/auth/login" element={<Login />} />
+              <Route path="/auth/register" element={<Register />} />
+              <Route path="/auth/reset-password" element={<ResetPassword />} />
               
               {/* Protected routes */}
               <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />

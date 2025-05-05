@@ -139,7 +139,7 @@ const Register = () => {
         <CardFooter>
           <div className="text-center w-full text-sm">
             Already have an account?{" "}
-            <Link to="/auth/login" className="text-mzad-secondary hover:underline">
+            <Link to="/login" className="text-mzad-secondary hover:underline">
               Login
             </Link>
           </div>

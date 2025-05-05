@@ -1,104 +1,166 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { User, Heart, Bell, Settings, HelpCircle, LogOut } from 'lucide-react';
+import {
+  X,
+  Home,
+  Search,
+  ShoppingCart,
+  User,
+  Heart,
+  PlusSquare,
+  MessageSquare,
+  Settings,
+  LogIn,
+  LogOut
+} from 'lucide-react';
 
-type MobileMenuProps = {
+interface MobileMenuProps {
   onClose: () => void;
   isLoggedIn: boolean;
   onSignOut: () => void;
-};
+}
 
 const MobileMenu: React.FC<MobileMenuProps> = ({ onClose, isLoggedIn, onSignOut }) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
-      <div className="bg-white h-full w-4/5 max-w-sm p-4 overflow-y-auto">
-        <div className="flex flex-col h-full">
-          <div className="py-6 border-b">
-            {isLoggedIn ? (
-              <div className="px-4 py-3">
-                <Link to="/profile" onClick={onClose} className="flex items-center space-x-3 mb-2">
-                  <div className="w-10 h-10 rounded-full bg-mzad-primary text-white flex items-center justify-center text-lg font-medium">
-                    U
-                  </div>
-                  <div>
-                    <div className="font-medium">My Account</div>
-                    <div className="text-sm text-gray-500">View profile</div>
-                  </div>
-                </Link>
-              </div>
-            ) : (
-              <Link to="/auth/login" onClick={onClose} className="flex items-center space-x-3 px-4 py-3 rounded-md hover:bg-gray-100">
-                <User size={24} />
-                <span className="font-medium">Sign In / Register</span>
-              </Link>
-            )}
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex md:hidden">
+      <div className="bg-white w-4/5 max-w-sm h-full flex flex-col overflow-y-auto">
+        <div className="flex justify-between items-center p-4 border-b">
+          <div className="flex items-center">
+            <span className="font-bold text-xl text-mzad-primary">Mzad</span>
+            <span className="font-bold text-xl text-mzad-secondary">KumSooq</span>
           </div>
-
-          <nav className="py-4 flex-1">
-            <ul className="space-y-1">
-              <li>
-                <Link to="/" onClick={onClose} className="block px-4 py-3 rounded-md hover:bg-gray-100">Home</Link>
-              </li>
-              <li>
-                <Link to="/categories" onClick={onClose} className="block px-4 py-3 rounded-md hover:bg-gray-100">Categories</Link>
-              </li>
-              <li>
-                <Link to="/deals" onClick={onClose} className="block px-4 py-3 rounded-md hover:bg-gray-100">Deals</Link>
-              </li>
-              <li>
-                <Link to="/sell" onClick={onClose} className="block px-4 py-3 rounded-md hover:bg-gray-100 font-medium text-mzad-secondary">Sell</Link>
-              </li>
-              <li>
-                <Link to="/wishlist" onClick={onClose} className="flex items-center space-x-3 px-4 py-3 rounded-md hover:bg-gray-100">
-                  <Heart size={20} />
-                  <span>Wishlist</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/notifications" onClick={onClose} className="flex items-center space-x-3 px-4 py-3 rounded-md hover:bg-gray-100">
-                  <Bell size={20} />
-                  <span>Notifications</span>
-                </Link>
-              </li>
-              {isLoggedIn && (
-                <>
-                  <li>
-                    <Link to="/my-listings" onClick={onClose} className="block px-4 py-3 rounded-md hover:bg-gray-100">My Listings</Link>
-                  </li>
-                  <li>
-                    <Link to="/my-bids" onClick={onClose} className="block px-4 py-3 rounded-md hover:bg-gray-100">My Bids</Link>
-                  </li>
-                </>
-              )}
-            </ul>
-          </nav>
-
-          <div className="py-4 border-t">
-            <Link to="/settings" onClick={onClose} className="flex items-center space-x-3 px-4 py-3 rounded-md hover:bg-gray-100">
-              <Settings size={20} />
-              <span>Settings</span>
-            </Link>
-            <Link to="/help" onClick={onClose} className="flex items-center space-x-3 px-4 py-3 rounded-md hover:bg-gray-100">
-              <HelpCircle size={20} />
-              <span>Help & Contact</span>
-            </Link>
-            {isLoggedIn && (
-              <button 
-                onClick={() => {
-                  onSignOut();
-                  onClose();
-                }}
-                className="flex items-center space-x-3 px-4 py-3 rounded-md hover:bg-gray-100 w-full text-left"
-              >
-                <LogOut size={20} />
-                <span>Sign Out</span>
-              </button>
-            )}
-          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full hover:bg-gray-100"
+          >
+            <X className="h-6 w-6" />
+          </button>
         </div>
+        
+        <nav className="flex-1 p-4">
+          <div className="space-y-1">
+            <Link
+              to="/"
+              className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-md"
+              onClick={onClose}
+            >
+              <Home className="mr-3 h-5 w-5 text-mzad-primary" />
+              Home
+            </Link>
+            
+            <Link
+              to="/browse"
+              className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-md"
+              onClick={onClose}
+            >
+              <Search className="mr-3 h-5 w-5 text-mzad-primary" />
+              Browse
+            </Link>
+            
+            {isLoggedIn ? (
+              <>
+                <Link
+                  to="/cart"
+                  className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  <ShoppingCart className="mr-3 h-5 w-5 text-mzad-primary" />
+                  Cart
+                </Link>
+                
+                <Link
+                  to="/wishlist"
+                  className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  <Heart className="mr-3 h-5 w-5 text-mzad-primary" />
+                  Wishlist
+                </Link>
+                
+                <Link
+                  to="/profile"
+                  className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  <User className="mr-3 h-5 w-5 text-mzad-primary" />
+                  My Profile
+                </Link>
+                
+                <Link
+                  to="/my-listings"
+                  className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  <PlusSquare className="mr-3 h-5 w-5 text-mzad-primary" />
+                  My Listings
+                </Link>
+                
+                <Link
+                  to="/messages"
+                  className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  <MessageSquare className="mr-3 h-5 w-5 text-mzad-primary" />
+                  Messages
+                </Link>
+                
+                <Link
+                  to="/sell"
+                  className="flex items-center px-4 py-3 font-semibold text-gray-800 hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  <PlusSquare className="mr-3 h-5 w-5 text-mzad-secondary" />
+                  Sell Item
+                </Link>
+                
+                <hr className="my-4" />
+                
+                <Link
+                  to="/settings"
+                  className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  <Settings className="mr-3 h-5 w-5" />
+                  Settings
+                </Link>
+                
+                <button
+                  onClick={() => {
+                    onSignOut();
+                    onClose();
+                  }}
+                  className="w-full flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-md"
+                >
+                  <LogOut className="mr-3 h-5 w-5 text-red-500" />
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="flex items-center px-4 py-3 font-semibold text-gray-800 hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  <LogIn className="mr-3 h-5 w-5 text-mzad-primary" />
+                  Log In
+                </Link>
+                
+                <Link
+                  to="/register"
+                  className="flex items-center px-4 py-3 font-semibold text-gray-800 hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  <User className="mr-3 h-5 w-5 text-mzad-secondary" />
+                  Register
+                </Link>
+              </>
+            )}
+          </div>
+        </nav>
       </div>
-      <div className="h-full w-1/5 min-w-[20%]" onClick={onClose}></div>
+      <div className="flex-1" onClick={onClose}></div>
     </div>
   );
 };
