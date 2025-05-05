@@ -72,7 +72,6 @@ const ProductDetail = () => {
   // Initial data fetch - no auto refresh
   useEffect(() => {
     fetchProductData();
-    // No refresh interval - removed auto-refresh functionality
   }, [id]);
 
   // Callback to update UI after a bid is placed

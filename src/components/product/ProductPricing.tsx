@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { AuctionCountdown } from '@/components/product/AuctionCountdown';
-import { fetchBidHistory } from '@/services/biddingService';
+import { fetchHighestBid } from '@/services/biddingService';
 
 interface ProductPricingProps {
   isAuction: boolean;
@@ -10,7 +10,7 @@ interface ProductPricingProps {
   price?: number;
   currency: string;
   endTime?: string;
-  productId: string; // Added productId to fetch bid history
+  productId: string;
 }
 
 export const ProductPricing: React.FC<ProductPricingProps> = ({
@@ -31,13 +31,11 @@ export const ProductPricing: React.FC<ProductPricingProps> = ({
     }
   }, [isAuction, productId]);
   
-  // Function to fetch the latest highest bid
+  // Function to fetch the latest highest bid - now uses optimized function
   const fetchLatestHighestBid = async () => {
     try {
-      const bids = await fetchBidHistory(productId);
-      if (bids && bids.length > 0) {
-        // Bids are already sorted by created_at desc from the API
-        const highestBidAmount = bids[0].amount;
+      const highestBidAmount = await fetchHighestBid(productId);
+      if (highestBidAmount !== null) {
         setHighestBid(highestBidAmount);
         console.log(`ProductPricing - Latest highest bid: ${highestBidAmount}`);
       }
@@ -56,7 +54,7 @@ export const ProductPricing: React.FC<ProductPricingProps> = ({
           Current bid: {displayBidAmount.toFixed(2)} {currency}
         </div>
         
-        {startPrice && currentBid && currentBid > startPrice && (
+        {startPrice && (currentBid || highestBid) && startPrice < (highestBid || currentBid || 0) && (
           <div className="text-sm text-gray-500">
             Started at: {startPrice.toFixed(2)} {currency}
           </div>

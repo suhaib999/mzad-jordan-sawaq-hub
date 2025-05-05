@@ -156,15 +156,40 @@ export const placeBid = async (
 };
 
 /**
- * Fetches bid history for a product
+ * Fetches only the highest bid for a product (optimized)
  */
-export const fetchBidHistory = async (productId: string): Promise<Bid[]> => {
+export const fetchHighestBid = async (productId: string): Promise<number | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('bids')
+      .select('amount')
+      .eq('product_id', productId)
+      .order('amount', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.error('Error fetching highest bid:', error);
+      return null;
+    }
+
+    return data && data.length > 0 ? data[0].amount : null;
+  } catch (error) {
+    console.error('Error in fetchHighestBid:', error);
+    return null;
+  }
+};
+
+/**
+ * Fetches bid history for a product (limited to top bids)
+ */
+export const fetchBidHistory = async (productId: string, limit: number = 5): Promise<Bid[]> => {
   try {
     const { data, error } = await supabase
       .from('bids')
       .select('*')
       .eq('product_id', productId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
     if (error) {
       console.error('Error fetching bid history:', error);

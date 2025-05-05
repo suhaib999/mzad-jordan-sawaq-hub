@@ -1,7 +1,10 @@
-import { Link } from 'react-router-dom';
+
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 const HeroBanner = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="bg-gradient-to-r from-mzad-primary to-mzad-secondary text-white">
       <div className="container mx-auto px-4 py-12 md:py-20">
@@ -11,14 +14,22 @@ const HeroBanner = () => {
               Welcome to MzadKumSooq
             </h1>
             <p className="text-xl mb-6">
-              Jordan's premier online marketplace for auctions and direct sales. Buy, sell, and discover amazing deals now2
+              Jordan's premier online marketplace for auctions and direct sales. Buy, sell, and discover amazing deals now
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-white text-mzad-primary hover:bg-gray-100">
-                <Link to="/browse">Browse Products</Link>
+              <Button 
+                size="lg" 
+                className="bg-white text-mzad-primary hover:bg-gray-100"
+                onClick={() => navigate('/browse')}
+              >
+                Browse Products
               </Button>
-              <Button size="lg" className="bg-mzad-accent text-mzad-dark hover:bg-mzad-accent/90">
-                <Link to="/sell">Start Selling</Link>
+              <Button 
+                size="lg" 
+                className="bg-mzad-accent text-mzad-dark hover:bg-mzad-accent/90"
+                onClick={() => navigate('/sell')}
+              >
+                Start Selling
               </Button>
             </div>
           </div>
