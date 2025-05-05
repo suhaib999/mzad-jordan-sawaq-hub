@@ -1,6 +1,6 @@
 
 import { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,7 @@ const RequireAuth = ({ children, message = "You need to be logged in to view thi
             <p className="text-gray-600 mb-6 text-center">
               {message}
             </p>
-            <Link to="/auth/login">
+            <Link to="/login">
               <Button>Login to continue</Button>
             </Link>
           </CardContent>
