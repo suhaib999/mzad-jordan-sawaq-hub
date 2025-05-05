@@ -1,10 +1,12 @@
+
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { fetchProductById } from '@/services/product';
+import { fetchHighestBid, formatTimeRemaining } from '@/services/biddingService';
 import { Badge } from '@/components/ui/badge';
-import { formatTimeRemaining } from '@/services/biddingService';
 import { WishlistButton } from './WishlistButton';
 
 export interface ProductCardProps {
@@ -35,6 +37,22 @@ const ProductCard: React.FC<ProductCardProps> = ({
   location
 }) => {
   const { addToCart } = useCart();
+  const [highestBid, setHighestBid] = useState<number | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
+  // Fetch highest bid if this is an auction
+  useEffect(() => {
+    if (isAuction) {
+      const getHighestBid = async () => {
+        const bidAmount = await fetchHighestBid(id);
+        if (bidAmount !== null) {
+          setHighestBid(bidAmount);
+        }
+      };
+      
+      getHighestBid();
+    }
+  }, [id, isAuction]);
   
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigating to product detail
@@ -54,18 +72,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const formattedTimeRemaining = endTime ? formatTimeRemaining(endTime) : '';
   const isEnded = formattedTimeRemaining === 'Auction ended';
   
-  // For auctions, display the current bid or starting price
-  const displayPrice = isAuction ? (currentBid || price) : price;
-  
+  // For auctions, display the highest bid, current bid or starting price
+  const displayPrice = isAuction ? (highestBid || currentBid || price) : price;
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
       <div className="relative">
         <Link to={`/product/${id}`}>
-          <img 
-            src={imageUrl} 
-            alt={title} 
-            className="w-full h-48 object-cover"
-          />
+          <div className="w-full h-48 bg-gray-100">
+            {!imageLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-200 animate-pulse">
+                <span className="text-gray-400 text-sm">Loading...</span>
+              </div>
+            )}
+            <img 
+              src={imageUrl} 
+              alt={title} 
+              className={`w-full h-48 object-cover ${!imageLoaded ? 'opacity-0' : 'opacity-100'}`}
+              onLoad={() => setImageLoaded(true)}
+              loading="lazy"
+            />
+          </div>
         </Link>
         <WishlistButton productId={id} variant="card" />
         

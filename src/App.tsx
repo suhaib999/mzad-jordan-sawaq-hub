@@ -1,76 +1,92 @@
 
-import { ReactNode } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Index from './pages/Index';
-import Login from './pages/Auth/Login';
-import Register from './pages/Auth/Register';
-import ResetPassword from './pages/Auth/ResetPassword';
-import NotFound from './pages/NotFound';
-import AuthLayout from './pages/Auth/AuthLayout';
-import ProductDetail from './pages/Product/ProductDetail';
-import AddProduct from './pages/Product/AddProduct';
-import BrowseProducts from './pages/Browse/BrowseProducts';
-import Profile from './pages/Profile/Profile';
-import MyListings from './pages/Profile/MyListings';
-import SellPage from './pages/Sell/SellPage';
-import CartPage from './pages/Cart/CartPage';
-import WishlistPage from './pages/Wishlist/WishlistPage';
-import SellerDashboard from './pages/Seller/SellerDashboard';
-import SellerAccount from './pages/Seller/SellerAccount';
-import SellerSubscriptions from './pages/Seller/SellerSubscriptions';
-import SellerProfile from './pages/Seller/SellerProfile';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from "./components/ui/toaster";
-import { AuthProvider } from './contexts/AuthContext';
-import { CartProvider } from './contexts/CartContext';
-import { ThemeProvider } from './contexts/ThemeContext';
-import './App.css';
-import './i18n'; // Import i18n configuration
+import { Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { CartProvider } from "@/contexts/CartContext";
+import { Suspense, lazy } from "react";
 
-const queryClient = new QueryClient();
+// Pages
+import Index from "@/pages/Index";
+import NotFound from "@/pages/NotFound";
+import ProductDetail from "@/pages/Product/ProductDetail";
+import AddProduct from "@/pages/Product/AddProduct";
+import BrowseProducts from "@/pages/Browse/BrowseProducts";
 
-function AppRoutes(): ReactNode {
-  return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/auth" element={<AuthLayout />}>
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-        <Route path="reset-password" element={<ResetPassword />} />
-      </Route>
-      <Route path="/product/:id" element={<ProductDetail />} />
-      <Route path="/add-product" element={<AddProduct />} />
-      <Route path="/browse" element={<BrowseProducts />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/my-listings" element={<MyListings />} />
-      <Route path="/sell" element={<SellPage />} />
-      <Route path="/cart" element={<CartPage />} />
-      <Route path="/wishlist" element={<WishlistPage />} />
-      <Route path="/seller/dashboard" element={<SellerDashboard />} />
-      <Route path="/seller/account" element={<SellerAccount />} />
-      <Route path="/seller/subscriptions" element={<SellerSubscriptions />} />
-      <Route path="/seller/profile/:sellerId" element={<SellerProfile />} />
-      <Route path="/seller/profile/:sellerId/feedback" element={<SellerProfile />} />
-      <Route path="/seller/profile/:sellerId/items" element={<SellerProfile />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-}
+// Auth
+import Login from "@/pages/Auth/Login";
+import Register from "@/pages/Auth/Register";
+import ResetPassword from "@/pages/Auth/ResetPassword";
+import RequireAuth from "@/components/auth/RequireAuth";
+
+// User account pages
+import Profile from "@/pages/Profile/Profile";
+import MyListings from "@/pages/Profile/MyListings";
+import WishlistPage from "@/pages/Wishlist/WishlistPage";
+import CartPage from "@/pages/Cart/CartPage";
+import SellPage from "@/pages/Sell/SellPage";
+
+// Seller pages
+import SellerDashboard from "@/pages/Seller/SellerDashboard";
+import SellerProfile from "@/pages/Seller/SellerProfile";
+import SellerSubscriptions from "@/pages/Seller/SellerSubscriptions";
+import SellerAccount from "@/pages/Seller/SellerAccount";
+
+// New messaging page
+import MessagesPage from "@/pages/Messages/MessagesPage";
+
+// Create a query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ThemeProvider>
-          <AuthProvider>
-            <CartProvider>
-              <AppRoutes />
-              <Toaster />
-            </CartProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <CartProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/browse" element={<BrowseProducts />} />
+            
+            {/* Auth routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            
+            {/* Protected routes */}
+            <Route element={<RequireAuth />}>
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/my-listings" element={<MyListings />} />
+              <Route path="/wishlist" element={<WishlistPage />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/sell" element={<SellPage />} />
+              <Route path="/add-product" element={<AddProduct />} />
+              <Route path="/messages" element={<MessagesPage />} />
+            </Route>
+            
+            {/* Seller routes */}
+            <Route path="/seller" element={<RequireAuth />}>
+              <Route path="dashboard" element={<SellerDashboard />} />
+              <Route path="profile/:sellerId" element={<SellerProfile />} />
+              <Route path="profile/:sellerId/feedback" element={<SellerProfile />} />
+              <Route path="subscriptions" element={<SellerSubscriptions />} />
+              <Route path="account" element={<SellerAccount />} />
+            </Route>
+            
+            {/* 404 route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Toaster />
+        </CartProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 

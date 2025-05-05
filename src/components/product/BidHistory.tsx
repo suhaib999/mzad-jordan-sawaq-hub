@@ -1,8 +1,7 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchBidHistory, Bid } from '@/services/biddingService';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { fetchHighestBid } from '@/services/biddingService';
 import { Clock, User } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
@@ -12,26 +11,21 @@ interface BidHistoryProps {
 }
 
 export const BidHistory: React.FC<BidHistoryProps> = ({ productId, currency }) => {
-  const { data: bids, isLoading, error } = useQuery({
-    queryKey: ['bids', productId],
-    queryFn: () => fetchBidHistory(productId),
-    refetchInterval: 60000, // Reduced refresh frequency to once per minute
+  const { data: highestBid, isLoading, error } = useQuery({
+    queryKey: ['highestBid', productId],
+    queryFn: () => fetchHighestBid(productId),
+    refetchInterval: 60000, // Refresh once per minute
   });
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString();
-  };
-
   if (isLoading) {
-    return <div className="text-center py-4">Loading bid history...</div>;
+    return <div className="text-center py-4">Loading highest bid...</div>;
   }
 
   if (error) {
-    return <div className="text-center py-4 text-red-500">Error loading bid history</div>;
+    return <div className="text-center py-4 text-red-500">Error loading bid information</div>;
   }
 
-  if (!bids || bids.length === 0) {
+  if (!highestBid) {
     return (
       <Card className="p-6 text-center py-8 text-gray-500 bg-gray-50">
         <p>No bids have been placed yet</p>
@@ -41,31 +35,16 @@ export const BidHistory: React.FC<BidHistoryProps> = ({ productId, currency }) =
   }
 
   return (
-    <ScrollArea className="h-[250px]">
-      <div className="space-y-2">
-        {bids.map((bid, index) => (
-          <div 
-            key={bid.id} 
-            className={`border-b border-gray-100 py-3 last:border-b-0 ${index === 0 ? 'bg-green-50 rounded-md p-2' : ''}`}
-          >
-            <div className="flex justify-between">
-              <div className="flex items-center">
-                <User className={`h-4 w-4 mr-2 ${index === 0 ? 'text-green-600' : 'text-gray-500'}`} />
-                <span className={`text-sm ${index === 0 ? 'font-bold text-green-700' : 'font-medium'}`}>
-                  {index === 0 ? 'Highest bidder' : `Bidder ${bid.bidder_id.substring(0, 5)}...`}
-                </span>
-              </div>
-              <span className={`text-sm ${index === 0 ? 'font-bold text-green-700' : 'font-bold'}`}>
-                {bid.amount.toFixed(2)} {currency}
-              </span>
-            </div>
-            <div className="flex items-center mt-1 text-xs text-gray-500">
-              <Clock className="h-3 w-3 mr-1" />
-              <span>{formatDate(bid.created_at)}</span>
-            </div>
-          </div>
-        ))}
+    <Card className="p-6">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center">
+          <User className="h-4 w-4 mr-2 text-green-600" />
+          <span className="text-sm font-bold text-green-700">Highest bid</span>
+        </div>
+        <span className="font-bold text-green-700">
+          {highestBid.toFixed(2)} {currency}
+        </span>
       </div>
-    </ScrollArea>
+    </Card>
   );
 };

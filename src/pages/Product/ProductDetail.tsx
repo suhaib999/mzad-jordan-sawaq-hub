@@ -31,11 +31,10 @@ const ProductDetail = () => {
     }
   };
 
-  // Update recently viewed products - separate from product fetching
+  // Update recently viewed products
   useEffect(() => {
     if (id) {
       setRecentlyViewedProducts(prev => {
-        // Avoid unnecessary updates by checking if id is already at the end
         if (prev[prev.length - 1] === id) {
           return prev;
         }
@@ -88,8 +87,7 @@ const ProductDetail = () => {
         };
       });
       
-      // Also refetch product data to ensure we have the latest from the server
-      // with a slight delay to ensure the DB update has propagated
+      // Refetch product data with a slight delay
       setTimeout(() => {
         fetchProductData();
       }, 1000);
@@ -175,16 +173,14 @@ const ProductDetail = () => {
           </div>
         </div>
         
-        {/* Bid history section (only for auctions) */}
+        {/* Highest bid section (only for auctions) */}
         {product.is_auction && (
           <div className="mt-8">
             <h2 className="text-xl font-semibold mb-4 flex items-center">
               <Gavel className="mr-2 h-5 w-5" />
-              Bid History
+              Current Highest Bid
             </h2>
-            <Card className="p-4">
-              <BidHistory productId={product.id} currency={product.currency} />
-            </Card>
+            <BidHistory productId={product.id} currency={product.currency} />
           </div>
         )}
       </div>
