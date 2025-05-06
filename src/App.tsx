@@ -13,6 +13,7 @@ import NotFound from "@/pages/NotFound";
 import ProductDetail from "@/pages/Product/ProductDetail";
 import AddProduct from "@/pages/Product/AddProduct";
 import BrowseProducts from "@/pages/Browse/BrowseProducts";
+import BidPage from "@/pages/Bids/BidPage";
 
 // Auth
 import Login from "@/pages/Auth/Login";
@@ -32,6 +33,7 @@ import SellerDashboard from "@/pages/Seller/SellerDashboard";
 import SellerProfile from "@/pages/Seller/SellerProfile";
 import SellerSubscriptions from "@/pages/Seller/SellerSubscriptions";
 import SellerAccount from "@/pages/Seller/SellerAccount";
+import SavedSellersPage from "@/pages/Seller/SavedSellersPage";
 
 // New messaging page
 import MessagesPage from "@/pages/Messages/MessagesPage";
@@ -74,10 +76,12 @@ function App() {
               <Route path="/sell" element={<RequireAuth><SellPage /></RequireAuth>} />
               <Route path="/add-product" element={<RequireAuth><AddProduct /></RequireAuth>} />
               <Route path="/messages" element={<RequireAuth><MessagesPage /></RequireAuth>} />
+              <Route path="/my-bids" element={<RequireAuth><BidPage /></RequireAuth>} />
+              <Route path="/saved-sellers" element={<RequireAuth><SavedSellersPage /></RequireAuth>} />
               
               {/* Seller routes */}
               <Route path="/seller/dashboard" element={<RequireAuth><SellerDashboard /></RequireAuth>} />
-              <Route path="/seller/profile/:sellerId" element={<RequireAuth><SellerProfile /></RequireAuth>} />
+              <Route path="/seller/profile/:sellerId" element={<SellerProfile />} />
               <Route path="/seller/profile/:sellerId/feedback" element={<RequireAuth><SellerProfile /></RequireAuth>} />
               <Route path="/seller/subscriptions" element={<RequireAuth><SellerSubscriptions /></RequireAuth>} />
               <Route path="/seller/account" element={<RequireAuth><SellerAccount /></RequireAuth>} />

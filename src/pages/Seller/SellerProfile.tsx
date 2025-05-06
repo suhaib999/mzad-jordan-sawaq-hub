@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Star, Package, MessageCircle, User, ThumbsUp } from 'lucide-react';
+import { Star, Package, MessageCircle, User, ThumbsUp, BookmarkPlus } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,10 +16,13 @@ import { mapProductToCardProps } from '@/services/product/mappers';
 import { toast } from 'sonner';
 import { SellerFeedbackSummary } from '@/components/feedback/SellerFeedbackSummary';
 import { calculateFeedbackStats } from '@/services/feedbackService';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export const SellerProfile = () => {
   const { sellerId } = useParams<{ sellerId: string }>();
-  const [isFollowing, setIsFollowing] = React.useState(false);
+  const [isSavedSeller, setIsSavedSeller] = React.useState(false);
+  const { user } = useAuth();
   
   const { data: sellerProfile, isLoading: isLoadingProfile } = useQuery({
     queryKey: ['profile', sellerId],
@@ -39,18 +42,92 @@ export const SellerProfile = () => {
     enabled: !!sellerId,
   });
 
-  const handleFollowClick = () => {
-    setIsFollowing(!isFollowing);
-    if (!isFollowing) {
-      toast.success(`You are now following ${displayName}`, {
-        description: "You'll receive updates when they list new items",
-        duration: 3000,
+  // Check if seller is already saved by the user
+  useEffect(() => {
+    const checkSavedSeller = async () => {
+      if (!user || !sellerId) return;
+      
+      const { data, error } = await supabase
+        .from('saved_sellers')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('seller_id', sellerId)
+        .single();
+      
+      if (data && !error) {
+        setIsSavedSeller(true);
+      }
+    };
+    
+    checkSavedSeller();
+  }, [user, sellerId]);
+
+  const handleSaveSellerClick = async () => {
+    if (!user) {
+      toast.error("Please sign in to save this seller", {
+        description: "You need to be logged in to save sellers",
+        action: {
+          label: "Sign In",
+          onClick: () => window.location.href = "/login"
+        }
       });
-    } else {
-      toast.info(`You've unfollowed ${displayName}`, {
-        duration: 2000,
-      });
+      return;
     }
+
+    if (!sellerId) return;
+
+    try {
+      if (isSavedSeller) {
+        // Remove from saved sellers
+        const { error } = await supabase
+          .from('saved_sellers')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('seller_id', sellerId);
+
+        if (error) throw error;
+        
+        setIsSavedSeller(false);
+        toast.success(`You've removed ${displayName} from your saved sellers`);
+      } else {
+        // Add to saved sellers
+        const { error } = await supabase
+          .from('saved_sellers')
+          .insert([
+            { 
+              user_id: user.id, 
+              seller_id: sellerId,
+              seller_name: sellerProfile?.username || sellerProfile?.full_name || `User ${sellerId.substring(0, 5)}`
+            }
+          ]);
+
+        if (error) throw error;
+        
+        setIsSavedSeller(true);
+        toast.success(`${displayName} saved to your sellers list`, {
+          description: "You'll see this seller in your saved sellers",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error("Error updating saved seller:", error);
+      toast.error("Unable to update saved sellers");
+    }
+  };
+
+  const handleContactSellerClick = () => {
+    if (!user) {
+      toast.error("Please sign in to contact this seller", {
+        description: "You need to be logged in to send messages",
+        action: {
+          label: "Sign In",
+          onClick: () => window.location.href = "/login"
+        }
+      });
+      return;
+    }
+    
+    window.location.href = "/messages?new=true&recipient=" + sellerId;
   };
 
   if (!sellerId) {
@@ -119,15 +196,17 @@ export const SellerProfile = () => {
                 </div>
               </div>
               <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
-                <Button className="flex items-center">
+                <Button className="flex items-center" onClick={handleContactSellerClick}>
                   <MessageCircle className="mr-2" />
                   Contact
                 </Button>
                 <Button 
-                  variant={isFollowing ? "default" : "outline"}
-                  onClick={handleFollowClick}
+                  variant={isSavedSeller ? "default" : "outline"}
+                  onClick={handleSaveSellerClick}
+                  className={isSavedSeller ? "bg-mzad-primary" : ""}
                 >
-                  {isFollowing ? 'Following' : 'Follow'}
+                  <BookmarkPlus className="mr-2 h-4 w-4" />
+                  {isSavedSeller ? 'Saved Seller' : 'Save Seller'}
                 </Button>
               </div>
             </div>

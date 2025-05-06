@@ -12,7 +12,11 @@ import {
   MessageSquare,
   Settings,
   LogIn,
-  LogOut
+  LogOut,
+  Clock,
+  History,
+  Bookmark,
+  Gavel
 } from 'lucide-react';
 
 interface MobileMenuProps {
@@ -79,13 +83,35 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ onClose, isLoggedIn, onSignOut 
                 </Link>
                 
                 <Link
-                  to="/profile"
+                  to="/my-bids"
                   className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-md"
                   onClick={onClose}
                 >
-                  <User className="mr-3 h-5 w-5 text-mzad-primary" />
-                  My Profile
+                  <Gavel className="mr-3 h-5 w-5 text-mzad-primary" />
+                  Bids/Offers
                 </Link>
+                
+                <Link
+                  to="/recently-viewed"
+                  className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  <Clock className="mr-3 h-5 w-5 text-mzad-primary" />
+                  Recently Viewed
+                </Link>
+                
+                <Link
+                  to="/purchase-history"
+                  className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  <History className="mr-3 h-5 w-5 text-mzad-primary" />
+                  Purchase History
+                </Link>
+                
+                <div className="pt-2 pb-1 px-4">
+                  <div className="text-xs uppercase text-gray-500 font-semibold">Selling</div>
+                </div>
                 
                 <Link
                   to="/my-listings"
@@ -94,6 +120,15 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ onClose, isLoggedIn, onSignOut 
                 >
                   <PlusSquare className="mr-3 h-5 w-5 text-mzad-primary" />
                   My Listings
+                </Link>
+                
+                <Link
+                  to="/saved-sellers"
+                  className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  <Bookmark className="mr-3 h-5 w-5 text-mzad-primary" />
+                  Saved Sellers
                 </Link>
                 
                 <Link
@@ -115,6 +150,15 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ onClose, isLoggedIn, onSignOut 
                 </Link>
                 
                 <hr className="my-4" />
+                
+                <Link
+                  to="/profile"
+                  className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  <User className="mr-3 h-5 w-5 text-mzad-primary" />
+                  My Profile
+                </Link>
                 
                 <Link
                   to="/settings"

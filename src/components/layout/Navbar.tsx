@@ -12,6 +12,7 @@ import SearchBox from '@/components/search/SearchBox';
 import { Badge } from '@/components/ui/badge';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
+import UserDropdownMenu from './UserDropdownMenu';
 
 const Navbar = ({ toggleMobileMenu }: { toggleMobileMenu: () => void }) => {
   const { t } = useTranslation();
@@ -86,52 +87,8 @@ const Navbar = ({ toggleMobileMenu }: { toggleMobileMenu: () => void }) => {
                 </Button>
               </div>
               
-              {/* Profile dropdown menu */}
-              <div className="relative" ref={profileMenuRef}>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="flex items-center gap-1" 
-                  onClick={toggleProfileMenu}
-                >
-                  <div className="w-8 h-8 rounded-full bg-mzad-primary text-white flex items-center justify-center">
-                    <User className="h-4 w-4" />
-                  </div>
-                  <ChevronDown className="h-3 w-3" />
-                </Button>
-                
-                {isProfileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
-                    <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
-                      My Profile
-                    </Link>
-                    <Link to="/my-listings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
-                      My Listings
-                    </Link>
-                    <Link to="/my-bids" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
-                      My Bids
-                    </Link>
-                    <Link to="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
-                      Wishlist
-                    </Link>
-                    <Link to="/notifications" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
-                      Notifications
-                    </Link>
-                    <Link to="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
-                      Settings
-                    </Link>
-                    <button 
-                      onClick={() => {
-                        signOut();
-                        setIsProfileMenuOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Sign out
-                    </button>
-                  </div>
-                )}
-              </div>
+              {/* User dropdown menu */}
+              <UserDropdownMenu />
             </>
           ) : (
             <>
