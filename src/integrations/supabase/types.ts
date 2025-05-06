@@ -133,6 +133,7 @@ export type Database = {
           id: string
           is_auction: boolean
           location: string | null
+          main_image_url: string | null
           price: number
           reserve_price: number | null
           seller_id: string
@@ -153,6 +154,7 @@ export type Database = {
           id?: string
           is_auction?: boolean
           location?: string | null
+          main_image_url?: string | null
           price: number
           reserve_price?: number | null
           seller_id: string
@@ -173,6 +175,7 @@ export type Database = {
           id?: string
           is_auction?: boolean
           location?: string | null
+          main_image_url?: string | null
           price?: number
           reserve_price?: number | null
           seller_id?: string
@@ -217,6 +220,30 @@ export type Database = {
           phone_number?: string | null
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      saved_sellers: {
+        Row: {
+          created_at: string
+          id: string
+          seller_id: string
+          seller_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          seller_id: string
+          seller_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          seller_id?: string
+          seller_name?: string
+          user_id?: string
         }
         Relationships: []
       }

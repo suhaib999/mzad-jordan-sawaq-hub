@@ -21,10 +21,10 @@ interface BidRecord {
   product: {
     id: string;
     title: string;
-    main_image_url: string;
+    main_image_url: string | null;
     price: number;
-    current_bid: number;
-    end_time: string;
+    current_bid: number | null;
+    end_time: string | null;
     seller_id: string;
     status: string;
     currency: string;
@@ -64,7 +64,7 @@ const BidPage = () => {
         throw error;
       }
 
-      return data as BidRecord[];
+      return data as unknown as BidRecord[];
     },
     enabled: !!user?.id,
   });
@@ -74,7 +74,7 @@ const BidPage = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, images:product_images(*)')
         .eq('is_auction', true)
         .gt('end_time', new Date().toISOString())
         .limit(8);
@@ -90,9 +90,9 @@ const BidPage = () => {
 
   const renderBidStatus = (bid: BidRecord) => {
     // Check if auction ended
-    const endTime = new Date(bid.product.end_time);
+    const endTime = bid.product.end_time ? new Date(bid.product.end_time) : null;
     const now = new Date();
-    const isEnded = endTime < now;
+    const isEnded = endTime && endTime < now;
 
     // Check if user is the highest bidder
     const isHighestBidder = bid.amount >= (bid.product.current_bid || 0);
@@ -112,7 +112,9 @@ const BidPage = () => {
     }
   };
 
-  const formatTimeLeft = (endTime: string) => {
+  const formatTimeLeft = (endTime: string | null) => {
+    if (!endTime) return 'No end time set';
+    
     const end = new Date(endTime);
     const now = new Date();
     
@@ -173,7 +175,7 @@ const BidPage = () => {
                             </div>
                             
                             <div className="flex flex-col gap-2">
-                              {new Date(bid.product.end_time) > new Date() && (
+                              {bid.product.end_time && new Date(bid.product.end_time) > new Date() && (
                                 <div className="flex items-center text-sm">
                                   <Clock className="h-4 w-4 mr-1 text-amber-500" />
                                   <span>{formatTimeLeft(bid.product.end_time)} left</span>

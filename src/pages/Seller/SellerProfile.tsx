@@ -47,15 +47,20 @@ export const SellerProfile = () => {
     const checkSavedSeller = async () => {
       if (!user || !sellerId) return;
       
-      const { data, error } = await supabase
-        .from('saved_sellers')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('seller_id', sellerId)
-        .single();
-      
-      if (data && !error) {
-        setIsSavedSeller(true);
+      try {
+        const { data, error } = await supabase
+          .from('saved_sellers')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('seller_id', sellerId)
+          .single();
+        
+        if (data && !error) {
+          setIsSavedSeller(true);
+        }
+      } catch (error) {
+        // Single throws error when no results, which is expected sometimes
+        console.log('Seller not saved yet');
       }
     };
     
@@ -101,7 +106,10 @@ export const SellerProfile = () => {
             }
           ]);
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error inserting saved seller:", error);
+          throw error;
+        }
         
         setIsSavedSeller(true);
         toast.success(`${displayName} saved to your sellers list`, {

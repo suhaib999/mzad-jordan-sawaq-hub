@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { User, Store, MessageSquare, Trash, PackageSearch, Bookmark } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import Layout from '@/components/layout/Layout';
 import { fetchProfile } from '@/services/profileService';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,54 +34,52 @@ const SavedSellersPage = () => {
   const { data: savedSellers, isLoading, refetch } = useQuery({
     queryKey: ['saved-sellers', user?.id],
     queryFn: async () => {
-      // Mock data for demonstration - would be replaced with actual Supabase query
-      return [
-        {
-          id: '1',
-          user_id: user?.id,
-          seller_id: 'seller-1',
-          seller_name: 'Tech Gadgets Store',
-          created_at: new Date().toISOString(),
-          profile: {
-            avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Tech',
-            location: 'Amman, Jordan',
-            username: 'techgadgets'
+      if (!user?.id) throw new Error('User not authenticated');
+      
+      const { data, error } = await supabase
+        .from('saved_sellers')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching saved sellers:', error);
+        throw error;
+      }
+      
+      // If no data, return empty array
+      if (!data || data.length === 0) {
+        return [];
+      }
+
+      // Fetch profile details for each seller
+      const sellersWithProfiles = await Promise.all(
+        data.map(async (seller) => {
+          try {
+            const profile = await fetchProfile(seller.seller_id);
+            return { ...seller, profile };
+          } catch (error) {
+            console.error(`Error fetching profile for seller ${seller.seller_id}:`, error);
+            return seller;
           }
-        },
-        {
-          id: '2',
-          user_id: user?.id,
-          seller_id: 'seller-2',
-          seller_name: 'Vintage Collectibles',
-          created_at: new Date(Date.now() - 86400000).toISOString(),
-          profile: {
-            avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Vintage',
-            location: 'Irbid, Jordan',
-            username: 'vintagecollectibles'
-          }
-        },
-        {
-          id: '3',
-          user_id: user?.id,
-          seller_id: 'ad9b2785-ee18-4c85-89e8-e4793e59c1eb',
-          seller_name: 'Sarah\'s Boutique',
-          created_at: new Date(Date.now() - 172800000).toISOString(),
-          profile: {
-            avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
-            location: 'Aqaba, Jordan',
-            full_name: 'Sarah Ahmed',
-            username: 'sarahboutique'
-          }
-        }
-      ] as SavedSeller[];
+        })
+      );
+      
+      return sellersWithProfiles as SavedSeller[];
     },
     enabled: !!user?.id,
   });
 
   const handleRemoveSeller = async (sellerId: string, sellerName: string) => {
     try {
-      // In a real app, this would delete from Supabase
-      // For now, we'll just simulate it
+      const { error } = await supabase
+        .from('saved_sellers')
+        .delete()
+        .eq('user_id', user?.id || '')
+        .eq('seller_id', sellerId);
+      
+      if (error) throw error;
+      
       toast.success(`${sellerName} removed from your saved sellers`);
       refetch(); // Refresh the list after removal
     } catch (error) {
