@@ -4,39 +4,48 @@ import {
   Smartphone, Laptop, Camera, Car, Home, ShoppingBag, 
   Watch, Gem, Tv, Shirt, Briefcase, Dumbbell
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const categories = [
-  { name: 'Electronics', icon: Smartphone, slug: 'electronics' },
-  { name: 'Computers', icon: Laptop, slug: 'computers-laptops' },
-  { name: 'Cameras', icon: Camera, slug: 'cameras' },
-  { name: 'Vehicles', icon: Car, slug: 'vehicles' },
-  { name: 'Home & Garden', icon: Home, slug: 'home-garden' },
-  { name: 'Fashion', icon: Shirt, slug: 'womens-fashion' },
-  { name: 'Collectibles', icon: ShoppingBag, slug: 'books-hobbies' },
-  { name: 'Jewelry & Watches', icon: Watch, slug: 'womens-fashion/jewelry' },
-  { name: 'Luxury', icon: Gem, slug: 'mens-fashion' },
-  { name: 'Consumer Electronics', icon: Tv, slug: 'electronics/tv-audio' },
-  { name: 'Business & Industrial', icon: Briefcase, slug: 'business-equipment' },
-  { name: 'Sporting Goods', icon: Dumbbell, slug: 'sports-fitness' }
+  { name: 'Electronics', icon: Smartphone, slug: 'electronics', count: 1245 },
+  { name: 'Computers', icon: Laptop, slug: 'computers-laptops', count: 876 },
+  { name: 'Cameras', icon: Camera, slug: 'cameras', count: 543 },
+  { name: 'Vehicles', icon: Car, slug: 'vehicles', count: 328 },
+  { name: 'Home & Garden', icon: Home, slug: 'home-garden', count: 1087 },
+  { name: 'Fashion', icon: Shirt, slug: 'womens-fashion', count: 2156 },
+  { name: 'Collectibles', icon: ShoppingBag, slug: 'books-hobbies', count: 654 },
+  { name: 'Jewelry & Watches', icon: Watch, slug: 'womens-fashion/jewelry', count: 432 },
+  { name: 'Luxury', icon: Gem, slug: 'mens-fashion', count: 218 },
+  { name: 'Consumer Electronics', icon: Tv, slug: 'electronics/tv-audio', count: 765 },
+  { name: 'Business & Industrial', icon: Briefcase, slug: 'business-equipment', count: 321 },
+  { name: 'Sporting Goods', icon: Dumbbell, slug: 'sports-fitness', count: 546 }
 ];
 
 const CategoriesSection = () => {
   return (
     <div className="py-10 bg-gray-50 rounded-lg">
       <div className="container mx-auto px-4">
-        <h2 className="text-2xl font-bold mb-8 text-center">Shop by Category</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Shop by Category</h2>
+          <Link to="/browse" className="text-mzad-primary hover:underline text-sm font-medium">
+            View All Categories
+          </Link>
+        </div>
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {categories.map((category, index) => (
             <Link 
               key={index}
               to={`/browse?category=${category.slug}`}
-              className="flex flex-col items-center justify-center bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200"
+              className="flex flex-col items-center justify-center bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 group"
             >
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-mzad-primary mb-3">
+              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-mzad-primary mb-3 group-hover:bg-mzad-primary group-hover:text-white transition-colors">
                 <category.icon size={24} />
               </div>
               <span className="text-sm font-medium text-center">{category.name}</span>
+              <Badge variant="outline" className="mt-2 text-xs bg-gray-50">
+                {category.count} items
+              </Badge>
             </Link>
           ))}
         </div>

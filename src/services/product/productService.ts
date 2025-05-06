@@ -13,18 +13,22 @@ export const fetchProducts = async (
     console.log("Fetching products with params:", filterParams);
     
     // First execute a count query separately to avoid type issues
-    const countQuery = await supabase
+    const countQuery = supabase
       .from('products')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'active');
     
-    if (countQuery.error) {
-      console.error('Error in count query:', countQuery.error);
-      throw new Error(`Count query failed: ${countQuery.error.message}`);
+    // Apply filters to the count query
+    const filteredCountQuery = applyFilters(countQuery, filterParams);
+    const { count: countValue, error: countError } = await filteredCountQuery;
+    
+    if (countError) {
+      console.error('Error in count query:', countError);
+      throw new Error(`Count query failed: ${countError.message}`);
     }
     
-    const countValue = countQuery.count || 0;
-    console.log("Total count:", countValue);
+    const totalCount = countValue || 0;
+    console.log("Total count:", totalCount);
 
     // Build and execute the data query
     const query = supabase
@@ -57,7 +61,7 @@ export const fetchProducts = async (
 
     return { 
       products: productsWithMainImage, 
-      count: countValue
+      count: totalCount
     };
   } catch (error) {
     console.error('Error in fetchProducts:', error);
@@ -132,5 +136,68 @@ export const fetchProductById = async (id: string): Promise<ProductWithImages | 
   } catch (error) {
     console.error('Error in fetchProductById:', error);
     return null;
+  }
+};
+
+// New function to fetch featured products by category
+export const fetchFeaturedProductsByCategory = async (
+  categorySlug: string,
+  limit: number = 4
+): Promise<ProductWithImages[]> => {
+  try {
+    console.log("Fetching featured products for category:", categorySlug);
+    
+    const query = supabase
+      .from('products')
+      .select('*, images:product_images(*)')
+      .eq('status', 'active');
+    
+    // Apply category filter if provided
+    if (categorySlug && categorySlug !== 'all') {
+      query.ilike('category', `%${categorySlug}%`);
+    }
+    
+    // Get latest products
+    const { data, error } = await query
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching category products:', error);
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
+    
+    return processProductData(data);
+  } catch (error) {
+    console.error('Error in fetchFeaturedProductsByCategory:', error);
+    return [];
+  }
+};
+
+// New function to search products with advanced filtering
+export const searchProducts = async (
+  searchQuery: string,
+  filters: ProductFilterParams = {},
+  page: number = 1,
+  pageSize: number = 24
+): Promise<{ products: ProductWithImages[]; count: number }> => {
+  try {
+    const offset = (page - 1) * pageSize;
+    
+    // Add search query to filters
+    const searchFilters: ProductFilterParams = {
+      ...filters,
+      query: searchQuery
+    };
+    
+    // Use the existing fetchProducts function with pagination
+    return fetchProducts(pageSize, offset, searchFilters);
+  } catch (error) {
+    console.error('Error in searchProducts:', error);
+    return { products: [], count: 0 };
   }
 };

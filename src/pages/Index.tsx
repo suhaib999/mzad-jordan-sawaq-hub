@@ -15,9 +15,9 @@ const Index = () => {
       <HeroBanner />
       <div className="container mx-auto px-4 py-8">
         <CategoriesSection />
-        <ShoppingForSection />
-        <TrendingSection />
         <ProductSections />
+        <TrendingSection />
+        <ShoppingForSection />
         <RecentlyViewedSection />
         <SellCTA />
       </div>

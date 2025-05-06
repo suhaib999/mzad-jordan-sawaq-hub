@@ -1,16 +1,22 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import ProductGrid from '@/components/product/ProductGrid';
 import { useQuery } from '@tanstack/react-query';
 import { fetchProducts, mapProductToCardProps } from '@/services/product';
 import { placeholderFeaturedProducts, placeholderAuctionProducts } from '@/data/placeholderProducts';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const ProductSections = () => {
+  const [activeTab, setActiveTab] = React.useState<string>("featured");
+  
   // Fetch featured (non-auction) products
   const { data: featuredProductsData = {products: [], count: 0}, isLoading: isFeaturedLoading } = useQuery({
     queryKey: ['featuredProducts'],
     queryFn: async () => {
-      return fetchProducts(5, 0, { is_auction: false });
+      return fetchProducts(8, 0, { is_auction: false });
     }
   });
 
@@ -18,7 +24,7 @@ const ProductSections = () => {
   const { data: auctionProductsData = {products: [], count: 0}, isLoading: isAuctionLoading } = useQuery({
     queryKey: ['auctionProducts'],
     queryFn: async () => {
-      return fetchProducts(5, 0, { is_auction: true });
+      return fetchProducts(8, 0, { is_auction: true });
     }
   });
 
@@ -31,37 +37,90 @@ const ProductSections = () => {
 
   return (
     <div className="mt-12">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Featured Products</h2>
+        <Tabs defaultValue="featured" className="w-[400px]" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="featured">Featured</TabsTrigger>
+            <TabsTrigger value="auctions">Hot Auctions</TabsTrigger>
+            <TabsTrigger value="recently">Recently Added</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+      
       {showPlaceholders ? (
-        <>
+        <TabsContent value={activeTab} forceMount={true} hidden={activeTab !== 'featured'}>
           <ProductGrid 
-            title="Featured Products" 
             products={placeholderFeaturedProducts} 
             viewAllLink="/browse?type=fixed" 
           />
           
-          <ProductGrid 
-            title="Hot Auctions" 
-            products={placeholderAuctionProducts} 
-            viewAllLink="/browse?type=auction" 
-          />
-        </>
+          <div className="flex justify-center mt-8">
+            <Button variant="outline" className="gap-2" asChild>
+              <Link to="/browse?type=fixed">
+                View All Products <ArrowRight size={16} />
+              </Link>
+            </Button>
+          </div>
+        </TabsContent>
       ) : (
         <>
-          {featuredProducts.length > 0 && (
-            <ProductGrid 
-              title="Featured Products" 
-              products={featuredProducts} 
-              viewAllLink="/browse?type=fixed" 
-            />
-          )}
+          <TabsContent value="featured" forceMount={true} hidden={activeTab !== 'featured'}>
+            {featuredProducts.length > 0 && (
+              <>
+                <ProductGrid 
+                  products={featuredProducts} 
+                  viewAllLink="/browse?type=fixed" 
+                />
+                
+                <div className="flex justify-center mt-8">
+                  <Button variant="outline" className="gap-2" asChild>
+                    <Link to="/browse?type=fixed">
+                      View All Products <ArrowRight size={16} />
+                    </Link>
+                  </Button>
+                </div>
+              </>
+            )}
+          </TabsContent>
           
-          {auctionProducts.length > 0 && (
-            <ProductGrid 
-              title="Hot Auctions" 
-              products={auctionProducts} 
-              viewAllLink="/browse?type=auction" 
-            />
-          )}
+          <TabsContent value="auctions" forceMount={true} hidden={activeTab !== 'auctions'}>
+            {auctionProducts.length > 0 && (
+              <>
+                <ProductGrid 
+                  products={auctionProducts} 
+                  viewAllLink="/browse?type=auction" 
+                />
+                
+                <div className="flex justify-center mt-8">
+                  <Button variant="outline" className="gap-2" asChild>
+                    <Link to="/browse?type=auction">
+                      View All Auctions <ArrowRight size={16} />
+                    </Link>
+                  </Button>
+                </div>
+              </>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="recently" forceMount={true} hidden={activeTab !== 'recently'}>
+            {featuredProducts.length > 0 && (
+              <>
+                <ProductGrid 
+                  products={[...featuredProducts].sort(() => Math.random() - 0.5).slice(0, 6)} 
+                  viewAllLink="/browse?sort=newest" 
+                />
+                
+                <div className="flex justify-center mt-8">
+                  <Button variant="outline" className="gap-2" asChild>
+                    <Link to="/browse?sort=newest">
+                      View Recently Added <ArrowRight size={16} />
+                    </Link>
+                  </Button>
+                </div>
+              </>
+            )}
+          </TabsContent>
         </>
       )}
     </div>
