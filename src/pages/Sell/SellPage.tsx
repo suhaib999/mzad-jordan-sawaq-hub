@@ -1,157 +1,139 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, BadgeCheck, CircleDollarSign, Package, ShieldCheck } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import RequireAuth from '@/components/auth/RequireAuth';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tag, Package, Settings, ShieldCheck, ArrowRight, Layers, Plus } from 'lucide-react';
 
 const SellPage = () => {
-  const { user } = useAuth();
-  
+  const { session } = useAuth();
+  const isLoggedIn = !!session?.user;
+
   return (
     <Layout>
-      <RequireAuth message="You need to be logged in to start selling">
-        <div className="container mx-auto py-8 px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-10">
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">Start Selling on MzadKumSooq</h1>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Join thousands of sellers and turn your items into cash. Selling on MzadKumSooq is easy, secure, and effective.
+      <div className="container mx-auto py-8 px-4">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-3xl font-bold mb-2">Start Selling</h1>
+          <p className="text-gray-600 mb-8">
+            Create a listing and reach thousands of potential buyers today.
+          </p>
+
+          {!isLoggedIn ? (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+              <h2 className="font-semibold text-xl text-blue-800 mb-2">
+                Please sign in to sell
+              </h2>
+              <p className="text-blue-600 mb-4">
+                You need to be signed in to create listings and sell items.
               </p>
+              <div className="flex space-x-4">
+                <Button asChild>
+                  <Link to="/auth/login">Sign In</Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link to="/auth/register">Create Account</Link>
+                </Button>
+              </div>
             </div>
-            
-            <div className="grid md:grid-cols-3 gap-6 mb-12">
-              <Card>
-                <CardHeader>
-                  <CircleDollarSign className="h-10 w-10 text-mzad-secondary mb-2" />
-                  <CardTitle>Earn Money</CardTitle>
-                  <CardDescription>Turn unused items into cash quickly</CardDescription>
-                </CardHeader>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <Package className="h-10 w-10 text-mzad-secondary mb-2" />
-                  <CardTitle>Easy Listings</CardTitle>
-                  <CardDescription>Create listings in minutes with our simple tools</CardDescription>
-                </CardHeader>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <ShieldCheck className="h-10 w-10 text-mzad-secondary mb-2" />
-                  <CardTitle>Secure Payments</CardTitle>
-                  <CardDescription>Our secure platform protects both buyers and sellers</CardDescription>
-                </CardHeader>
-              </Card>
-            </div>
-            
-            <Card className="mb-12">
-              <CardHeader>
-                <CardTitle>How It Works</CardTitle>
-                <CardDescription>Follow these simple steps to start selling</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="flex gap-4">
-                    <div className="bg-mzad-secondary rounded-full h-8 w-8 flex items-center justify-center text-white font-bold shrink-0">
-                      1
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                <Card className="border-2 border-mzad-primary overflow-hidden shadow hover:shadow-md transition-shadow">
+                  <CardHeader className="bg-mzad-primary/5">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-xl">New Listing</CardTitle>
+                        <CardDescription>Create a listing from scratch</CardDescription>
+                      </div>
+                      <Plus size={24} className="text-mzad-primary" />
                     </div>
-                    <div>
-                      <h3 className="font-medium text-lg">Create your listing</h3>
-                      <p className="text-gray-600">Take clear photos and write a detailed description of your item.</p>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <ul className="space-y-3">
+                      <li className="flex items-center gap-2">
+                        <Tag size={18} className="text-mzad-primary" />
+                        <span>Fixed price or auction options</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Layers size={18} className="text-mzad-primary" />
+                        <span>Bulk selling with inventory tracking</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <ShieldCheck size={18} className="text-mzad-primary" />
+                        <span>Category-specific attributes</span>
+                      </li>
+                    </ul>
+                  </CardContent>
+                  <CardFooter className="pt-2">
+                    <Button className="w-full" asChild>
+                      <Link to="/sell/create">
+                        Start Creating <ArrowRight size={16} className="ml-1" />
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+
+                <Card className="overflow-hidden shadow hover:shadow-md transition-shadow">
+                  <CardHeader className="bg-gray-50">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-xl">Legacy Form</CardTitle>
+                        <CardDescription>Use the previous listing form</CardDescription>
+                      </div>
+                      <Settings size={24} className="text-gray-400" />
                     </div>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <ul className="space-y-3">
+                      <li className="flex items-center gap-2">
+                        <Package size={18} className="text-gray-500" />
+                        <span>Basic listing features</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Tag size={18} className="text-gray-500" />
+                        <span>Fixed price and auction options</span>
+                      </li>
+                    </ul>
+                  </CardContent>
+                  <CardFooter className="pt-2">
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link to="/sell/add-product">
+                        Use Legacy Form
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h2 className="font-semibold text-xl mb-4">Selling Tips</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <h3 className="font-medium mb-2">Great Photos</h3>
+                    <p className="text-sm text-gray-600">
+                      Take clear, well-lit photos from multiple angles to show your item's condition.
+                    </p>
                   </div>
-                  
-                  <div className="flex gap-4">
-                    <div className="bg-mzad-secondary rounded-full h-8 w-8 flex items-center justify-center text-white font-bold shrink-0">
-                      2
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-lg">Set your price</h3>
-                      <p className="text-gray-600">Choose a competitive price or enable auction mode to let buyers bid.</p>
-                    </div>
+                  <div>
+                    <h3 className="font-medium mb-2">Accurate Description</h3>
+                    <p className="text-sm text-gray-600">
+                      Be honest about the condition and include all relevant details about your item.
+                    </p>
                   </div>
-                  
-                  <div className="flex gap-4">
-                    <div className="bg-mzad-secondary rounded-full h-8 w-8 flex items-center justify-center text-white font-bold shrink-0">
-                      3
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-lg">Connect with buyers</h3>
-                      <p className="text-gray-600">Respond to inquiries and arrange for delivery or pickup once sold.</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-4">
-                    <div className="bg-mzad-secondary rounded-full h-8 w-8 flex items-center justify-center text-white font-bold shrink-0">
-                      4
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-lg">Get paid</h3>
-                      <p className="text-gray-600">Receive payment securely through our platform or in person.</p>
-                    </div>
+                  <div>
+                    <h3 className="font-medium mb-2">Fair Pricing</h3>
+                    <p className="text-sm text-gray-600">
+                      Research similar items to set a competitive price that will attract buyers.
+                    </p>
                   </div>
                 </div>
-              </CardContent>
-              <CardFooter>
-                <Link to="/add-product" className="w-full">
-                  <Button className="w-full bg-mzad-secondary hover:bg-mzad-secondary/90">
-                    Create Your First Listing
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </CardFooter>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Seller Tips</CardTitle>
-                <CardDescription>Stand out and sell faster with these tips</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-2">
-                    <BadgeCheck className="h-5 w-5 text-mzad-secondary shrink-0 mt-0.5" />
-                    <p><span className="font-medium">Use high-quality photos</span> - Take clear, well-lit photos from multiple angles.</p>
-                  </div>
-                  
-                  <div className="flex items-start gap-2">
-                    <BadgeCheck className="h-5 w-5 text-mzad-secondary shrink-0 mt-0.5" />
-                    <p><span className="font-medium">Write detailed descriptions</span> - Include dimensions, condition, brand, and any defects.</p>
-                  </div>
-                  
-                  <div className="flex items-start gap-2">
-                    <BadgeCheck className="h-5 w-5 text-mzad-secondary shrink-0 mt-0.5" />
-                    <p><span className="font-medium">Price competitively</span> - Research similar items to find the right price point.</p>
-                  </div>
-                  
-                  <div className="flex items-start gap-2">
-                    <BadgeCheck className="h-5 w-5 text-mzad-secondary shrink-0 mt-0.5" />
-                    <p><span className="font-medium">Respond quickly</span> - Fast responses to inquiries increase your chances of selling.</p>
-                  </div>
-                  
-                  <div className="flex items-start gap-2">
-                    <BadgeCheck className="h-5 w-5 text-mzad-secondary shrink-0 mt-0.5" />
-                    <p><span className="font-medium">Be honest</span> - Always disclose any flaws or issues with your items.</p>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Link to="/my-listings">
-                  <Button variant="outline">Manage My Listings</Button>
-                </Link>
-                <Link to="/add-product">
-                  <Button className="bg-mzad-secondary hover:bg-mzad-secondary/90">Create New Listing</Button>
-                </Link>
-              </CardFooter>
-            </Card>
-          </div>
+              </div>
+            </>
+          )}
         </div>
-      </RequireAuth>
+      </div>
     </Layout>
   );
 };
