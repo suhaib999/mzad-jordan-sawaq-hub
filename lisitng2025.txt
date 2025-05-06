@@ -1,0 +1,1079 @@
+Okay, AI assistant, let's break down the mazdkumsooq product listing process in detail. This guide is designed to help you understand the structure, required information, and best practices for creating effective listings on an e-commerce platform like OpenSooq, tailored for the Jordanian market.
+
+## mzadkumssoq Listing Process: A Comprehensive Guide for AI
+
+The goal of a product listing is to provide clear, accurate, and enticing information to potential buyers, maximizing the chances of a successful transaction.
+
+### I. General Listing Workflow (Applicable to most listings)
+
+1.  **Category & Subcategory Selection:**
+    *   **Action:** User selects the primary category that best fits their item/service.
+    *   **Action:** User then selects the most relevant subcategory.
+    *   **Importance:** Crucial for discoverability. Accurate categorization ensures the listing reaches the right audience.
+
+2.  **Listing Details (Core Information):**
+    *   **Listing Title:**
+        *   **Input:** Text (Character limit, e.g., 100 characters).
+        *   **Guidance:** Should be concise, descriptive, and include key terms. E.g., "Toyota Camry Hybrid 2019 Silver Excellent Condition".
+    *   **Listing Description:**
+        *   **Input:** Text (Larger character limit, e.g., 4096 characters).
+        *   **Guidance:** Provide comprehensive details: features, specifications, condition nuances, usage history, reason for selling (optional), any included accessories or unique selling points. Use clear, structured language (bullet points can be effective).
+    *   **Condition:**
+        *   **Input:** Dropdown/Selection.
+        *   **Standard Options:** Brand New (Sealed), Brand New (Opened Box), Used - Like New, Used - Excellent, Used - Good, Used - Fair, For Parts or Not Working, Damaged.
+        *   **Context:** Select the option that most accurately reflects the item's state.
+    *   **Price:**
+        *   **Input:** Numeric (Currency: JOD - Jordanian Dinar).
+        *   **Guidance:** Specify the full price. Indicate if negotiable (e.g., a separate checkbox "Price Negotiable" or include in description). Avoid listing down payments as the full price.
+    *   **Images/Videos:**
+        *   **Input:** File upload (multiple allowed, specify formats like JPG, PNG, MP4 and size limits).
+        *   **Guidance:** High-quality, clear photos/videos from multiple angles are essential. Show any defects if applicable.
+    *   **Location:**
+        *   **Input:** Series of Dropdowns.
+        *   **Fields:** Select City (e.g., Amman, Irbid, Zarqa), Select Neighborhood/Area.
+        *   **Importance:** Helps local buyers find items and assess pickup/delivery feasibility.
+    *   **Delivery Option:**
+        *   **Input:** Yes/No toggle or Dropdown.
+        *   **Guidance:** Indicate if the seller offers delivery. Optionally, allow sellers to specify delivery cost or areas covered.
+    *   **Contact Information:**
+        *   **Input:** Numeric (Phone number).
+        *   **Format:** Pre-filled country code (e.g., +962 for Jordan), user enters the remaining digits.
+        *   **Privacy:** Option to hide number and rely on in-app messaging initially.
+
+### II. Detailed Category & Subcategory Breakdown with Specific Attributes
+
+Here's an expanded list of categories and subcategories with relevant listing attributes you should expect or prompt for.
+
+---
+
+## 1. Cars and Bikes
+
+### Subcategories:
+
+    a.  **Cars For Sale**
+        *   **Key Listing Attributes:**
+            *   Make (e.g., Toyota, BMW, Hyundai) - Dropdown
+            *   Model (e.g., Camry, X5, Elantra) - Dropdown (dependent on Make)
+            *   Year of Manufacture - Dropdown/Numeric Input
+            *   Mileage (km) - Numeric Input
+            *   Transmission (Automatic, Manual, Tiptronic) - Dropdown
+            *   Fuel Type (Petrol, Diesel, Hybrid, Electric) - Dropdown
+            *   Engine Capacity (cc or Liters) - Numeric Input or Dropdown (e.g., 1600cc, 2.0L)
+            *   Body Type (Sedan, SUV, Hatchback, Coupe, Minivan, Pickup) - Dropdown
+            *   Color (Exterior) - Dropdown/Color Picker
+            *   Color (Interior) - Dropdown/Color Picker
+            *   Number of Doors (2, 3, 4, 5) - Dropdown
+            *   Number of Cylinders - Dropdown
+            *   Drive Type (FWD, RWD, AWD, 4WD) - Dropdown
+            *   Condition (As per general list, plus "Salvage Title" if applicable)
+            *   License/Registration Status (Licensed & Insured, Needs Renewal, Unlicensed) - Dropdown
+            *   Payment Options (Cash, Installments, Trade-in Considered) - Checkboxes
+            *   Features (Sunroof, Leather Seats, Navigation System, Cruise Control, Parking Sensors, Alloy Wheels, etc.) - Checkboxes
+            *   Accident History (No Accidents, Minor Accidents, Major Accidents - specify) - Dropdown
+            *   Service History (Full Dealer Service History, Partial History, No History) - Dropdown
+
+    b.  **Autos for Rent**
+        *   **Key Listing Attributes:**
+            *   Make, Model, Year, Body Type, Color (as above)
+            *   Rental Period (Per Day, Per Week, Per Month, Custom) - Dropdown
+            *   Insurance Included (Yes/No, Type: Comprehensive/Third Party) - Dropdown
+            *   Mileage Allowance (e.g., km/day, Unlimited) - Numeric Input or Dropdown
+            *   Driver Option (With Driver, Self-Drive) - Dropdown
+            *   Deposit Required (Yes/No, Amount JOD) - Input
+
+    c.  **Car Plates Number**
+        *   **Key Listing Attributes:**
+            *   Plate Number - Text/Numeric Input
+            *   Governorate/City of Issue - Dropdown
+            *   Special Characteristics (e.g., Unique combination, Low number) - Text Input
+            *   Transferability - Text Input (e.g., "Ready for immediate transfer")
+
+    d.  **Junk Cars & Other Vehicles**
+        *   **Key Listing Attributes:**
+            *   Vehicle Type (Car, Truck, Bus) - Dropdown
+            *   Make, Model, Year (if identifiable)
+            *   Condition (Primarily "For Parts or Not Working", "Salvage")
+            *   Reason for Junking (Accident, Mechanical Failure, End of Life) - Text Input
+            *   Key Parts Available/Missing - Text Input
+
+    e.  **Motorcycles & Motor Vehicles**
+        *   **Key Listing Attributes:**
+            *   Type (Sport Bike, Cruiser, Scooter, ATV, Dirt Bike, Touring) - Dropdown
+            *   Make (e.g., Honda, Yamaha, Harley-Davidson) - Dropdown
+            *   Model - Dropdown (dependent on Make)
+            *   Year of Manufacture - Dropdown/Numeric Input
+            *   Mileage (km) - Numeric Input
+            *   Engine Capacity (cc) - Numeric Input
+            *   Condition (As per general list)
+            *   License Status - Dropdown
+
+    f.  **Heavy Machinery**
+        *   **Key Listing Attributes:**
+            *   Type (Excavator, Bulldozer, Crane, Loader, Forklift, Generator) - Dropdown
+            *   Make, Model, Year
+            *   Hours of Operation - Numeric Input
+            *   Capacity/Power Rating (e.g., Tonnes, kW) - Text/Numeric Input
+            *   Condition
+
+    g.  **Buses, Trucks & Trailers**
+        *   **Key Listing Attributes:**
+            *   Type (City Bus, Coach, Light Truck, Heavy Truck, Flatbed Trailer, Box Trailer) - Dropdown
+            *   Make, Model, Year
+            *   Mileage (km) / Hours of Operation
+            *   Load Capacity (Tonnes or kg) / Seating Capacity
+            *   Axle Configuration (for trucks/trailers) - Text Input
+            *   Condition
+
+    h.  **Boats & Jet Skis**
+        *   **Key Listing Attributes:**
+            *   Type (Speedboat, Fishing Boat, Yacht, Jet Ski) - Dropdown
+            *   Make, Model, Year
+            *   Length (feet or meters) - Numeric Input
+            *   Engine Type (Inboard, Outboard) & Power (HP) - Dropdown/Text Input
+            *   Hull Material (Fiberglass, Aluminum) - Dropdown
+            *   Condition
+            *   Trailer Included (Yes/No) - Toggle
+
+    i.  **Tires, Wheels & Rims**
+        *   **Key Listing Attributes:**
+            *   Type (Tires, Wheels/Rims, Tire & Wheel Set) - Dropdown
+            *   For Tires: Size (e.g., 205/55 R16), Brand, Type (Summer, Winter, All-Season), Tread Depth (mm or percentage remaining)
+            *   For Wheels/Rims: Diameter (inches), Width (inches), Bolt Pattern (e.g., 5x114.3), Material (Alloy, Steel), Brand
+            *   Quantity (Single, Pair, Set of 4, Set of 5) - Dropdown
+            *   Condition (New, Used, Retread)
+
+    j.  **Vehicle Spare Parts**
+        *   **Key Listing Attributes:**
+            *   Part Name (e.g., Alternator, Headlight, Brake Pads) - Text Input
+            *   Compatible Vehicle Make(s) - Dropdown/Text Input
+            *   Compatible Vehicle Model(s) - Dropdown/Text Input
+            *   Compatible Vehicle Year(s) - Text Input Range
+            *   Part Number (OEM or Aftermarket) - Text Input
+            *   Brand (if applicable) - Text Input
+            *   Condition (New, Used, Remanufactured)
+
+    k.  **Vehicle Accessories**
+        *   **Key Listing Attributes:**
+            *   Accessory Type (e.g., Car Cover, Seat Covers, GPS Navigator, Sound System, Roof Rack, Floor Mats) - Dropdown/Text Input
+            *   Brand (if applicable)
+            *   Compatibility (Universal or Specific Vehicle Make/Model)
+            *   Condition (New, Used)
+
+---
+
+## 2. Mobile - Tablet
+
+    a.  **Mobiles**
+        *   **Key Listing Attributes:**
+            *   Brand (e.g., Apple, Samsung, Xiaomi, Huawei) - Dropdown
+            *   Model (e.g., iPhone 15 Pro, Galaxy S24 Ultra, Redmi Note 13) - Dropdown (dependent on Brand)
+            *   Storage Size (e.g., 64GB, 128GB, 256GB, 512GB, 1TB, Other) - Dropdown
+            *   RAM (e.g., 4GB, 6GB, 8GB, 12GB, 16GB) - Dropdown
+            *   Color - Dropdown (standard colors) or Text Input
+            *   Operating System (iOS, Android - potentially with version e.g., iOS 17, Android 14) - Auto-filled or Dropdown
+            *   Camera Resolution (Main Rear MP, Front MP) - Text Input
+            *   SIM Card Slots (Single SIM, Dual SIM, eSIM support) - Dropdown
+            *   Warranty (Yes/No, if Yes: Duration remaining/Provider) - Toggle & Text Input
+            *   Condition (Brand New - Sealed, Brand New - Open Box, Used - Excellent, Used - Good, Used - Fair, For Parts) - Dropdown
+            *   Includes (Original Box, Charger, Cable, Earphones, Case) - Checkboxes
+            *   IMEI Number (Optional, for verification purposes, usually private) - Text Input
+
+    b.  **Tablets**
+        *   **Key Listing Attributes:**
+            *   Brand (e.g., Apple, Samsung, Lenovo, Microsoft) - Dropdown
+            *   Model (e.g., iPad Air, Galaxy Tab S9, Surface Pro 9) - Dropdown (dependent on Brand)
+            *   Storage Size (as per Mobiles) - Dropdown
+            *   RAM (as per Mobiles) - Dropdown
+            *   Screen Size (e.g., 13") - Dropdown
+            *   Connectivity (Wi-Fi Only, Wi-Fi + Cellular/5G) - Dropdown
+            *   Color - Dropdown or Text Input
+            *   Operating System (iPadOS, Android, Windows) - Auto-filled or Dropdown
+            *   Warranty (Yes/No, if Yes: Duration remaining/Provider) - Toggle & Text Input
+            *   Condition (as per Mobiles) - Dropdown
+            *   Includes (Original Box, Charger, Cable, Stylus, Keyboard Cover) - Checkboxes
+
+    c.  **Smart Watches**
+        *   **Key Listing Attributes:**
+            *   Brand (e.g., Apple, Samsung, Garmin, Fitbit, Xiaomi) - Dropdown
+            *   Model (e.g., Watch Series 9, Galaxy Watch 6, Forerunner 265) - Dropdown
+            *   Case Size (mm, e.g., 40mm, 44mm, 49mm) - Dropdown
+            *   Band Material (e.g., Silicone, Leather, Metal, Nylon) - Dropdown
+            *   Band Color - Dropdown or Text Input
+            *   Connectivity (Bluetooth, Wi-Fi, Cellular/LTE) - Dropdown
+            *   Compatibility (iOS, Android, Both) - Dropdown
+            *   Key Features (GPS, Heart Rate Monitor, ECG, NFC/Payments, Blood Oxygen) - Checkboxes
+            *   Condition (as per Mobiles) - Dropdown
+            *   Includes (Original Box, Charging Cable/Puck) - Checkboxes
+
+    d.  **Headsets**
+        *   **Key Listing Attributes:**
+            *   Brand (e.g., Sony, Bose, Apple, JBL, Sennheiser) - Dropdown
+            *   Model - Text Input
+            *   Type (In-ear/Earbuds, On-ear, Over-ear) - Dropdown
+            *   Connectivity (Wired - 3.5mm/USB-C/Lightning, Wireless - Bluetooth version) - Dropdown
+            *   Features (Noise Cancelling, Microphone, Water Resistant, True Wireless) - Checkboxes
+            *   Condition (New, Used) - Dropdown (simplified for accessories)
+            *   Includes (Carrying Case, Charging Cable, Extra Eartips) - Checkboxes
+
+    e.  **Covers & Protectors**
+        *   **Key Listing Attributes:**
+            *   Product Type (Phone Case, Tablet Cover, Screen Protector) - Dropdown
+            *   Compatible Device Brand - Dropdown
+            *   Compatible Device Model - Dropdown/Text Input
+            *   Material (e.g., Silicone, Plastic, Leather, Tempered Glass) - Dropdown
+            *   Color/Design - Text Input
+            *   Condition (New, Used)
+
+    f.  **Chargers & Cables**
+        *   **Key Listing Attributes:**
+            *   Product Type (Wall Charger, Car Charger, Power Bank, Charging Cable, Wireless Charger) - Dropdown
+            *   Brand (if applicable) - Text Input
+            *   Connector Type (USB-A, USB-C, Lightning, Micro-USB) - Dropdown
+            *   Output Power (Watts, e.g., 20W, 65W) / Capacity (mAh for Power Banks) - Numeric Input
+            *   Cable Length (for cables, e.g., 1m, 2m) - Dropdown
+            *   Condition (New, Used)
+
+    g.  **Mobile - Tablet Spare Parts**
+        *   **Key Listing Attributes:**
+            *   Part Type (Screen, Battery, Charging Port, Camera Module, Back Cover) - Dropdown
+            *   Compatible Device Brand - Dropdown
+            *   Compatible Device Model - Dropdown/Text Input
+            *   Condition (New, Used/Pulled, Refurbished) - Dropdown
+
+    h.  **Accessories** (General category for items not fitting above)
+        *   **Key Listing Attributes:**
+            *   Accessory Name/Type (e.g., PopSocket, Stylus, Phone Stand, Camera Lens Kit) - Text Input
+            *   Brand (if applicable) - Text Input
+            *   Compatibility (Universal or Specific Device) - Text Input
+            *   Condition (New, Used)
+
+    i.  **VIP Phone Numbers**
+        *   **Key Listing Attributes:**
+            *   Phone Number - Text Input (partially masked for privacy if needed, full number on request)
+            *   Operator (Zain, Orange, Umniah) - Dropdown
+            *   Number Type (Prepaid, Postpaid) - Dropdown
+            *   Special Characteristics (e.g., Easy to Remember, Repeated Digits, Sequence) - Text Input
+            *   Transferability - Text Input
+
+    j.  **Mobile & Tablet Repair Services**
+        *   **Key Listing Attributes:**
+            *   Service Offered (e.g., Screen Replacement, Battery Replacement, Water Damage Repair, Software Issues) - Checkboxes or Text Input
+            *   Brands Serviced (Apple, Samsung, All Brands, etc.) - Checkboxes
+            *   Service Location (Shop Location, On-site Repair) - Text Input/Dropdown
+            *   Experience Level (Years) - Numeric Input
+            *   Warranty on Repair (Yes/No, Duration) - Toggle & Text Input
+
+---
+
+## 3. Gaming & Toys
+
+    a.  **Gaming Consoles**
+        *   **Key Listing Attributes:**
+            *   Platform (e.g., PlayStation 5, Xbox Series X/S, Nintendo Switch, Steam Deck, Retro Console) - Dropdown
+            *   Model/Edition (e.g., PS5 Disc Edition, PS5 Digital, Xbox Series S, Switch OLED) - Dropdown
+            *   Storage Capacity (e.g., 512GB, 1TB, 2TB) - Dropdown
+            *   Condition (as per Mobiles) - Dropdown
+            *   Included Accessories (e.g., Number of Controllers, Cables, Original Box) - Checkboxes/Text Input
+            *   Bundled Games (List titles if any) - Text Input
+            *   Region (PAL, NTSC/U, NTSC/J, Region Free) - Dropdown (if applicable)
+
+    b.  **Video Games**
+        *   **Key Listing Attributes:**
+            *   Platform (as per Gaming Consoles) - Dropdown
+            *   Game Title - Text Input
+            *   Genre (e.g., Action, RPG, Sports, Strategy, Simulation) - Dropdown/Checkboxes
+            *   Edition (Standard, Collector's, Game of the Year) - Dropdown
+            *   Format (Physical Disc/Cartridge, Digital Code) - Dropdown
+            *   Condition (New - Sealed, Used - Excellent, Used - Good) - Dropdown
+            *   Region (if applicable) - Dropdown
+
+    c.  **Controllers**
+        *   **Key Listing Attributes:**
+            *   Compatible Platform (as per Gaming Consoles) - Dropdown
+            *   Brand (e.g., Sony DualSense, Xbox Wireless, Nintendo Pro Controller, Third-party brand) - Dropdown/Text Input
+            *   Connectivity (Wired, Wireless) - Dropdown
+            *   Color/Design - Text Input
+            *   Condition (New, Used)
+
+    d.  **Gaming Accessories**
+        *   **Key Listing Attributes:**
+            *   Accessory Type (Gaming Headset, Gaming Mouse, Keyboard, VR Headset, Racing Wheel, Charging Dock, Memory Card) - Dropdown
+            *   Brand - Text Input
+            *   Compatible Platform (if applicable) - Dropdown
+            *   Condition (New, Used)
+
+    e.  **Gift Cards**
+        *   **Key Listing Attributes:**
+            *   Platform/Store (e.g., PlayStation Store, Xbox Live, Steam, Nintendo eShop, iTunes, Google Play) - Dropdown
+            *   Card Value (JOD or original currency if applicable) - Numeric Input
+            *   Region (e.g., Jordan, US, UK) - Dropdown (Important for activation)
+            *   Format (Physical Card, Digital Code) - Dropdown
+
+    f.  **Accounts** (Use with caution, subject to platform ToS)
+        *   **Key Listing Attributes:**
+            *   Game/Service (e.g., Fortnite Account, Steam Account with Games) - Text Input
+            *   Account Level/Rank/Items - Text Input (Detailed description of valuable assets)
+            *   Security (e.g., Email changeable, Full access provided) - Text Input
+
+    g.  **Toys**
+        *   **Key Listing Attributes:**
+            *   Toy Type (e.g., Action Figures, Dolls, Board Games, Puzzles, Educational Toys, Remote Control Cars, Building Blocks) - Dropdown
+            *   Brand (e.g., LEGO, Barbie, Hot Wheels, Hasbro) - Text Input
+            *   Age Range (e.g., 0-2 years, 3-5 years, 6-8 years, 9+ years) - Dropdown
+            *   Material (e.g., Plastic, Wood, Fabric) - Dropdown
+            *   Condition (New - Sealed, New - Open Box, Used - Excellent, Used - Good) - Dropdown
+
+    h.  **Video Games Repair Services**
+        *   **Key Listing Attributes:**
+            *   Consoles Serviced (e.g., PS5, Xbox Series X, Nintendo Switch) - Checkboxes
+            *   Types of Repair (e.g., HDMI Port, Disc Drive, Controller Repair, Overheating) - Checkboxes/Text Input
+            *   Service Location (Shop, Pickup) - Text Input
+            *   Experience (Years) - Numeric Input
+
+---
+
+## 4. Computers & Laptops
+
+    a.  **Laptops**
+        *   **Key Listing Attributes:**
+            *   Brand (e.g., Apple, Dell, HP, Lenovo, Asus, Acer, Microsoft) - Dropdown
+            *   Model (e.g., MacBook Pro, XPS 15, Spectre x360, ThinkPad X1 Carbon) - Text Input
+            *   Processor (CPU) (e.g., Intel Core i5, Intel Core i7, AMD Ryzen 5, Apple M2) - Text Input (specify generation if possible)
+            *   RAM (GB) (e.g., 8GB, 16GB, 32GB) - Dropdown
+            *   Storage Type (SSD, HDD, SSD+HDD) - Dropdown
+            *   Storage Size (e.g., 256GB SSD, 1TB HDD) - Text Input
+            *   Graphics Card (GPU) (e.g., NVIDIA GeForce RTX 3060, AMD Radeon RX 6700M, Intel Iris Xe) - Text Input (specify VRAM if dedicated)
+            *   Screen Size (inches, e.g., 13.3", 15.6", 17.3") - Dropdown
+            *   Screen Resolution (e.g., Full HD 1920x1080, QHD, 4K UHD) - Dropdown
+            *   Operating System (e.g., Windows 11, macOS Sonoma, Linux distribution) - Dropdown
+            *   Condition (as per Mobiles) - Dropdown
+            *   Features (Touchscreen, Backlit Keyboard, Fingerprint Reader, Webcam) - Checkboxes
+            *   Battery Health/Cycle Count (for used laptops) - Text Input
+            *   Warranty (Yes/No, Duration) - Toggle & Text Input
+
+    b.  **Computers (Desktops / All-in-Ones)**
+        *   **Key Listing Attributes:**
+            *   Type (Desktop Tower, All-in-One, Mini PC) - Dropdown
+            *   Brand (as per Laptops, or Custom Built) - Dropdown/Text Input
+            *   Processor (CPU), RAM, Storage Type, Storage Size, Graphics Card (GPU), Operating System (as per Laptops)
+            *   Monitor Included (Yes/No, if Yes: Size, Brand, Model) - Toggle & Text Inputs
+            *   Peripherals Included (Keyboard, Mouse) - Checkboxes
+            *   Condition (as per Mobiles) - Dropdown
+
+    c.  **Gaming PC (Pre-built or Custom)**
+        *   **Key Listing Attributes:** (Similar to Computers, but emphasize gaming specs)
+            *   CPU Model & Generation
+            *   GPU Model & VRAM
+            *   RAM Speed & Capacity
+            *   Motherboard Model
+            *   Cooling System (Air, Liquid) - Text Input
+            *   Power Supply Unit (PSU) Wattage & Rating - Text Input
+            *   Case Model/Type - Text Input
+            *   Performance Benchmarks (Optional, e.g., FPS in specific games) - Text Input
+
+    d.  **Monitors**
+        *   **Key Listing Attributes:**
+            *   Brand (e.g., Dell, Samsung, LG, BenQ, Asus) - Dropdown
+            *   Model - Text Input
+            *   Screen Size (inches) - Dropdown
+            *   Resolution (e.g., FHD, QHD 1440p, 4K UHD) - Dropdown
+            *   Aspect Ratio (e.g., 16:9, 21:9 Ultrawide) - Dropdown
+            *   Panel Type (IPS, VA, TN, OLED) - Dropdown
+            *   Refresh Rate (Hz, e.g., 60Hz, 144Hz, 240Hz) - Dropdown
+            *   Response Time (ms) - Numeric Input
+            *   Inputs (HDMI, DisplayPort, USB-C) - Checkboxes
+            *   Features (HDR, G-Sync/FreeSync, Curved, Built-in Speakers) - Checkboxes
+            *   Condition (New, Used)
+
+    e.  **Printers & Accessories**
+        *   **Key Listing Attributes:**
+            *   Product Type (Printer, Scanner, All-in-One, Ink Cartridges, Toner, Paper) - Dropdown
+            *   For Printers: Brand, Model, Technology (Inkjet, Laser), Functionality (Print, Scan, Copy, Fax), Color/Monochrome, Connectivity (USB, Wi-Fi, Ethernet)
+            *   For Consumables: Compatible Printer Models, Color (Black, Cyan, Magenta, Yellow), Type (Original, Compatible)
+            *   Condition (New, Used)
+
+    f.  **Components**
+        *   **Key Listing Attributes:**
+            *   Component Type (CPU, GPU, Motherboard, RAM, SSD, HDD, Power Supply, Case, Cooling Fan/System) - Dropdown
+            *   Brand, Model, Key Specifications (e.g., for CPU: socket type, core count; for GPU: VRAM; for RAM: DDR type, speed, capacity module)
+            *   Condition (New, Used)
+
+    g.  **Accessories (Computer)**
+        *   **Key Listing Attributes:**
+            *   Accessory Type (Keyboard, Mouse, Webcam, USB Hub, Laptop Stand, External Drive Enclosure, Graphics Tablet) - Dropdown
+            *   Brand, Model
+            *   Connectivity (Wired, Wireless - Bluetooth/RF)
+            *   Condition (New, Used)
+
+    h.  **Drives & Storage**
+        *   **Key Listing Attributes:**
+            *   Type (External HDD, External SSD, USB Flash Drive, Memory Card - SD/microSD) - Dropdown
+            *   Brand, Capacity (GB/TB), Interface (USB 3.0, USB-C, Thunderbolt)
+            *   Condition (New, Used)
+
+    i.  **Modems - Routers**
+        *   **Key Listing Attributes:**
+            *   Type (Modem, Router, Modem-Router Combo, Mesh Wi-Fi System, Access Point) - Dropdown
+            *   Brand, Model
+            *   Wi-Fi Standard (e.g., Wi-Fi 5/ac, Wi-Fi 6/ax, Wi-Fi 6E, Wi-Fi 7) - Dropdown
+            *   Speed Rating (e.g., AC1200, AX3000) - Text Input
+            *   Features (Number of Ethernet Ports, MU-MIMO, Beamforming, Guest Network) - Checkboxes
+            *   Condition (New, Used)
+
+    j.  **Servers**
+        *   **Key Listing Attributes:**
+            *   Type (Tower, Rack, Blade) - Dropdown
+            *   Brand (e.g., Dell, HP, Supermicro, Custom) - Dropdown/Text Input
+            *   CPU, RAM, Storage Configuration
+            *   Condition (New, Used, Refurbished)
+
+    k.  **Projectors**
+        *   **Key Listing Attributes:**
+            *   Brand, Model
+            *   Technology (DLP, LCD, LED, LCoS) - Dropdown
+            *   Resolution (Native, e.g., 720p, 1080p, 4K) - Dropdown
+            *   Brightness (Lumens) - Numeric Input
+            *   Lamp Hours Used / Remaining (if applicable) - Numeric Input
+            *   Features (Short Throw, Built-in Speakers, Wi-Fi, 3D Capable) - Checkboxes
+            *   Condition (New, Used)
+
+    l.  **Softwares & Systems**
+        *   **Key Listing Attributes:**
+            *   Software Name & Version (e.g., Microsoft Office 2021, Adobe Photoshop CC, Windows 11 Pro License) - Text Input
+            *   License Type (Perpetual, Subscription, OEM Key) - Dropdown
+            *   Format (Digital Download, Physical Media with Key) - Dropdown
+            *   Number of Users/Devices - Dropdown/Numeric Input
+
+    m. **Computer Furniture**
+        *   **Key Listing Attributes:**
+            *   Item Type (Desk, Office Chair, Monitor Stand, CPU Stand) - Dropdown
+            *   Material (Wood, Metal, Glass) - Dropdown
+            *   Dimensions (L x W x H) - Text Input
+            *   Features (Ergonomic, Adjustable Height, Storage Drawers) - Checkboxes
+            *   Condition (New, Used)
+
+    n. **POS Systems**
+        *   **Key Listing Attributes:**
+            *   System Type (Hardware, Software, Complete System) - Dropdown
+            *   Brand (if applicable)
+            *   Included Components (Touchscreen Monitor, Receipt Printer, Barcode Scanner, Cash Drawer) - Checkboxes
+            *   Software Features (Inventory Management, Sales Reporting, Customer Management) - Checkboxes
+            *   Industry Suitability (Retail, Restaurant, etc.) - Dropdown
+            *   Condition (New, Used)
+
+    o. **Computer Repair Services**
+        *   **Key Listing Attributes:**
+            *   Service Offered (e.g., Virus Removal, Hardware Upgrade/Replacement, Data Recovery, OS Installation) - Checkboxes
+            *   Device Types Serviced (Laptops, Desktops, Macs, PCs) - Checkboxes
+            *   Service Location (Shop, On-site) - Text Input
+            *   Experience (Years) - Numeric Input
+            *   Warranty on Repair (Yes/No, Duration) - Toggle & Text Input
+
+---
+
+## 5. Electronics
+
+    a.  **TVs - Screens**
+        *   **Key Listing Attributes:**
+            *   Brand (e.g., Samsung, LG, Sony, TCL, Hisense) - Dropdown
+            *   Model - Text Input
+            *   Screen Size (inches) - Dropdown
+            *   Display Technology (LED, QLED, OLED, Mini-LED) - Dropdown
+            *   Resolution (HD, Full HD, 4K UHD, 8K UHD) - Dropdown
+            *   Smart TV (Yes/No, Operating System e.g., Android TV, webOS, Tizen) - Toggle & Dropdown
+            *   Refresh Rate (Hz) - Dropdown
+            *   Inputs (Number of HDMI, USB ports) - Numeric Input
+            *   Condition (as per Mobiles) - Dropdown
+            *   Warranty (Yes/No, Duration) - Toggle & Text Input
+
+    b.  **Small Kitchen Appliances**
+        *   **Key Listing Attributes:**
+            *   Appliance Type (e.g., Blender, Toaster, Coffee Maker, Microwave, Air Fryer, Kettle, Food Processor) - Dropdown
+            *   Brand, Model
+            *   Capacity/Power (e.g., Liters, Watts) - Text Input
+            *   Condition (New, Used)
+
+    c.  **Refrigerators - Freezers**
+        *   **Key Listing Attributes:**
+            *   Type (Top Freezer, Bottom Freezer, Side-by-Side, French Door, Chest Freezer, Upright Freezer) - Dropdown
+            *   Brand, Model
+            *   Capacity (Liters) - Numeric Input
+            *   Features (No Frost, Ice Maker, Water Dispenser, Inverter Technology) - Checkboxes
+            *   Dimensions (H x W x D cm) - Text Input
+            *   Condition (New, Used)
+            *   Warranty (Yes/No, Duration) - Toggle & Text Input
+
+    d.  **Washing Machines - Dryers**
+        *   **Key Listing Attributes:**
+            *   Type (Front Load Washer, Top Load Washer, Washer-Dryer Combo, Vented Dryer, Condenser Dryer, Heat Pump Dryer) - Dropdown
+            *   Brand, Model
+            *   Capacity (kg) - Numeric Input
+            *   Spin Speed (RPM for washers) - Numeric Input
+            *   Features (Inverter Technology, Steam Cycle, Quick Wash) - Checkboxes
+            *   Condition (New, Used)
+            *   Warranty (Yes/No, Duration) - Toggle & Text Input
+
+    e.  **Dishwashers**
+        *   **Key Listing Attributes:**
+            *   Type (Freestanding, Built-in, Countertop) - Dropdown
+            *   Brand, Model
+            *   Place Settings Capacity (e.g., 12, 14) - Numeric Input
+            *   Features (Number of Programs, Half Load, Cutlery Tray/Basket) - Checkboxes
+            *   Condition (New, Used)
+            *   Warranty (Yes/No, Duration) - Toggle & Text Input
+
+    f.  **Ovens**
+        *   **Key Listing Attributes:**
+            *   Type (Electric Oven, Gas Oven, Built-in, Freestanding with Hob) - Dropdown
+            *   Brand, Model
+            *   Capacity (Liters) - Numeric Input
+            *   Features (Convection, Grill, Self-Cleaning) - Checkboxes
+            *   Condition (New, Used)
+
+    g.  **Microwaves** (Covered under Small Kitchen Appliances, but can be standalone)
+        *   **Key Listing Attributes:**
+            *   Type (Countertop, Over-the-Range, Built-in) - Dropdown
+            *   Brand, Model
+            *   Capacity (Liters) - Numeric Input
+            *   Power (Watts) - Numeric Input
+            *   Features (Grill, Convection) - Checkboxes
+            *   Condition (New, Used)
+
+    h.  **Air Conditioners**
+        *   **Key Listing Attributes:**
+            *   Type (Split Unit, Window Unit, Portable AC, Central AC) - Dropdown
+            *   Brand, Model
+            *   Cooling Capacity (BTU or Tons) - Numeric Input
+            *   Features (Inverter, Hot & Cold, Wi-Fi Control) - Checkboxes
+            *   Energy Efficiency Rating - Text Input
+            *   Condition (New, Used)
+            *   Warranty (Yes/No, Duration) - Toggle & Text Input
+
+    i.  **Cameras - Photography**
+        *   **Key Listing Attributes:**
+            *   Item Type (DSLR Camera, Mirrorless Camera, Point & Shoot, Action Camera, Drone, Lens, Tripod, Flash) - Dropdown
+            *   Brand, Model
+            *   For Cameras: Sensor Size, Megapixels, Video Resolution, Included Lens (if any)
+            *   For Lenses: Mount Type, Focal Length, Aperture
+            *   Condition (New, Used)
+            *   Shutter Count (for used DSLRs/Mirrorless) - Numeric Input
+
+    j.  **Receivers (Audio/Video)**
+        *   **Key Listing Attributes:**
+            *   Type (Stereo Receiver, AV Receiver) - Dropdown
+            *   Brand, Model
+            *   Channels (e.g., 2.1, 5.1, 7.2) - Dropdown
+            *   Power Output (Watts per channel) - Numeric Input
+            *   Features (Dolby Atmos, DTS:X, HDMI ARC/eARC, Wi-Fi, Bluetooth) - Checkboxes
+            *   Condition (New, Used)
+
+    k.  **Audio & Video (Other)**
+        *   **Key Listing Attributes:**
+            *   Item Type (Speakers - Bookshelf/Floorstanding/Portable, Soundbar, Turntable, Blu-ray Player, Projector Screen) - Dropdown
+            *   Brand, Model, Key Specifications
+            *   Condition (New, Used)
+
+    l.  **Home Appliances (Other)**
+        *   **Key Listing Attributes:**
+            *   Appliance Type (e.g., Vacuum Cleaner (see separate), Iron, Fan, Humidifier, Dehumidifier, Water Heater (see separate)) - Dropdown
+            *   Brand, Model, Key Specifications
+            *   Condition (New, Used)
+
+    m. **Personal Care Devices**
+        *   **Key Listing Attributes:**
+            *   Device Type (Hair Dryer, Hair Straightener, Electric Shaver, Epilator, Electric Toothbrush, Massager) - Dropdown
+            *   Brand, Model
+            *   Power Source (Battery, Corded) - Dropdown
+            *   Condition (New - Sealed, New - Open Box, Used - Excellent - *ensure hygiene aspects are clear*)
+
+    n. **Heaters**
+        *   **Key Listing Attributes:**
+            *   Type (Electric Heater - Fan/Oil/Radiant, Gas Heater, Kerosene Heater) - Dropdown
+            *   Brand, Model
+            *   Power Rating (Watts or BTU) - Numeric Input
+            *   Coverage Area (sqm) - Numeric Input
+            *   Safety Features (Tip-over switch, Overheat protection) - Checkboxes
+            *   Condition (New, Used)
+
+    o. **Water - Solar Heater**
+        *   **Key Listing Attributes:**
+            *   Type (Electric Water Heater, Gas Water Heater, Solar Water Heater System) - Dropdown
+            *   Brand, Model
+            *   Capacity (Liters) - Numeric Input
+            *   For Solar: Collector Type (Flat Plate, Evacuated Tube), Number of Tubes/Area
+            *   Condition (New, Used, Installation Service)
+
+    p. **Vacuum Cleaner**
+        *   **Key Listing Attributes:**
+            *   Type (Canister, Upright, Stick, Robotic, Handheld) - Dropdown
+            *   Brand, Model
+            *   Bagged/Bagless - Dropdown
+            *   Suction Power (Air Watts or Pa) - Numeric Input
+            *   Features (HEPA Filter, Pet Hair Attachment, Wet & Dry) - Checkboxes
+            *   Condition (New, Used)
+
+    q. **Water Coolers and Filters**
+        *   **Key Listing Attributes:**
+            *   Type (Water Cooler - Top/Bottom Load, Water Dispenser, Water Filter - Pitcher/Faucet/Under-Sink) - Dropdown
+            *   Brand, Model
+            *   Features (Hot & Cold Water, Storage Cabinet for cooler) - Checkboxes
+            *   Filter Type & Lifespan (for filters) - Text Input
+            *   Condition (New, Used)
+
+    r.  **Security & Surveillance**
+        *   **Key Listing Attributes:**
+            *   Item Type (Security Camera - IP/Analog, DVR/NVR, Alarm System, Doorbell Camera, Intercom) - Dropdown
+            *   Brand, Model
+            *   Features (Resolution, Night Vision, Motion Detection, Wireless, Indoor/Outdoor) - Checkboxes
+            *   Number of Channels (for DVR/NVR) - Numeric Input
+            *   Condition (New, Used)
+
+    s.  **Phones & Fax (Landline)**
+        *   **Key Listing Attributes:**
+            *   Type (Corded Phone, Cordless Phone, Fax Machine, Answering Machine) - Dropdown
+            *   Brand, Model
+            *   Features (Caller ID, Speakerphone, Number of Handsets for cordless) - Checkboxes
+            *   Condition (New, Used)
+
+    t.  **Accessories & Parts (Electronics)**
+        *   **Key Listing Attributes:**
+            *   Item Type (Remote Control, Power Adapter, Cable - HDMI/Audio, Antenna, Mounts) - Dropdown
+            *   Compatible Device/Brand - Text Input
+            *   Condition (New, Used)
+
+    u.  **Appliances Repair Services**
+        *   **Key Listing Attributes:**
+            *   Appliances Serviced (e.g., Refrigerators, Washing Machines, ACs, TVs, Ovens) - Checkboxes
+            *   Brands Serviced - Checkboxes/Text Input
+            *   Service Location (Shop, On-site) - Text Input
+            *   Experience (Years) - Numeric Input
+            *   Warranty on Repair (Yes/No, Duration) - Toggle & Text Input
+
+---
+
+*(Continuing for other main categories in a similar detailed fashion... This is becoming quite extensive. I will provide a more summarized attribute list for the remaining categories to keep the response manageable, but the principle of identifying key distinguishing features applies to all.)*
+
+---
+
+## 6. Real Estate for Sale
+
+*   **General Attributes for all subcategories:** Property Type (from subcategory), Location (Governorate, City, Area, Street), Price (JOD), Area (sqm/donum), Number of Bedrooms, Number of Bathrooms, Furnishing Status (Unfurnished, Semi-Furnished, Fully Furnished), Ownership Deed (Available, In Process), Payment Terms (Cash, Bank Loan, Installments).
+*   **Specifics:**
+    *   **Apartments:** Floor Number, Building Age, Amenities (Elevator, Parking, Balcony, View, Shared Pool/Gym).
+    *   **Villa - Palace:** Number of Floors, Land Area, Private Garden, Private Pool, Garage Capacity.
+    *   **Lands:** Zoning (Residential, Commercial, Agricultural, Industrial), Frontage (m), Access to Utilities.
+    *   **Farms & Chalets:** Land Area, Number of Buildings, Water Source (Well, Mains), Crops/Livestock (if any).
+    *   **Commercial Properties (Offices, Shops, etc.):** Suitability, Current Use (if any), Lease Income (if applicable), Proximity to landmarks.
+
+---
+
+## 7. Real Estate for Rent
+
+*   **General Attributes for all subcategories:** Property Type, Location, Rental Price (JOD per month/year), Area, Number of Bedrooms/Bathrooms, Furnishing Status, Lease Duration (Minimum/Preferred), Deposit Amount.
+*   **Specifics:** Similar to "Real Estate for Sale" regarding property-specific features (e.g., amenities for apartments, land area for farms).
+*   **Shared Rooms:** Room Type (Private Room in Shared Apt, Bed Space), Number of Flatmates, Gender Preference (if any), Bills Included (Yes/No - specify which).
+
+---
+
+## 8. Home & Garden
+
+    a.  **Furniture (Living, Bedroom, Dining, Office, Outdoor, Kids)**
+        *   Item Type (e.g., Sofa, Bed, Table, Chair, Wardrobe, Desk)
+        *   Material (Wood, Metal, Fabric, Leather, Rattan)
+        *   Dimensions (L x W x H)
+        *   Color/Style
+        *   Condition (New, Used - specify wear)
+        *   Set (e.g., Sofa Set - 3+2+1, Dining Set - Table + 6 Chairs)
+
+    b.  **Decoration & Accessories**
+        *   Item Type (e.g., Vases, Mirrors, Paintings, Clocks, Rugs - see Carpets, Curtains - see Curtains)
+        *   Material, Color, Style, Dimensions
+
+    c.  **Mattresses & Textile**
+        *   Item Type (Mattress, Bed Sheets, Blankets, Pillows, Towels)
+        *   Size (Single, Double, Queen, King for mattresses/sheets)
+        *   Material (Cotton, Memory Foam, Latex)
+        *   Firmness (for mattresses)
+
+    d.  **Garden - Plants**
+        *   Item Type (Plants - Indoor/Outdoor, Seeds, Pots, Garden Tools, Outdoor Lighting, Fertilizer)
+        *   Plant Species (if applicable), Pot Size/Material
+
+    e.  **Kitchens (Cabinets/Full Systems)**
+        *   Type (Full Kitchen Set, Individual Cabinets, Countertops)
+        *   Material (Wood, Aluminum, Laminate)
+        *   Layout Style (L-Shape, U-Shape, Island - if full set)
+        *   Includes Appliances (Yes/No - specify)
+
+    f.  **Kitchen Tools**
+        *   Item Type (Pots & Pans, Cutlery, Bakeware, Utensils, Small Gadgets)
+        *   Material (Stainless Steel, Non-stick, Ceramic)
+        *   Set/Individual Pieces
+
+    g.  **Bathrooms (Fixtures/Accessories)**
+        *   Item Type (Sink, Toilet, Bathtub, Shower Unit, Taps, Cabinets, Towel Racks)
+        *   Material, Color, Brand
+
+    h.  **Tiles & Flooring**
+        *   Type (Ceramic, Porcelain, Marble, Granite, Parquet, Laminate, Vinyl)
+        *   Dimensions per tile/plank, Total Area Covered (if selling a lot)
+        *   Color/Pattern
+
+    i.  **Doors - Windows - Aluminium**
+        *   Type (Interior Door, Exterior Door, Window - Sliding/Hinged, Aluminium Sections)
+        *   Material (Wood, Aluminium, uPVC, Glass Type)
+        *   Dimensions
+
+    j.  **Lighting**
+        *   Type (Ceiling Lights, Chandeliers, Wall Sconces, Lamps - Table/Floor, LED Bulbs)
+        *   Material, Style, Wattage/Brightness
+
+    k.  **Carpets**
+        *   Material (Wool, Synthetic, Silk), Size (Dimensions), Style/Pattern, Origin (if handmade)
+
+    l.  **Curtains**
+        *   Type (Drapes, Blinds - Roller/Venetian, Sheers), Material, Dimensions, Color/Pattern, Includes Rails/Rods (Yes/No)
+
+    m. **Upholstery Services, Gardening Services, Other Home & Garden**
+        * Service Type, Materials Used/Offered, Area Covered, Experience.
+
+---
+
+## 9. Women's Fashion
+
+    a.  **Clothes**
+        *   Item Type (e.g., Dress, Abaya, Top, Trousers, Skirt, Jeans, Jacket, Jumpsuit)
+        *   Brand (if applicable)
+        *   Size (International, EU, UK, US, or specific measurements)
+        *   Color, Material (e.g., Cotton, Polyester, Silk, Wool)
+        *   Occasion (e.g., Casual, Formal, Evening Wear)
+        *   Condition (New with Tags, New without Tags, Used - Excellent, Used - Good)
+
+    b.  **Women Shoes**
+        *   Type (e.g., Heels, Flats, Sandals, Boots, Sneakers)
+        *   Brand, Size (EU, UK, US)
+        *   Color, Material (Leather, Suede, Synthetic)
+        *   Heel Height (if applicable)
+        *   Condition
+
+    c.  **Watches (Women's)**
+        *   Brand, Model
+        *   Movement (Quartz, Automatic, Smartwatch features if applicable)
+        *   Case Material, Strap Material
+        *   Condition
+
+    d.  **Accessories - Jewelry**
+        *   Item Type (Necklace, Earrings, Bracelet, Ring, Brooch, Scarf, Belt, Sunglasses)
+        *   Material (Gold - specify carat, Silver, Diamond, Gemstones, Fashion/Costume Jewelry)
+        *   Brand (if applicable)
+        *   Condition
+
+    e.  **Bags**
+        *   Type (Handbag, Shoulder Bag, Crossbody, Clutch, Backpack, Tote)
+        *   Brand, Material (Leather, Canvas, Synthetic)
+        *   Color, Dimensions
+        *   Condition
+
+    f.  **Perfumes - Incense**
+        *   Product Name, Brand
+        *   Type (Eau de Parfum, Eau de Toilette, Body Mist, Bukhoor/Incense type)
+        *   Volume (ml or grams)
+        *   Condition (New - Sealed, Used - specify amount remaining)
+
+    g.  **Beauty Cosmetics**
+        *   Product Type (Makeup - Foundation/Lipstick/Eyeshadow, Skincare - Cream/Serum, Haircare)
+        *   Brand, Shade (for makeup)
+        *   Volume/Weight
+        *   Condition (New - Sealed, Used - specify usage, Swatched Only) - *Hygiene is critical.*
+        *   Expiry Date (if applicable)
+
+---
+
+## 10. Men's Fashion
+
+    a.  **Menswear**
+        *   Item Type (e.g., Shirt, T-Shirt, Trousers/Chinos, Jeans, Suit, Jacket, Thobe/Dishdasha)
+        *   Brand, Size, Color, Material
+        *   Fit (e.g., Slim, Regular, Relaxed)
+        *   Condition
+
+    b.  **Mens Shoes**
+        *   Type (e.g., Dress Shoes, Casual Shoes, Sneakers, Boots, Sandals)
+        *   Brand, Size, Color, Material
+        *   Condition
+
+    c.  **Men's Watches**
+        *   Brand, Model, Movement, Case Material, Strap Material
+        *   Condition
+
+    d.  **Men's Accessories**
+        *   Item Type (e.g., Ties, Belts, Wallets, Cufflinks, Sunglasses, Hats/Keffiyeh)
+        *   Brand, Material, Color
+        *   Condition
+
+    e.  **Personal Care Products (Men's)**
+        *   Product Type (e.g., Shaving Cream/Gel, Aftershave, Beard Oil, Skincare, Hair Styling Products)
+        *   Brand, Volume/Weight
+        *   Condition (New - Sealed, Used - specify amount remaining)
+
+    f.  **Perfume - Incense for men**
+        *   (Similar to Women's Perfumes - Incense)
+
+---
+
+## 11. Baby - Kids
+
+    a.  **Kids Furniture**
+        *   Item Type (Crib, Bed, Changing Table, High Chair, Desk, Toy Storage)
+        *   Material, Dimensions, Age Appropriateness
+        *   Brand, Condition
+
+    b.  **Baby Products**
+        *   Item Type (Stroller, Car Seat, Baby Carrier, Bouncer, Playpen, Bottles, Sterilizer, Diapers - unopened packs)
+        *   Brand, Age/Weight Suitability
+        *   Safety Standards Met (if applicable)
+        *   Condition (Hygiene critical for used items, specify cleaning)
+
+    c.  **Kids Clothing**
+        *   Item Type (specify)
+        *   Age/Size (e.g., 0-3 months, 2T, Size 6 years)
+        *   Gender (Boy, Girl, Unisex)
+        *   Brand, Material, Condition
+        *   Lot/Bundle (Yes/No, if Yes: number of pieces)
+
+---
+
+## 12. Food - Supplements
+
+*   **General Attributes:** Product Name, Brand, Weight/Volume (e.g., kg, grams, Liters, ml), Packaging (Sealed, Loose), Expiry Date (CRITICAL), Country of Origin, Organic/Halal/Other Certifications (if any).
+*   **Specifics:**
+    *   **Oils:** Type (Olive, Sunflower, Corn), Grade (Extra Virgin for olive oil).
+    *   **Dates:** Variety, Grade.
+    *   **Honey:** Type (Sidr, Floral), Raw/Processed.
+    *   **Ready Cooked Meals/Desserts:** Ingredients list (optional but good), Storage Instructions (Frozen, Chilled, Ambient).
+    *   **Food Supplements:** Type (Protein, Vitamins, Minerals), Dosage Form (Powder, Pills, Liquid), Active Ingredients.
+    *   **Meat/Vegetable & Fruit:** Freshness indicator, Source (Local, Imported).
+
+---
+
+## 13. Education & Training
+
+    a.  **Training Courses**
+        *   Course Title/Subject (e.g., English Language, PMP Certification, Graphic Design, Programming)
+        *   Provider/Institution Name
+        *   Format (Online, In-Person, Hybrid)
+        *   Duration, Schedule/Timing
+        *   Target Audience/Prerequisites
+        *   Certification Offered (Yes/No)
+        *   Price (Course Fee)
+
+    b.  **Tutoring**
+        *   Subjects Offered (e.g., Math, Physics, Arabic, All School Subjects)
+        *   Level (e.g., Elementary, High School, University, SAT/IGCSE Prep)
+        *   Tutor Experience/Qualifications
+        *   Location (Student's Home, Tutor's Home, Online)
+        *   Hourly Rate (JOD)
+        *   Availability
+
+---
+
+## 14. Services (Many are specific)
+
+*   **General Attributes for Services:** Service Type (from subcategory), Service Description (what is included, process), Areas Covered/Service Location, Experience Level (Years), Pricing Model (Hourly Rate, Fixed Project Price, Price on Enquiry), Availability/Working Hours, Portfolio/References (optional link or description).
+*   **Examples for specific services:**
+    *   **Home Repair/Electrical/Plumbing:** Specific tasks undertaken (e.g., faucet repair, socket installation).
+    *   **Travel - Tourism:** Package Type (e.g., Hajj/Umrah, International Tour, Local Excursion), Destination, Duration, Inclusions (Flights, Hotel, Tours).
+    *   **Events Services:** Type (Wedding Planning, Catering, Photography, DJ), Package Details.
+    *   **Movers - Packers:** Vehicle Size, Number of Staff, Packing Materials Included (Yes/No).
+    *   **Cleaning Services:** Type (Residential, Commercial, Deep Clean), Team Size, Equipment/Supplies (Provided by user/client).
+    *   **Marketing & Advertising:** Specific services (SEO, Social Media, Content Creation).
+
+---
+
+## 15. Jobs
+
+*   **Job Title** - Text Input
+*   **Company Name** (Or "Private Employer") - Text Input
+*   **Location** (City, Area) - Dropdown
+*   **Employment Type** (Full-time, Part-time, Contract, Internship, Freelance) - Dropdown
+*   **Industry** (e.g., IT, Hospitality, Sales, Education, Healthcare) - Dropdown
+*   **Experience Level Required** (Entry Level, Mid-Level, Senior Level, Manager) - Dropdown
+*   **Education Level Required** (High School, Diploma, Bachelor's, Master's) - Dropdown
+*   **Salary Range** (JOD per month/hour - Optional, or "Negotiable", "Competitive") - Numeric Input/Dropdown
+*   **Job Description** (Responsibilities, Duties) - Text Input
+*   **Requirements/Skills** - Text Input
+*   **How to Apply** (Contact Number, Email, Apply through platform) - Text Input/Options
+*   **Application Deadline** (Optional) - Date Input
+
+---
+
+## 16. Pets
+
+    a.  **Specific Animals (Cats, Dogs, Birds, etc.)**
+        *   Breed (e.g., Siamese Cat, German Shepherd Dog, African Grey Parrot) - Dropdown/Text Input
+        *   Age (Years/Months) - Numeric Input
+        *   Gender (Male, Female, Pair) - Dropdown
+        *   Vaccinated (Yes/No, Date of last vaccination if known) - Toggle & Date Input
+        *   Neutered/Spayed (Yes/No) - Toggle
+        *   Pedigree/Registered (Yes/No) - Toggle
+        *   Temperament/Characteristics (e.g., Good with kids, House-trained) - Text Input
+        *   Reason for Sale/Adoption - Text Input (optional)
+        *   Includes (Cage, Food, Toys - if any) - Checkboxes
+
+    b.  **Accessories (Pet)**
+        *   Item Type (e.g., Cage, Leash, Collar, Bed, Food Bowl, Toys, Aquarium, Carrier)
+        *   Suitable For (e.g., Dog, Cat, Bird, Fish - specify size/breed if relevant)
+        *   Material, Brand, Condition (New, Used)
+
+    c.  **Animal Food**
+        *   Food Type (e.g., Dry Kibble, Wet Food, Seeds, Hay)
+        *   Brand, Target Animal (e.g., Cat, Dog, Bird - specify Lifestage: Kitten/Puppy/Adult/Senior)
+        *   Bag/Package Size (kg/grams)
+        *   Expiry Date
+        *   Condition (New - Sealed)
+
+    d.  **Training & Taming / Pets Grooming Services**
+        *   Service Type (Obedience Training, Behavior Modification, Full Groom, Bath & Brush)
+        *   Animals Serviced (Dogs, Cats, etc.)
+        *   Location (At Client's, At Provider's, Mobile Service)
+        *   Experience/Certifications
+        *   Price/Packages
+
+---
+
+## 17. Books & Hobbies
+
+    a.  **Books**
+        *   Title, Author, ISBN (optional but helpful)
+        *   Genre (Fiction, Non-Fiction, Textbook, Children's, etc.) - Dropdown
+        *   Language - Dropdown
+        *   Format (Hardcover, Paperback, E-book - if transferable) - Dropdown
+        *   Condition (New, Like New, Good, Fair - specify any markings/damage)
+
+    b.  **Collectibles**
+        *   Item Type (e.g., Stamps, Coins, Antiques, Figurines, Trading Cards) - Dropdown
+        *   Era/Origin/Brand (if applicable)
+        *   Rarity/Edition (if known)
+        *   Condition/Grading (if applicable)
+
+    c.  **Tickets**
+        *   Event Type (Concert, Sports, Theatre, Cinema, Festival) - Dropdown
+        *   Event Name, Date, Time, Venue
+        *   Seat Location/Section (if applicable)
+        *   Number of Tickets
+        *   Price per Ticket / Total Price
+
+    d.  **Stationery**
+        *   Item Type (e.g., Notebooks, Pens, Pencils, Art Supplies, Organizers) - Dropdown
+        *   Brand, Quantity, Condition (New, Used)
+
+    e.  **Crafts & Arts**
+        *   Item Type (e.g., Handmade Jewelry, Paintings, Sculptures, Pottery, Knitting/Crochet items, Craft Supplies) - Dropdown
+        *   Material, Dimensions, Artist Name (if original work)
+        *   Style/Theme
+
+---
+
+## 18. Sports & Fitness
+
+    a.  **Sport Equipments (General)**
+        *   Equipment Type (e.g., Treadmill, Elliptical, Exercise Bike, Home Gym, Dumbbells - see specific) - Dropdown
+        *   Brand, Model
+        *   Key Features (e.g., for treadmill: max speed, incline levels, programs)
+        *   Condition (New, Used)
+
+    b.  **Weight Lifting**
+        *   Item Type (Dumbbells, Barbells, Weight Plates, Kettlebells, Benches, Racks) - Dropdown
+        *   Weight (kg or lbs) - Specify if set or individual
+        *   Material (e.g., Cast Iron, Rubber Coated)
+        *   Brand, Condition
+
+    c.  **Bicycles / Electric Bicycles**
+        *   Type (Mountain, Road, Hybrid, BMX, Kids, Electric) - Dropdown
+        *   Brand, Model
+        *   Frame Size (inches or S/M/L) - Dropdown/Text Input
+        *   Wheel Size (inches) - Dropdown
+        *   Number of Gears
+        *   For E-bikes: Motor Power (Watts), Battery Capacity (Ah/Wh), Range (km)
+        *   Condition
+
+    d.  **Other Sports (Billiard, Racket, Ball, Camping, etc.)**
+        *   Item Type (e.g., Billiard Table, Tennis Racket, Basketball, Tent, Sleeping Bag, Fishing Rod) - Dropdown
+        *   Brand, Size/Specifications relevant to the item
+        *   Condition
+
+    e.  **Sport Accessories**
+        *   Item Type (e.g., Helmets, Gloves, Protective Gear, Fitness Trackers - also in Electronics, Gym Bags)
+        *   Brand, Size, Sport Suitability
+        *   Condition
+
+---
+
+## 19. Business - Equipments
+
+    a.  **Restaurants Equipments**
+        *   Item Type (e.g., Commercial Oven, Fryer, Grill, Refrigerator/Freezer, Mixer, Coffee Machine, POS System - also in Computers, Tables/Chairs) - Dropdown
+        *   Brand, Model, Capacity/Dimensions
+        *   Power Source (Gas, Electric - specify voltage/phase)
+        *   Condition (New, Used)
+
+    b.  **Shops Supplies**
+        *   Item Type (e.g., Shelving Units, Display Cases, Mannequins, Shopping Carts/Baskets, Cash Register, Security Tags/System) - Dropdown
+        *   Material, Dimensions
+        *   Condition (New, Used)
+
+    c.  **Medical Equipments / Supplies**
+        *   Equipment Type (e.g., Examination Table, Wheelchair, Hospital Bed, Diagnostic Tools - Stethoscope/BP Monitor, Dental Chair) - Dropdown
+        *   Supplies Type (e.g., Bandages, Syringes, Masks, Gloves - often in bulk, new/sealed)
+        *   Brand, Model, Specifications
+        *   Condition (New, Used - sterilization/certification may be relevant for some used equipment)
+        *   Regulatory Approval (if applicable)
+
+    d.  **Building Supplies & Materials**
+        *   Material Type (e.g., Cement, Bricks, Wood, Steel Rebar, Tiles - also in Home, Pipes, Electrical Wiring, Insulation) - Dropdown
+        *   Quantity/Dimensions, Grade/Specification
+        *   Condition (New, Surplus, Used - if applicable)
+
+    e.  **Hand Tools / Power Tools**
+        *   Tool Type (e.g., Hammer, Screwdriver Set, Drill, Saw, Wrench Set, Grinder) - Dropdown
+        *   Brand, Power Source (Manual, Corded Electric, Battery - specify voltage)
+        *   Condition (New, Used)
+
+    f.  **Investment projects**
+        *   Project Type (e.g., Existing Business for Sale, Franchise Opportunity, Partnership Offer) - Dropdown
+        *   Industry, Location, Asking Price/Investment Required
+        *   Financials (Revenue, Profit - summarized or available on request)
+        *   Reason for Sale/Seeking Investment
+
+    g.  **Factories Equipments**
+        *   Machine Type (e.g., CNC Machine, Lathe, Press, Packaging Line, Conveyor System) - Dropdown
+        *   Brand, Model, Capacity, Year of Manufacture
+        *   Technical Specifications
+        *   Condition (New, Used, Reconditioned)
+
+    h.  **Cleaning Supplies & Equipment (Commercial)**
+        *   Item Type (e.g., Industrial Vacuum, Floor Scrubber/Polisher, Pressure Washer, Cleaning Carts, Bulk Cleaning Chemicals) - Dropdown
+        *   Brand, Capacity/Power
+        *   Condition (New, Used)
+
+    i.  **Sewing Supplies & Equipment**
+        *   Item Type (e.g., Sewing Machine - Industrial/Domestic, Overlocker, Fabrics, Threads, Mannequins) - Dropdown
+        *   Brand, Model (for machines)
+        *   Quantity/Type (for supplies)
+        *   Condition
+
+---
+
+### III. General Best Practices for AI to Understand/Implement
+
+*   **Mandatory vs. Optional Fields:** Identify which attributes are absolutely necessary for a listing to be useful (e.g., Title, Category, Price, Condition, Location) and which are highly recommended or optional.
+*   **Dependent Fields:** Some selections should trigger other fields (e.g., selecting "Cars for Sale" then "Make: Toyota" should populate "Model" with Toyota models).
+*   **Data Validation:** Implement input validation (e.g., price must be numeric, phone number format, character limits).
+*   **User Guidance:** Provide tooltips or placeholder text for each field to guide the user on what information is expected.
+*   **Keyword Importance:** Emphasize the use of relevant keywords in the title and description for better search visibility.
+*   **Honesty and Accuracy:** Stress the importance of providing truthful information, especially regarding condition and specifications.
+
+This detailed structure should provide a robust framework for understanding and processing product listings effectively for an e-commerce platform in Jordan. The key is to be as specific as possible within each subcategory to capture the information buyers are looking for.
+
+---
+Answer from Perplexity: pplx.ai/share
