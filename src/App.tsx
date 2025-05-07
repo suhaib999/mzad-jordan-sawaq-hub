@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
@@ -46,134 +46,132 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <CartProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/browse" element={<BrowseProducts />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                
-                {/* Sell routes */}
-                <Route path="/sell" element={<SellPage />} />
-                <Route 
-                  path="/sell/create" 
-                  element={
-                    <RequireAuth>
-                      <CreateListing />
-                    </RequireAuth>
-                  } 
-                />
-                <Route 
-                  path="/sell/add-product" 
-                  element={
-                    <RequireAuth>
-                      <AddProduct />
-                    </RequireAuth>
-                  } 
-                />
-                
-                {/* Cart and Wishlist */}
-                <Route 
-                  path="/cart" 
-                  element={
-                    <RequireAuth>
-                      <CartPage />
-                    </RequireAuth>
-                  } 
-                />
-                <Route 
-                  path="/wishlist" 
-                  element={
-                    <RequireAuth>
-                      <WishlistPage />
-                    </RequireAuth>
-                  } 
-                />
-                
-                {/* Auth routes */}
-                <Route path="/auth" element={<AuthLayout />}>
-                  <Route path="login" element={<Login />} />
-                  <Route path="register" element={<Register />} />
-                  <Route path="reset-password" element={<ResetPassword />} />
-                </Route>
-                
-                {/* Bids */}
-                <Route 
-                  path="/bids" 
-                  element={
-                    <RequireAuth>
-                      <BidPage />
-                    </RequireAuth>
-                  } 
-                />
-                
-                {/* Profile routes */}
-                <Route 
-                  path="/profile" 
-                  element={
-                    <RequireAuth>
-                      <Profile />
-                    </RequireAuth>
-                  } 
-                />
-                <Route 
-                  path="/profile/listings" 
-                  element={
-                    <RequireAuth>
-                      <MyListings />
-                    </RequireAuth>
-                  } 
-                />
-                
-                {/* Seller routes */}
-                <Route path="/seller/:id" element={<SellerProfile />} />
-                <Route 
-                  path="/seller/saved" 
-                  element={
-                    <RequireAuth>
-                      <SavedSellersPage />
-                    </RequireAuth>
-                  } 
-                />
-                <Route 
-                  path="/seller/account" 
-                  element={
-                    <RequireAuth>
-                      <SellerAccount />
-                    </RequireAuth>
-                  } 
-                />
-                <Route 
-                  path="/seller/dashboard" 
-                  element={
-                    <RequireAuth>
-                      <SellerDashboard />
-                    </RequireAuth>
-                  } 
-                />
-                <Route 
-                  path="/seller/subscriptions" 
-                  element={
-                    <RequireAuth>
-                      <SellerSubscriptions />
-                    </RequireAuth>
-                  } 
-                />
-                
-                {/* Messages */}
-                <Route 
-                  path="/messages" 
-                  element={
-                    <RequireAuth>
-                      <MessagesPage />
-                    </RequireAuth>
-                  } 
-                />
-                
-                {/* 404 route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <Toaster />
-            </BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/browse" element={<BrowseProducts />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              
+              {/* Sell routes */}
+              <Route path="/sell" element={<SellPage />} />
+              <Route 
+                path="/sell/create" 
+                element={
+                  <RequireAuth>
+                    <CreateListing />
+                  </RequireAuth>
+                } 
+              />
+              <Route 
+                path="/sell/add-product" 
+                element={
+                  <RequireAuth>
+                    <AddProduct />
+                  </RequireAuth>
+                } 
+              />
+              
+              {/* Cart and Wishlist */}
+              <Route 
+                path="/cart" 
+                element={
+                  <RequireAuth>
+                    <CartPage />
+                  </RequireAuth>
+                } 
+              />
+              <Route 
+                path="/wishlist" 
+                element={
+                  <RequireAuth>
+                    <WishlistPage />
+                  </RequireAuth>
+                } 
+              />
+              
+              {/* Auth routes */}
+              <Route path="/auth" element={<AuthLayout />}>
+                <Route path="login" element={<Login />} />
+                <Route path="register" element={<Register />} />
+                <Route path="reset-password" element={<ResetPassword />} />
+              </Route>
+              
+              {/* Bids */}
+              <Route 
+                path="/bids" 
+                element={
+                  <RequireAuth>
+                    <BidPage />
+                  </RequireAuth>
+                } 
+              />
+              
+              {/* Profile routes */}
+              <Route 
+                path="/profile" 
+                element={
+                  <RequireAuth>
+                    <Profile />
+                  </RequireAuth>
+                } 
+              />
+              <Route 
+                path="/profile/listings" 
+                element={
+                  <RequireAuth>
+                    <MyListings />
+                  </RequireAuth>
+                } 
+              />
+              
+              {/* Seller routes */}
+              <Route path="/seller/:id" element={<SellerProfile />} />
+              <Route 
+                path="/seller/saved" 
+                element={
+                  <RequireAuth>
+                    <SavedSellersPage />
+                  </RequireAuth>
+                } 
+              />
+              <Route 
+                path="/seller/account" 
+                element={
+                  <RequireAuth>
+                    <SellerAccount />
+                  </RequireAuth>
+                } 
+              />
+              <Route 
+                path="/seller/dashboard" 
+                element={
+                  <RequireAuth>
+                    <SellerDashboard />
+                  </RequireAuth>
+                } 
+              />
+              <Route 
+                path="/seller/subscriptions" 
+                element={
+                  <RequireAuth>
+                    <SellerSubscriptions />
+                  </RequireAuth>
+                } 
+              />
+              
+              {/* Messages */}
+              <Route 
+                path="/messages" 
+                element={
+                  <RequireAuth>
+                    <MessagesPage />
+                  </RequireAuth>
+                } 
+              />
+              
+              {/* 404 route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
           </CartProvider>
         </AuthProvider>
       </ThemeProvider>

@@ -783,7 +783,7 @@ const CreateListing = () => {
                           {/* For other categories */}
                           {selectedCategory && selectedCategory !== 'mobile-phones' && (
                             <DynamicAttributesForm
-                              category={selectedCategory}
+                              category={selectedCategory as any}
                             />
                           )}
                         </CardContent>
