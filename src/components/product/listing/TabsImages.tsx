@@ -36,6 +36,18 @@ const TabsImages: React.FC<TabsImagesProps> = ({
   completionScore,
   setActiveTab
 }) => {
+  const handleCreateListing = () => {
+    console.log("Creating listing, validation will run");
+    setIsDraft(false);
+    form.handleSubmit(onSubmit)();
+  };
+
+  const handleSaveDraft = () => {
+    console.log("Saving draft, bypassing validation");
+    setIsDraft(true);
+    onSubmit();
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -148,10 +160,7 @@ const TabsImages: React.FC<TabsImagesProps> = ({
           <Button
             type="button"
             variant="outline"
-            onClick={() => {
-              setIsDraft(true);
-              onSubmit();
-            }}
+            onClick={handleSaveDraft}
             disabled={isSubmitting}
           >
             {isSubmitting && isDraft ? (
@@ -163,10 +172,7 @@ const TabsImages: React.FC<TabsImagesProps> = ({
           </Button>
           <Button
             type="button"
-            onClick={() => {
-              setIsDraft(false);
-              form.handleSubmit(onSubmit)();
-            }}
+            onClick={handleCreateListing}
             disabled={isSubmitting || completionScore < 75}
           >
             {isSubmitting && !isDraft ? (

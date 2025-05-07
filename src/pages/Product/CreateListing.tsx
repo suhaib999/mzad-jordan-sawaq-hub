@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -271,8 +272,12 @@ const CreateListing = () => {
         return null;
       });
       
+      console.log("Starting image uploads...");
+      
       // Wait for all image uploads to complete
       const uploadedImages = (await Promise.all(imagePromises)).filter(Boolean);
+      
+      console.log(`Uploaded ${uploadedImages.length} images successfully`);
       
       // Prepare the product data for database
       const productData = {
@@ -305,24 +310,33 @@ const CreateListing = () => {
         custom_attributes: JSON.stringify(data.attributes || {})
       };
       
+      console.log("Inserting product data into database...", productData);
+      
       // Insert product into database
       const { error: productError } = await supabase
         .from('products')
         .upsert(productData);
         
       if (productError) {
+        console.error("Error inserting product:", productError);
         throw new Error(`Failed to create listing: ${productError.message}`);
       }
       
+      console.log("Product created successfully");
+      
       // Insert images into database
       if (uploadedImages.length > 0) {
+        console.log("Saving image references to database...");
         const { error: imagesError } = await supabase
           .from('product_images')
           .upsert(uploadedImages);
           
         if (imagesError) {
+          console.error("Error saving images:", imagesError);
           throw new Error(`Failed to save product images: ${imagesError.message}`);
         }
+        
+        console.log("Product images saved successfully");
       }
       
       // Clear draft from local storage if successful
@@ -397,7 +411,7 @@ const CreateListing = () => {
           <CompletionIndicator completionScore={completionScore} />
           
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form>
               <Tabs 
                 value={activeTab} 
                 onValueChange={setActiveTab} 
@@ -488,7 +502,7 @@ const CreateListing = () => {
                     isSubmitting={isSubmitting}
                     isDraft={isDraft}
                     setIsDraft={setIsDraft}
-                    onSubmit={form.handleSubmit(onSubmit)}
+                    onSubmit={onSubmit}
                     completionScore={completionScore}
                     setActiveTab={setActiveTab}
                   />
