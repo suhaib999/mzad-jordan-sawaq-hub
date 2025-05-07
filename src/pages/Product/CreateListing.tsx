@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -101,12 +100,13 @@ import {
   AlertCircle,
   CheckCircle2,
   ArrowRight,
+  Package2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { PhoneSpecsSelector } from '@/components/product/PhoneSpecsSelector';
-import { DynamicAttributesForm } from '@/components/product/DynamicAttributesForm';
-import { CategorySelector } from '@/components/category/CategorySelector';
+import PhoneSpecsSelector from '@/components/product/PhoneSpecsSelector';
+import DynamicAttributesForm from '@/components/product/DynamicAttributesForm';
+import CategorySelector from '@/components/category/CategorySelector';
 
 // Create schema for product form
 const productSchema = z.object({
@@ -335,9 +335,9 @@ const CreateListing = () => {
   };
   
   // Handle category selection
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategory(category);
-    form.setValue('category', category);
+  const handleCategorySelect = (category: any) => {
+    setSelectedCategory(category.id);
+    form.setValue('category', category.id);
   };
   
   // Handle form submission
@@ -538,7 +538,7 @@ const CreateListing = () => {
       </div>
     );
   };
-  
+
   if (!session?.user) {
     return (
       <Layout>
@@ -645,7 +645,7 @@ const CreateListing = () => {
                           name="title"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel required>Title</FormLabel>
+                              <FormLabel>Title <span className="text-red-500">*</span></FormLabel>
                               <FormControl>
                                 <Input placeholder="Enter title" {...field} />
                               </FormControl>
@@ -663,7 +663,7 @@ const CreateListing = () => {
                           name="description"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel required>Description</FormLabel>
+                              <FormLabel>Description <span className="text-red-500">*</span></FormLabel>
                               <FormControl>
                                 <Textarea 
                                   placeholder="Describe your item in detail" 
@@ -685,14 +685,15 @@ const CreateListing = () => {
                           name="category"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel required>Category</FormLabel>
+                              <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
                               <FormControl>
                                 <CategorySelector 
                                   onCategorySelect={(category) => {
                                     handleCategorySelect(category);
-                                    field.onChange(category);
+                                    field.onChange(category.id);
                                   }}
-                                  selectedCategory={field.value}
+                                  onCancel={() => {}}
+                                  initialCategoryId={field.value}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -706,7 +707,7 @@ const CreateListing = () => {
                           name="condition"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel required>Condition</FormLabel>
+                              <FormLabel>Condition <span className="text-red-500">*</span></FormLabel>
                               <Select 
                                 onValueChange={field.onChange} 
                                 defaultValue={field.value}
@@ -832,7 +833,7 @@ const CreateListing = () => {
                           name="listing_type"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel required>Listing Type</FormLabel>
+                              <FormLabel>Listing Type <span className="text-red-500">*</span></FormLabel>
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                                 <div
                                   className={`border rounded-md p-3 cursor-pointer ${
@@ -912,7 +913,7 @@ const CreateListing = () => {
                               name="price"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel required>Price ($)</FormLabel>
+                                  <FormLabel>Price ($) <span className="text-red-500">*</span></FormLabel>
                                   <FormControl>
                                     <Input 
                                       type="number" 
@@ -939,656 +940,3 @@ const CreateListing = () => {
                                       onCheckedChange={field.onChange}
                                     />
                                   </FormControl>
-                                  <div className="space-y-1 leading-none">
-                                    <FormLabel>
-                                      Price is negotiable
-                                    </FormLabel>
-                                  </div>
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="allow_offers"
-                              render={({ field }) => (
-                                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <div className="space-y-1 leading-none">
-                                    <FormLabel>
-                                      Allow buyers to make offers
-                                    </FormLabel>
-                                  </div>
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        )}
-                        
-                        {/* Auction Section */}
-                        {(listingType === 'auction' || listingType === 'both') && (
-                          <div className="space-y-4 border rounded-md p-4">
-                            <h3 className="font-medium flex items-center">
-                              <Gavel className="h-4 w-4 mr-2" />
-                              Auction Details
-                            </h3>
-                            
-                            <FormField
-                              control={form.control}
-                              name="start_price"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel required>Starting Price ($)</FormLabel>
-                                  <FormControl>
-                                    <Input 
-                                      type="number" 
-                                      step="0.01" 
-                                      min="0.01"
-                                      placeholder="0.00" 
-                                      {...field}
-                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="reserve_price"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Reserve Price ($)</FormLabel>
-                                  <FormControl>
-                                    <Input 
-                                      type="number" 
-                                      step="0.01" 
-                                      min="0"
-                                      placeholder="0.00 (optional)" 
-                                      {...field}
-                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                    />
-                                  </FormControl>
-                                  <FormDescription>
-                                    Minimum price you'll accept (optional)
-                                  </FormDescription>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="auction_duration"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel required>Duration (days)</FormLabel>
-                                  <Select 
-                                    onValueChange={(value) => field.onChange(parseInt(value))} 
-                                    defaultValue={field.value?.toString()}
-                                  >
-                                    <FormControl>
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Select duration" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      <SelectItem value="1">1 day</SelectItem>
-                                      <SelectItem value="3">3 days</SelectItem>
-                                      <SelectItem value="5">5 days</SelectItem>
-                                      <SelectItem value="7">7 days</SelectItem>
-                                      <SelectItem value="10">10 days</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                    
-                    <div className="space-y-6">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="text-lg flex items-center">
-                            <Package className="w-5 h-5 mr-2" />
-                            Inventory
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          {/* Quantity */}
-                          <FormField
-                            control={form.control}
-                            name="quantity"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel required>Quantity</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    min="1" 
-                                    step="1"
-                                    placeholder="1" 
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
-                                    disabled={listingType === 'auction'}
-                                  />
-                                </FormControl>
-                                {listingType === 'auction' && (
-                                  <FormDescription>
-                                    Auctions are limited to quantity of 1
-                                  </FormDescription>
-                                )}
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          {/* SKU/Item ID (if managing inventory) */}
-                          <FormField
-                            control={form.control}
-                            name="sku"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>SKU/Item ID (Optional)</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Your inventory reference" {...field} />
-                                </FormControl>
-                                <FormDescription>
-                                  For your internal inventory tracking
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </CardContent>
-                      </Card>
-                      
-                      <div className="flex justify-between">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setActiveTab('details')}
-                        >
-                          Back: Details
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={() => setActiveTab('shipping')}
-                          className="flex items-center"
-                        >
-                          Next: Shipping <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                {/* ===== SHIPPING TAB ===== */}
-                <TabsContent value="shipping" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center">
-                          <Truck className="w-5 h-5 mr-2" />
-                          Shipping Options
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {/* Location */}
-                        <FormField
-                          control={form.control}
-                          name="location"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel required>Item Location</FormLabel>
-                              <FormControl>
-                                <Input placeholder="City, State" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        {/* Shipping Methods */}
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center">
-                            <Label>Shipping Methods</Label>
-                            <Button 
-                              type="button" 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => appendShipping({ method: '', price: 0 })}
-                            >
-                              <Plus className="w-4 h-4 mr-1" /> Add Method
-                            </Button>
-                          </div>
-                          
-                          {shippingFields.map((field, index) => (
-                            <div key={field.id} className="flex items-end gap-2">
-                              <FormField
-                                control={form.control}
-                                name={`shipping_options.${index}.method`}
-                                render={({ field }) => (
-                                  <FormItem className="flex-1">
-                                    <FormControl>
-                                      <Input placeholder="Shipping method" {...field} />
-                                    </FormControl>
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name={`shipping_options.${index}.price`}
-                                render={({ field }) => (
-                                  <FormItem className="w-24">
-                                    <FormControl>
-                                      <Input 
-                                        type="number" 
-                                        placeholder="Price" 
-                                        {...field}
-                                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                      />
-                                    </FormControl>
-                                  </FormItem>
-                                )}
-                              />
-                              <Button 
-                                type="button"
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => removeShipping(index)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                        
-                        {/* Shipping Options */}
-                        <div className="space-y-3 pt-2">
-                          <FormField
-                            control={form.control}
-                            name="free_shipping"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <div className="space-y-1 leading-none">
-                                  <FormLabel>
-                                    Offer free shipping
-                                  </FormLabel>
-                                </div>
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="local_pickup"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <div className="space-y-1 leading-none">
-                                  <FormLabel>
-                                    Allow local pickup
-                                  </FormLabel>
-                                </div>
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="shipping_worldwide"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <div className="space-y-1 leading-none">
-                                  <FormLabel>
-                                    Ship worldwide
-                                  </FormLabel>
-                                </div>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        {/* Handling Time */}
-                        <FormField
-                          control={form.control}
-                          name="handling_time"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Handling Time</FormLabel>
-                              <Select 
-                                onValueChange={field.onChange} 
-                                defaultValue={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select handling time" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="same_day">Same Business Day</SelectItem>
-                                  <SelectItem value="1_day">1 Business Day</SelectItem>
-                                  <SelectItem value="2_days">2 Business Days</SelectItem>
-                                  <SelectItem value="3_days">3 Business Days</SelectItem>
-                                  <SelectItem value="5_days">5 Business Days</SelectItem>
-                                  <SelectItem value="10_days">10 Business Days</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </CardContent>
-                    </Card>
-                    
-                    <div className="space-y-6">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="text-lg flex items-center">
-                            <Award className="w-5 h-5 mr-2" />
-                            Return Policy
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          {/* Return Policy */}
-                          <FormField
-                            control={form.control}
-                            name="return_policy"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Return Policy</FormLabel>
-                                <Select 
-                                  onValueChange={field.onChange} 
-                                  defaultValue={field.value}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select return policy" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="no_returns">No Returns</SelectItem>
-                                    <SelectItem value="30_days">30 Days Return</SelectItem>
-                                    <SelectItem value="14_days">14 Days Return</SelectItem>
-                                    <SelectItem value="7_days">7 Days Return</SelectItem>
-                                    <SelectItem value="custom">Custom Policy</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          {/* Warranty Information */}
-                          <FormField
-                            control={form.control}
-                            name="warranty"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Warranty</FormLabel>
-                                <Select 
-                                  onValueChange={field.onChange} 
-                                  defaultValue={field.value}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select warranty option" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="none">No Warranty</SelectItem>
-                                    <SelectItem value="30_days">30 Days</SelectItem>
-                                    <SelectItem value="60_days">60 Days</SelectItem>
-                                    <SelectItem value="90_days">90 Days</SelectItem>
-                                    <SelectItem value="6_months">6 Months</SelectItem>
-                                    <SelectItem value="1_year">1 Year</SelectItem>
-                                    <SelectItem value="manufacturer">Manufacturer Warranty</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          {/* Tags */}
-                          <FormField
-                            control={form.control}
-                            name="tags"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Tags (Optional)</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    placeholder="Enter tags separated by commas" 
-                                    {...field}
-                                    value={field.value?.join(', ') || ''}
-                                    onChange={(e) => {
-                                      const value = e.target.value;
-                                      const tags = value.split(',')
-                                        .map(tag => tag.trim())
-                                        .filter(tag => tag.length > 0);
-                                      field.onChange(tags);
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormDescription>
-                                  Add relevant keywords to help buyers find your item
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </CardContent>
-                      </Card>
-                      
-                      <div className="flex justify-between">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setActiveTab('pricing')}
-                        >
-                          Back: Pricing
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={() => setActiveTab('images')}
-                          className="flex items-center"
-                        >
-                          Next: Images <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                {/* ===== IMAGES TAB ===== */}
-                <TabsContent value="images" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center">
-                        <ImageIcon className="w-5 h-5 mr-2" />
-                        Product Images
-                      </CardTitle>
-                      <CardDescription>
-                        Add up to 10 images. First image will be the main display image.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <FormField
-                        control={form.control}
-                        name="images"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                              {/* Image upload button */}
-                              {watchedImages.length < 10 && (
-                                <div 
-                                  className="border-2 border-dashed rounded-md flex flex-col items-center justify-center p-4 h-40 cursor-pointer hover:border-primary transition-colors"
-                                  onClick={() => fileInputRef.current?.click()}
-                                >
-                                  <Upload className="h-10 w-10 text-muted-foreground mb-2" />
-                                  <p className="text-sm text-center text-muted-foreground">
-                                    Click to upload
-                                  </p>
-                                  <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    className="hidden"
-                                    accept="image/*"
-                                    multiple
-                                    onChange={handleImageUpload}
-                                  />
-                                </div>
-                              )}
-                              
-                              {/* Display uploaded images */}
-                              {watchedImages.map((image, index) => (
-                                <div
-                                  key={image.id}
-                                  className="relative border rounded-md overflow-hidden group h-40"
-                                >
-                                  {/* Main image indicator */}
-                                  {index === 0 && (
-                                    <Badge className="absolute top-2 left-2 z-10">
-                                      Main
-                                    </Badge>
-                                  )}
-                                  
-                                  {/* Image */}
-                                  <img
-                                    src={image.url}
-                                    alt={`Product ${index + 1}`}
-                                    className="w-full h-full object-cover"
-                                  />
-                                  
-                                  {/* Image controls */}
-                                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
-                                    <div className="flex justify-end">
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-white"
-                                        onClick={() => removeImage(index)}
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                    
-                                    <div className="flex justify-between">
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-white"
-                                        onClick={() => moveImage(index, 'up')}
-                                        disabled={index === 0}
-                                      >
-                                        <ArrowRight className="h-4 w-4 rotate-180" />
-                                      </Button>
-                                      
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-white"
-                                        onClick={() => moveImage(index, 'down')}
-                                        disabled={index === watchedImages.length - 1}
-                                      >
-                                        <ArrowRight className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  </Card>
-                  
-                  <div className="flex justify-between items-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setActiveTab('shipping')}
-                    >
-                      Back: Shipping
-                    </Button>
-                    
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          setIsDraft(true);
-                          form.handleSubmit(onSubmit)();
-                        }}
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting && isDraft ? (
-                          <Loader className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Save className="mr-2 h-4 w-4" />
-                        )}
-                        Save as Draft
-                      </Button>
-                      
-                      <Button 
-                        type="submit" 
-                        disabled={isSubmitting || completionScore < 60}
-                        onClick={() => setIsDraft(false)}
-                      >
-                        {isSubmitting && !isDraft ? (
-                          <Loader className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Tag className="mr-2 h-4 w-4" />
-                        )}
-                        Publish Listing
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {draftSaved && (
-                    <div className="flex items-center gap-2 text-sm text-green-600 justify-center mt-2">
-                      <Check className="h-4 w-4" />
-                      <span>Draft saved automatically</span>
-                    </div>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </form>
-          </Form>
-        </div>
-      </div>
-    </Layout>
-  );
-};
-
-export default CreateListing;
