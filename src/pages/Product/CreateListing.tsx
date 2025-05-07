@@ -776,14 +776,7 @@ const CreateListing = () => {
                           {/* Render category-specific form fields */}
                           {selectedCategory === 'mobile-phones' && (
                             <PhoneSpecsSelector 
-                              onSpecsChange={(specs) => {
-                                // Update form values with phone specifications
-                                form.setValue('attributes', {
-                                  ...form.getValues('attributes'),
-                                  ...specs
-                                });
-                              }}
-                              currentValues={form.getValues('attributes')}
+                              categoryPath={selectedCategory}
                             />
                           )}
                           
@@ -791,13 +784,6 @@ const CreateListing = () => {
                           {selectedCategory && selectedCategory !== 'mobile-phones' && (
                             <DynamicAttributesForm
                               category={selectedCategory}
-                              onAttributesChange={(attrs) => {
-                                form.setValue('attributes', {
-                                  ...form.getValues('attributes'),
-                                  ...attrs
-                                });
-                              }}
-                              currentValues={form.getValues('attributes')}
                             />
                           )}
                         </CardContent>

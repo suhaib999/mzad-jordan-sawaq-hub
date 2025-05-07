@@ -16,10 +16,12 @@ import { Info, Smartphone, Tablet } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 interface PhoneSpecsSelectorProps {
-  categoryPath: string;
+  categoryPath?: string;
+  onSpecsChange?: (specs: any) => void;
+  currentValues?: Record<string, string | number | boolean | string[]>;
 }
 
-const PhoneSpecsSelector: React.FC<PhoneSpecsSelectorProps> = ({ categoryPath }) => {
+const PhoneSpecsSelector: React.FC<PhoneSpecsSelectorProps> = ({ categoryPath, onSpecsChange, currentValues }) => {
   const form = useFormContext();
   const [selectedBrand, setSelectedBrand] = useState<SmartphoneBrand | null>(null);
   const [selectedModel, setSelectedModel] = useState<SmartphoneModel | null>(null);
