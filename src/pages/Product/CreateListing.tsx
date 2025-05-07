@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,22 +10,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 // UI Components
 import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+import { Form } from '@/components/ui/form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Custom Components
 import TabsDetails from '@/components/product/listing/TabsDetails';
@@ -37,7 +22,7 @@ import CompletionIndicator from '@/components/product/listing/CompletionIndicato
 import AuthCheck from '@/components/product/listing/AuthCheck';
 
 // Types
-import { ProductFormValues, productSchema } from '@/types/product';
+import { ProductFormValues, productSchema, Category } from '@/types/product';
 
 const CreateListing = () => {
   const { session } = useAuth();
@@ -217,6 +202,8 @@ const CreateListing = () => {
   
   // Handle form submission
   const onSubmit = async (data: ProductFormValues) => {
+    console.log("Form submitted with data:", data);
+    
     if (!session?.user) {
       toast({
         title: "Authentication required",
@@ -360,6 +347,7 @@ const CreateListing = () => {
         description: error.message || "Failed to create listing",
         variant: "destructive"
       });
+      console.error("Submission error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -495,7 +483,7 @@ const CreateListing = () => {
                     watchedImages={watchedImages}
                     handleImageUpload={handleImageUpload}
                     moveImage={moveImage}
-                    removeImage={removeImage}
+                    removeImage={(index) => removeImage(index)}
                     fileInputRef={fileInputRef}
                     isSubmitting={isSubmitting}
                     isDraft={isDraft}

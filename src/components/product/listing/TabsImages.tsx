@@ -162,10 +162,10 @@ const TabsImages: React.FC<TabsImagesProps> = ({
             Save as Draft
           </Button>
           <Button
-            type="submit"
+            type="button"
             onClick={() => {
               setIsDraft(false);
-              onSubmit();
+              form.handleSubmit(onSubmit)();
             }}
             disabled={isSubmitting || completionScore < 75}
           >
