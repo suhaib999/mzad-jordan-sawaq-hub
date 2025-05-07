@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 // UI Components
 import Layout from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button'; // Added missing Button import
 import { Form } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -36,6 +36,12 @@ import RequireAuth from '@/components/auth/RequireAuth';
 // Types
 import { ProductFormValues, productSchema, Category } from '@/types/product';
 
+// Update the ProductFormValues type to include the id property
+// We'll extend it locally since we don't want to modify the original type file
+interface ExtendedProductFormValues extends ProductFormValues {
+  id?: string;
+}
+
 const CreateListing = () => {
   const { session } = useAuth();
   const navigate = useNavigate();
@@ -54,7 +60,7 @@ const CreateListing = () => {
   const [loadDraftDialogOpen, setLoadDraftDialogOpen] = useState(false);
   
   // Load draft from local storage
-  const [savedDraft, setSavedDraft] = useLocalStorage<ProductFormValues | null>('product_draft', null);
+  const [savedDraft, setSavedDraft] = useLocalStorage<ExtendedProductFormValues | null>('product_draft', null);
 
   // Check for existing draft
   useEffect(() => {
@@ -651,7 +657,7 @@ const CreateListing = () => {
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction 
                     onClick={discardDraft}
-                    variant="destructive"
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
                     Discard
                   </AlertDialogAction>
