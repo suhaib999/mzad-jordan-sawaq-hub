@@ -940,3 +940,331 @@ const CreateListing = () => {
                                       onCheckedChange={field.onChange}
                                     />
                                   </FormControl>
+
+                                  <FormLabel>Is Negotiable</FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Auction Section */}
+                        {(listingType === 'auction' || listingType === 'both') && (
+                          <div className="space-y-4 border rounded-md p-4">
+                            <h3 className="font-medium flex items-center">
+                              <Gavel className="h-4 w-4 mr-2" />
+                              Auction Details
+                            </h3>
+                            
+                            <FormField
+                              control={form.control}
+                              name="start_price"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Starting Price ($) <span className="text-red-500">*</span></FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      step="0.01" 
+                                      min="0.01"
+                                      placeholder="0.00" 
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="reserve_price"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Reserve Price ($) <span className="text-red-500">*</span></FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      step="0.01" 
+                                      min="0.01"
+                                      placeholder="0.00" 
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="auction_duration"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Auction Duration (days) <span className="text-red-500">*</span></FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      min="1"
+                                      placeholder="1" 
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+                
+                {/* ===== SHIPPING TAB ===== */}
+                <TabsContent value="shipping" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center">
+                          <Tag className="w-5 h-5 mr-2" />
+                          Shipping Details
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Shipping Options */}
+                        <FormField
+                          control={form.control}
+                          name="shipping_options"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Shipping Options</FormLabel>
+                              <FormControl>
+                                <Select 
+                                  onValueChange={field.onChange} 
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select shipping options" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="Standard">Standard</SelectItem>
+                                    <SelectItem value="Express">Express</SelectItem>
+                                    <SelectItem value="Priority">Priority</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        {/* Handling Time */}
+                        <FormField
+                          control={form.control}
+                          name="handling_time"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Handling Time (days)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  min="1"
+                                  placeholder="1" 
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        {/* Location */}
+                        <FormField
+                          control={form.control}
+                          name="location"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Location</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter location" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        {/* Shipping Worldwide */}
+                        <FormField
+                          control={form.control}
+                          name="shipping_worldwide"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Shipping Worldwide</FormLabel>
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        {/* Shipping Exclusions */}
+                        <FormField
+                          control={form.control}
+                          name="shipping_exclusions"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Shipping Exclusions</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Enter any shipping exclusions" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+                
+                {/* ===== IMAGES TAB ===== */}
+                <TabsContent value="images" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Image Upload */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center">
+                          <Upload className="w-5 h-5 mr-2" />
+                          Image Upload
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm">Upload up to 10 images</p>
+                          <Button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="flex items-center"
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Choose Files
+                          </Button>
+                        </div>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          multiple
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
+                        <div className="mt-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {imageFields.map((field, index) => (
+                              <div key={field.id} className="relative">
+                                <img
+                                  src={field.url}
+                                  alt={`Image ${index + 1}`}
+                                  className="w-full h-auto rounded-lg"
+                                />
+                                <div className="absolute top-2 right-2">
+                                  <Button
+                                    type="button"
+                                    onClick={() => moveImage(index, 'up')}
+                                    disabled={index === 0}
+                                    className="flex items-center justify-center h-6 w-6 rounded-full bg-gray-200 hover:bg-gray-300"
+                                  >
+                                    <ArrowRight className="h-4 w-4 text-gray-500" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    onClick={() => moveImage(index, 'down')}
+                                    disabled={index === imageFields.length - 1}
+                                    className="flex items-center justify-center h-6 w-6 rounded-full bg-gray-200 hover:bg-gray-300"
+                                  >
+                                    <ArrowRight className="h-4 w-4 text-gray-500" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    onClick={() => removeImage(index)}
+                                    className="flex items-center justify-center h-6 w-6 rounded-full bg-gray-200 hover:bg-gray-300"
+                                  >
+                                    <Trash2 className="h-4 w-4 text-gray-500" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+              </Tabs>
+              
+              <div className="mt-8 flex justify-between items-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsDraft(true);
+                    form.handleSubmit(onSubmit)();
+                  }}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting && isDraft ? (
+                    <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  Save as Draft
+                </Button>
+                
+                <Button 
+                  type="submit"
+                  disabled={isSubmitting || completionScore < 60}
+                  onClick={() => setIsDraft(false)}
+                >
+                  {isSubmitting && !isDraft ? (
+                    <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Check className="mr-2 h-4 w-4" />
+                  )}
+                  Publish Listing
+                </Button>
+              </div>
+              
+              {draftSaved && (
+                <div className="mt-2 text-center text-sm text-green-600">
+                  Draft saved automatically
+                </div>
+              )}
+              
+              {completionScore < 60 && (
+                <div className="mt-2 text-center text-sm text-amber-600 flex items-center justify-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  Complete more information to publish your listing
+                </div>
+              )}
+            </form>
+          </Form>
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default CreateListing;
