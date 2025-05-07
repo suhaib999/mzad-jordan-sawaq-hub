@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -786,7 +785,11 @@ const CreateListing = () => {
                           {/* For other categories */}
                           {selectedCategory && selectedCategory !== 'mobile-phones' && (
                             <DynamicAttributesForm
-                              category={{ name: selectedCategory }}
+                              category={{ 
+                                id: selectedCategory, 
+                                name: selectedCategory, 
+                                slug: selectedCategory 
+                              }}
                               form={form}
                               customAttributes={customAttributes}
                               setCustomAttributes={setCustomAttributes}
