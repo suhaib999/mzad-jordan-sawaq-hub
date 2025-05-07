@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -202,8 +201,11 @@ const CreateListing = () => {
   };
   
   // Handle form submission
-  const onSubmit = async (data: ProductFormValues) => {
-    console.log("Form submitted with data:", data);
+  const onSubmit = async (data?: ProductFormValues) => {
+    // If no data is provided (save draft case), get values from form
+    const formData = data || form.getValues();
+    
+    console.log("Form submitted with data:", formData);
     
     if (!session?.user) {
       toast({
@@ -219,20 +221,20 @@ const CreateListing = () => {
       setIsSubmitting(true);
       
       // Set status based on button clicked
-      data.status = isDraft ? 'draft' : 'active';
+      formData.status = isDraft ? 'draft' : 'active';
       
       // Format the end time for auctions
-      if ((data.listing_type === 'auction' || data.listing_type === 'both') && data.auction_duration) {
+      if ((formData.listing_type === 'auction' || formData.listing_type === 'both') && formData.auction_duration) {
         const endDate = new Date();
-        endDate.setDate(endDate.getDate() + data.auction_duration);
-        data.end_time = endDate.toISOString();
+        endDate.setDate(endDate.getDate() + formData.auction_duration);
+        formData.end_time = endDate.toISOString();
       }
       
       // Generate a product ID
       const productId = draftId || uuidv4();
       
       // Upload images first
-      const imagePromises = data.images.map(async (image, index) => {
+      const imagePromises = formData.images.map(async (image, index) => {
         // If the image was already uploaded (has a URL but no file), skip upload
         if (image.url && !image.url.startsWith('blob:') && !image.file) {
           return {
@@ -282,32 +284,32 @@ const CreateListing = () => {
       // Prepare the product data for database
       const productData = {
         id: productId,
-        title: data.title,
-        description: data.description,
-        price: data.listing_type === 'auction' ? data.start_price : data.price,
+        title: formData.title,
+        description: formData.description,
+        price: formData.listing_type === 'auction' ? formData.start_price : formData.price,
         currency: 'USD', // Default to USD for now
-        condition: data.condition,
-        category: data.category,
-        category_id: data.category, // Using category as ID for now
+        condition: formData.condition,
+        category: formData.category,
+        category_id: formData.category, // Using category as ID for now
         seller_id: session.user.id,
-        location: data.location,
+        location: formData.location,
         // Convert shipping_options array to string for database storage
-        shipping: JSON.stringify(data.shipping_options || []),
-        shipping_fee: data.shipping_options?.[0]?.price || 0,
-        is_auction: data.listing_type === 'auction' || data.listing_type === 'both',
-        start_price: data.start_price,
-        reserve_price: data.reserve_price,
-        end_time: data.end_time,
-        status: data.status,
+        shipping: JSON.stringify(formData.shipping_options || []),
+        shipping_fee: formData.shipping_options?.[0]?.price || 0,
+        is_auction: formData.listing_type === 'auction' || formData.listing_type === 'both',
+        start_price: formData.start_price,
+        reserve_price: formData.reserve_price,
+        end_time: formData.end_time,
+        status: formData.status,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        quantity: data.quantity,
-        accept_offers: data.allow_offers,
-        brand: data.brand,
-        model: data.model,
-        color: data.color,
-        size: data.size,
-        custom_attributes: JSON.stringify(data.attributes || {})
+        quantity: formData.quantity,
+        accept_offers: formData.allow_offers,
+        brand: formData.brand,
+        model: formData.model,
+        color: formData.color,
+        size: formData.size,
+        custom_attributes: JSON.stringify(formData.attributes || {})
       };
       
       console.log("Inserting product data into database...", productData);
@@ -344,15 +346,15 @@ const CreateListing = () => {
       setDraftId(productId);
       
       toast({
-        title: data.status === 'draft' ? "Draft saved" : "Listing published",
-        description: data.status === 'draft' 
+        title: formData.status === 'draft' ? "Draft saved" : "Listing published",
+        description: formData.status === 'draft' 
           ? "Your listing draft has been saved" 
           : "Your listing is now live and visible to buyers",
         variant: "default",
       });
       
       // Redirect based on status
-      if (data.status === 'active') {
+      if (formData.status === 'active') {
         navigate(`/product/${productId}`);
       }
     } catch (error: any) {

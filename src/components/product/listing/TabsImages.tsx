@@ -17,7 +17,7 @@ interface TabsImagesProps {
   isSubmitting: boolean;
   isDraft: boolean;
   setIsDraft: (isDraft: boolean) => void;
-  onSubmit: () => void;
+  onSubmit: (data?: ProductFormValues) => void | Promise<void>; // Updated to accept optional data parameter
   completionScore: number;
   setActiveTab: (tab: string) => void;
 }
