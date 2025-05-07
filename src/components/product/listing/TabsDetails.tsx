@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
@@ -10,8 +10,10 @@ import { ArrowRight, FileText, Tag } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProductFormValues } from '@/types/product';
 import CategorySelector from '@/components/category/CategorySelector';
+import CategorySelectDialog from '@/components/category/CategorySelectDialog';
 import PhoneSpecsSelector from '@/components/product/PhoneSpecsSelector';
 import DynamicAttributesForm from '@/components/product/DynamicAttributesForm';
+import { findCategoryById } from '@/data/categories';
 
 interface TabsDetailsProps {
   form: UseFormReturn<ProductFormValues>;
@@ -32,6 +34,22 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
   handleCategorySelect,
   setActiveTab
 }) => {
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  
+  const onCategorySelect = (category: any) => {
+    console.log("Category selected:", category);
+    handleCategorySelect(category);
+    form.setValue('category', category.id);
+    setSelectedCategory(category.id);
+  };
+
+  // Get the category name from the ID for display
+  const getCategoryDisplayName = () => {
+    if (!selectedCategory) return "Select category";
+    const category = findCategoryById(selectedCategory);
+    return category ? category.name : "Select category";
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Basic Information */}
@@ -83,7 +101,7 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
             )}
           />
           
-          {/* Category */}
+          {/* Category - Updated to use dialog */}
           <FormField
             control={form.control}
             name="category"
@@ -91,14 +109,24 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
               <FormItem>
                 <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
-                  <CategorySelector 
-                    onCategorySelect={(category) => {
-                      handleCategorySelect(category);
-                      field.onChange(category.id);
-                    }}
-                    onCancel={() => {}}
-                    initialCategoryId={field.value}
-                  />
+                  <div>
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      className="w-full justify-between"
+                      onClick={() => setCategoryDialogOpen(true)}
+                    >
+                      {getCategoryDisplayName()}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                    
+                    <CategorySelectDialog
+                      open={categoryDialogOpen}
+                      onOpenChange={setCategoryDialogOpen}
+                      onCategorySelect={onCategorySelect}
+                      initialCategoryId={field.value}
+                    />
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -115,6 +143,7 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>

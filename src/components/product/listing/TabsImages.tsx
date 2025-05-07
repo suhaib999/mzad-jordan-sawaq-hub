@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ProductFormValues } from '@/types/product';
 import { ArrowRight, Trash2, Upload, Image as ImageIcon, Save, Loader, CheckCircle2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface TabsImagesProps {
   form: UseFormReturn<ProductFormValues>;
@@ -17,7 +18,7 @@ interface TabsImagesProps {
   isSubmitting: boolean;
   isDraft: boolean;
   setIsDraft: (isDraft: boolean) => void;
-  onSubmit: (data?: ProductFormValues) => void | Promise<void>; // Updated to accept optional data parameter
+  onSubmit: (data?: ProductFormValues) => void | Promise<void>;
   completionScore: number;
   setActiveTab: (tab: string) => void;
 }
@@ -39,13 +40,23 @@ const TabsImages: React.FC<TabsImagesProps> = ({
   const handleCreateListing = () => {
     console.log("Creating listing, validation will run");
     setIsDraft(false);
-    form.handleSubmit(onSubmit)();
+    // Get the current form values
+    const formData = form.getValues();
+    console.log("Form data before submission:", formData);
+    
+    // Use form.handleSubmit to ensure validation runs
+    form.handleSubmit((validData) => {
+      console.log("Form validated successfully, submitting:", validData);
+      onSubmit(validData);
+    })();
   };
 
   const handleSaveDraft = () => {
     console.log("Saving draft, bypassing validation");
     setIsDraft(true);
-    onSubmit();
+    const formData = form.getValues();
+    console.log("Saving draft with data:", formData);
+    onSubmit(formData);
   };
 
   return (

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,6 +13,16 @@ import { v4 as uuidv4 } from 'uuid';
 import Layout from '@/components/layout/Layout';
 import { Form } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog';
 
 // Custom Components
 import TabsDetails from '@/components/product/listing/TabsDetails';
@@ -20,6 +31,7 @@ import TabsShipping from '@/components/product/listing/TabsShipping';
 import TabsImages from '@/components/product/listing/TabsImages';
 import CompletionIndicator from '@/components/product/listing/CompletionIndicator';
 import AuthCheck from '@/components/product/listing/AuthCheck';
+import RequireAuth from '@/components/auth/RequireAuth';
 
 // Types
 import { ProductFormValues, productSchema, Category } from '@/types/product';
@@ -37,14 +49,31 @@ const CreateListing = () => {
   const [draftId, setDraftId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [customAttributes, setCustomAttributes] = useState<{ name: string; value: string }[]>([]);
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
+  const [loadDraftDialogOpen, setLoadDraftDialogOpen] = useState(false);
   
   // Load draft from local storage
   const [savedDraft, setSavedDraft] = useLocalStorage<ProductFormValues | null>('product_draft', null);
 
+  // Check for existing draft
+  useEffect(() => {
+    if (savedDraft) {
+      setHasDraft(true);
+      // Prompt to load draft if we have a saved one and form is empty
+      const currentTitle = form.getValues('title') || '';
+      const currentDesc = form.getValues('description') || '';
+      
+      if (!currentTitle && !currentDesc) {
+        setLoadDraftDialogOpen(true);
+      }
+    }
+  }, []);
+
   // Define form
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
-    defaultValues: savedDraft || {
+    defaultValues: {
       title: '',
       description: '',
       category: '',
@@ -69,6 +98,46 @@ const CreateListing = () => {
       status: 'active'
     },
   });
+
+  // Load saved draft into form
+  const loadDraft = () => {
+    if (savedDraft) {
+      console.log("Loading saved draft:", savedDraft);
+      form.reset(savedDraft);
+      
+      // Set selected category
+      if (savedDraft.category) {
+        setSelectedCategory(savedDraft.category);
+      }
+      
+      // Set draft ID if it exists
+      if (savedDraft.id) {
+        setDraftId(savedDraft.id);
+      }
+      
+      toast({
+        title: "Draft loaded",
+        description: "Your saved draft has been loaded successfully",
+      });
+      
+      setLoadDraftDialogOpen(false);
+    }
+  };
+
+  // Discard draft
+  const discardDraft = () => {
+    setSavedDraft(null);
+    setHasDraft(false);
+    form.reset();
+    setSelectedCategory('');
+    setDraftId(null);
+    setDiscardDialogOpen(false);
+    
+    toast({
+      title: "Draft discarded",
+      description: "Your draft has been discarded",
+    });
+  };
 
   // Get the field array for images
   const { fields: imageFields, append: appendImage, remove: removeImage, update: updateImage } = 
@@ -133,6 +202,7 @@ const CreateListing = () => {
       if (currentValues.title || currentValues.description) {
         setSavedDraft(currentValues);
         setDraftSaved(true);
+        setHasDraft(true);
         setTimeout(() => setDraftSaved(false), 3000);
       }
     }, 10000); // Save every 10 seconds if changes
@@ -196,6 +266,7 @@ const CreateListing = () => {
   
   // Handle category selection
   const handleCategorySelect = (category: any) => {
+    console.log("Category selected in parent:", category);
     setSelectedCategory(category.id);
     form.setValue('category', category.id);
   };
@@ -233,10 +304,16 @@ const CreateListing = () => {
       // Generate a product ID
       const productId = draftId || uuidv4();
       
+      console.log("Product ID:", productId);
+      console.log("Uploading images...");
+      
       // Upload images first
       const imagePromises = formData.images.map(async (image, index) => {
+        console.log(`Processing image ${index}:`, image);
+        
         // If the image was already uploaded (has a URL but no file), skip upload
         if (image.url && !image.url.startsWith('blob:') && !image.file) {
+          console.log("Image already uploaded:", image.url);
           return {
             id: image.id,
             product_id: productId,
@@ -246,23 +323,31 @@ const CreateListing = () => {
         }
         
         if (image.file) {
+          console.log("Uploading image:", image.id);
           // Upload to Supabase storage
           const fileExt = image.file.name.split('.').pop();
           const filePath = `products/${productId}/${image.id}.${fileExt}`;
+          
+          console.log("Uploading to path:", filePath);
           
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('images')
             .upload(filePath, image.file);
             
           if (uploadError) {
+            console.error("Upload error:", uploadError);
             throw new Error(`Image upload failed: ${uploadError.message}`);
           }
+          
+          console.log("Upload successful:", uploadData);
           
           // Get the public URL
           const { data: publicUrlData } = supabase.storage
             .from('images')
             .getPublicUrl(filePath);
             
+          console.log("Public URL:", publicUrlData.publicUrl);
+          
           return {
             id: image.id,
             product_id: productId,
@@ -274,11 +359,9 @@ const CreateListing = () => {
         return null;
       });
       
-      console.log("Starting image uploads...");
-      
       // Wait for all image uploads to complete
+      console.log("Waiting for all image uploads...");
       const uploadedImages = (await Promise.all(imagePromises)).filter(Boolean);
-      
       console.log(`Uploaded ${uploadedImages.length} images successfully`);
       
       // Prepare the product data for database
@@ -312,37 +395,40 @@ const CreateListing = () => {
         custom_attributes: JSON.stringify(formData.attributes || {})
       };
       
-      console.log("Inserting product data into database...", productData);
+      console.log("Inserting product data:", productData);
       
       // Insert product into database
-      const { error: productError } = await supabase
+      const { data: insertData, error: productError } = await supabase
         .from('products')
-        .upsert(productData);
+        .upsert(productData)
+        .select();
         
       if (productError) {
         console.error("Error inserting product:", productError);
         throw new Error(`Failed to create listing: ${productError.message}`);
       }
       
-      console.log("Product created successfully");
+      console.log("Product created successfully:", insertData);
       
       // Insert images into database
       if (uploadedImages.length > 0) {
-        console.log("Saving image references to database...");
-        const { error: imagesError } = await supabase
+        console.log("Saving image references to database:", uploadedImages);
+        const { data: imageInsertData, error: imagesError } = await supabase
           .from('product_images')
-          .upsert(uploadedImages);
+          .upsert(uploadedImages)
+          .select();
           
         if (imagesError) {
           console.error("Error saving images:", imagesError);
           throw new Error(`Failed to save product images: ${imagesError.message}`);
         }
         
-        console.log("Product images saved successfully");
+        console.log("Product images saved successfully:", imageInsertData);
       }
       
       // Clear draft from local storage if successful
       setSavedDraft(null);
+      setHasDraft(false);
       setDraftId(productId);
       
       toast({
@@ -356,14 +442,17 @@ const CreateListing = () => {
       // Redirect based on status
       if (formData.status === 'active') {
         navigate(`/product/${productId}`);
+      } else {
+        // Reset form after successful draft save if needed
+        // form.reset();
       }
     } catch (error: any) {
+      console.error("Submission error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to create listing",
         variant: "destructive"
       });
-      console.error("Submission error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -390,130 +479,188 @@ const CreateListing = () => {
     }
   };
 
-  // Check if user is authenticated
-  if (!session?.user) {
-    return (
-      <Layout>
-        <AuthCheck session={session} />
-      </Layout>
-    );
-  }
-
   return (
     <Layout>
-      <div className="container mx-auto py-8 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold">Create Listing</h1>
-            <p className="text-muted-foreground mt-1">
-              Fill in the details to create your listing
-            </p>
+      <RequireAuth message="You need to be logged in to create a listing">
+        <div className="container mx-auto py-8 px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+              <div>
+                <h1 className="text-3xl font-bold">Create Listing</h1>
+                <p className="text-muted-foreground mt-1">
+                  Fill in the details to create your listing
+                </p>
+              </div>
+              
+              {/* Draft management */}
+              <div className="mt-4 sm:mt-0 flex space-x-2">
+                {hasDraft && (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setLoadDraftDialogOpen(true)}
+                    >
+                      Load Draft
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setDiscardDialogOpen(true)}
+                    >
+                      Discard Draft
+                    </Button>
+                  </>
+                )}
+                
+                {draftSaved && (
+                  <span className="text-sm text-muted-foreground animate-fade-in-out flex items-center">
+                    Draft saved
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            <CompletionIndicator completionScore={completionScore} />
+            
+            <Form {...form}>
+              <form>
+                <Tabs 
+                  value={activeTab} 
+                  onValueChange={setActiveTab} 
+                  className="space-y-6"
+                >
+                  <TabsList className="grid grid-cols-4 md:w-[600px]">
+                    <TabsTrigger 
+                      value="details" 
+                      className="relative"
+                      data-error={tabHasErrors('details')}
+                    >
+                      Details
+                      {tabHasErrors('details') && (
+                        <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="pricing" 
+                      className="relative"
+                      data-error={tabHasErrors('pricing')}
+                    >
+                      Pricing
+                      {tabHasErrors('pricing') && (
+                        <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="shipping" 
+                      className="relative"
+                      data-error={tabHasErrors('shipping')}
+                    >
+                      Shipping
+                      {tabHasErrors('shipping') && (
+                        <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="images" 
+                      className="relative"
+                      data-error={tabHasErrors('images')}
+                    >
+                      Images
+                      {tabHasErrors('images') && (
+                        <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                      )}
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  {/* Details Tab */}
+                  <TabsContent value="details">
+                    <TabsDetails 
+                      form={form}
+                      selectedCategory={selectedCategory}
+                      setSelectedCategory={setSelectedCategory}
+                      customAttributes={customAttributes}
+                      setCustomAttributes={setCustomAttributes}
+                      handleCategorySelect={handleCategorySelect}
+                      setActiveTab={setActiveTab}
+                    />
+                  </TabsContent>
+                  
+                  {/* Pricing Tab */}
+                  <TabsContent value="pricing">
+                    <TabsPricing 
+                      form={form}
+                      listingType={listingType}
+                      setActiveTab={setActiveTab}
+                    />
+                  </TabsContent>
+                  
+                  {/* Shipping Tab */}
+                  <TabsContent value="shipping">
+                    <TabsShipping 
+                      form={form}
+                      setActiveTab={setActiveTab}
+                    />
+                  </TabsContent>
+                  
+                  {/* Images Tab */}
+                  <TabsContent value="images">
+                    <TabsImages 
+                      form={form}
+                      watchedImages={watchedImages}
+                      handleImageUpload={handleImageUpload}
+                      moveImage={moveImage}
+                      removeImage={(index) => removeImage(index)}
+                      fileInputRef={fileInputRef}
+                      isSubmitting={isSubmitting}
+                      isDraft={isDraft}
+                      setIsDraft={setIsDraft}
+                      onSubmit={onSubmit}
+                      completionScore={completionScore}
+                      setActiveTab={setActiveTab}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </form>
+            </Form>
+            
+            {/* Load Draft Dialog */}
+            <AlertDialog open={loadDraftDialogOpen} onOpenChange={setLoadDraftDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Load saved draft</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    You have a previously saved draft. Would you like to load it?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={loadDraft}>Load Draft</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            
+            {/* Discard Draft Dialog */}
+            <AlertDialog open={discardDialogOpen} onOpenChange={setDiscardDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Discard draft</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to discard this draft? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={discardDraft}
+                    variant="destructive"
+                  >
+                    Discard
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
-          
-          <CompletionIndicator completionScore={completionScore} />
-          
-          <Form {...form}>
-            <form>
-              <Tabs 
-                value={activeTab} 
-                onValueChange={setActiveTab} 
-                className="space-y-6"
-              >
-                <TabsList className="grid grid-cols-4 md:w-[600px]">
-                  <TabsTrigger 
-                    value="details" 
-                    className="relative"
-                    data-error={tabHasErrors('details')}
-                  >
-                    Details
-                    {tabHasErrors('details') && (
-                      <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="pricing" 
-                    className="relative"
-                    data-error={tabHasErrors('pricing')}
-                  >
-                    Pricing
-                    {tabHasErrors('pricing') && (
-                      <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="shipping" 
-                    className="relative"
-                    data-error={tabHasErrors('shipping')}
-                  >
-                    Shipping
-                    {tabHasErrors('shipping') && (
-                      <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="images" 
-                    className="relative"
-                    data-error={tabHasErrors('images')}
-                  >
-                    Images
-                    {tabHasErrors('images') && (
-                      <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
-                    )}
-                  </TabsTrigger>
-                </TabsList>
-                
-                {/* Details Tab */}
-                <TabsContent value="details">
-                  <TabsDetails 
-                    form={form}
-                    selectedCategory={selectedCategory}
-                    setSelectedCategory={setSelectedCategory}
-                    customAttributes={customAttributes}
-                    setCustomAttributes={setCustomAttributes}
-                    handleCategorySelect={handleCategorySelect}
-                    setActiveTab={setActiveTab}
-                  />
-                </TabsContent>
-                
-                {/* Pricing Tab */}
-                <TabsContent value="pricing">
-                  <TabsPricing 
-                    form={form}
-                    listingType={listingType}
-                    setActiveTab={setActiveTab}
-                  />
-                </TabsContent>
-                
-                {/* Shipping Tab */}
-                <TabsContent value="shipping">
-                  <TabsShipping 
-                    form={form}
-                    setActiveTab={setActiveTab}
-                  />
-                </TabsContent>
-                
-                {/* Images Tab */}
-                <TabsContent value="images">
-                  <TabsImages 
-                    form={form}
-                    watchedImages={watchedImages}
-                    handleImageUpload={handleImageUpload}
-                    moveImage={moveImage}
-                    removeImage={(index) => removeImage(index)}
-                    fileInputRef={fileInputRef}
-                    isSubmitting={isSubmitting}
-                    isDraft={isDraft}
-                    setIsDraft={setIsDraft}
-                    onSubmit={onSubmit}
-                    completionScore={completionScore}
-                    setActiveTab={setActiveTab}
-                  />
-                </TabsContent>
-              </Tabs>
-            </form>
-          </Form>
         </div>
-      </div>
+      </RequireAuth>
     </Layout>
   );
 };
