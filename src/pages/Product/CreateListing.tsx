@@ -1,20 +1,39 @@
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
-import { toast } from 'sonner';
+import { format } from 'date-fns';
+
+// UI Components
 import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Form,
   FormControl,
@@ -24,1377 +43,1549 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
-import { 
-  X, 
-  Plus, 
-  Upload, 
-  Loader2, 
-  Info, 
-  ShieldCheck, 
-  Save,
-  ArrowLeft,
-  ArrowRight,
-  Package,
-  Truck,
-  Tag,
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
+// Icons
+import {
+  Check,
+  X,
+  Trash2,
+  Plus,
   Calendar,
+  Upload,
+  PencilLine,
+  CreditCard,
+  Gavel,
+  ShoppingCart,
+  Save,
+  Loader,
   Clock,
-  DollarSign
+  Award,
+  FileText,
+  Tag,
+  Truck,
+  Image as ImageIcon,
+  MoreHorizontal,
+  Info,
+  AlertCircle,
+  CheckCircle2,
+  ArrowRight,
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import CategorySelectDialog from '@/components/category/CategorySelectDialog';
-import CategoryDisplay from '@/components/category/CategoryDisplay';
-import { Category, findCategoryById } from '@/data/categories';
-import DynamicAttributesForm from '@/components/product/DynamicAttributesForm';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
+import { PhoneSpecsSelector } from '@/components/product/PhoneSpecsSelector';
+import { DynamicAttributesForm } from '@/components/product/DynamicAttributesForm';
+import { CategorySelector } from '@/components/category/CategorySelector';
 
-// Define conditions
-const conditions = [
-  "New",
-  "Like New",
-  "Very Good",
-  "Good",
-  "Acceptable",
-  "For Parts or Not Working"
-];
-
-// Define locations
-const jordanianCities = [
-  "Amman",
-  "Zarqa",
-  "Irbid",
-  "Aqaba",
-  "Madaba",
-  "Jerash",
-  "Karak",
-  "Mafraq",
-  "Salt",
-  "Ajloun",
-  "Tafilah",
-  "Ma'an"
-];
-
-// Define the form schema using zod
-const listingSchema = z.object({
-  // Basic details
-  title: z.string().min(5, "Title must be at least 5 characters").max(100, "Title cannot exceed 100 characters"),
-  description: z.string().min(20, "Description must be at least 20 characters").max(2000, "Description cannot exceed 2000 characters"),
-  categoryId: z.string().min(1, "Please select a category"),
+// Create schema for product form
+const productSchema = z.object({
+  title: z.string().min(10, "Title must be at least 10 characters").max(100, "Title cannot exceed 100 characters"),
+  description: z.string().min(30, "Description must be at least 30 characters").max(5000, "Description cannot exceed 5000 characters"),
+  category: z.string().min(1, "Please select a category"),
+  subcategory: z.string().optional(),
   condition: z.string().min(1, "Please select a condition"),
-  location: z.string().optional(),
-  
-  // Pricing & listing type
-  listingType: z.enum(["fixed", "auction", "both"]),
-  price: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-    message: "Price must be a positive number",
-  }).optional(),
-  currency: z.string().default("JOD"),
-  
-  // Auction details
-  startPrice: z.string().optional().refine(
-    (val) => !val || (!isNaN(Number(val)) && Number(val) > 0),
-    { message: "Starting price must be a positive number" }
-  ),
-  reservePrice: z.string().optional().refine(
-    (val) => !val || (!isNaN(Number(val)) && Number(val) > 0),
-    { message: "Reserve price must be a positive number" }
-  ),
-  endDate: z.string().optional().refine(
-    (val) => !val || new Date(val) > new Date(),
-    { message: "End date must be in the future" }
-  ),
-  endTime: z.string().optional(),
-  
-  // Inventory & shipping
-  quantity: z.number().int().positive("Quantity must be a positive number").default(1),
-  isDeliveryAvailable: z.boolean().default(false),
-  shippingOptions: z.string().optional(),
-  shippingFee: z.string().optional().refine(
-    (val) => !val || (!isNaN(Number(val)) && Number(val) >= 0),
-    { message: "Shipping fee must be a non-negative number" }
-  ),
-  
-  // Item specifics (will be extended dynamically)
   brand: z.string().optional(),
   model: z.string().optional(),
+  year: z.string().optional(),
   color: z.string().optional(),
   size: z.string().optional(),
-  
-  // Additional fields
-  tags: z.string().optional(),
-  acceptOffers: z.boolean().default(false),
-  isDraft: z.boolean().default(false),
-  
-  // Custom attributes (will be handled separately)
-  customAttributes: z.array(
+  listing_type: z.enum(['fixed_price', 'auction', 'both']),
+  price: z.number().min(0.01, "Price must be greater than 0").optional(),
+  is_negotiable: z.boolean().optional(),
+  start_price: z.number().min(0.01, "Starting price must be greater than 0").optional(),
+  reserve_price: z.number().min(0).optional(),
+  auction_duration: z.number().optional(),
+  end_time: z.string().optional(),
+  quantity: z.number().int().min(1, "Quantity must be at least 1").default(1),
+  allow_offers: z.boolean().optional(),
+  location: z.string().min(1, "Location is required"),
+  shipping_options: z.array(
     z.object({
-      name: z.string(),
-      value: z.string()
+      method: z.string().min(1, "Shipping method is required"),
+      price: z.number().min(0, "Shipping price must be 0 or greater"),
     })
-  ).default([]),
+  ).optional(),
+  free_shipping: z.boolean().optional(),
+  local_pickup: z.boolean().optional(),
+  shipping_worldwide: z.boolean().optional(),
+  shipping_exclusions: z.array(z.string()).optional(),
+  handling_time: z.string().optional(),
+  return_policy: z.string().optional(),
+  warranty: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  images: z.array(
+    z.object({
+      id: z.string(),
+      file: z.any().optional(),
+      url: z.string().optional(),
+      order: z.number(),
+    })
+  ).min(1, "At least one image is required"),
+  attributes: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string())])).optional(),
+  status: z.enum(['active', 'draft']),
 });
 
-type FormValues = z.infer<typeof listingSchema>;
+type ProductFormValues = z.infer<typeof productSchema>;
 
 const CreateListing = () => {
-  const navigate = useNavigate();
   const { session } = useAuth();
-  const [images, setImages] = useState<File[]>([]);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
-  const [listingType, setListingType] = useState<"fixed" | "auction" | "both">("fixed");
-  const [categorySelectOpen, setCategorySelectOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [activeTab, setActiveTab] = useState("details");
-  const [completionScore, setCompletionScore] = useState(0);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('details');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [customAttributes, setCustomAttributes] = useState<{name: string; value: string}[]>([]);
-  const [saveAsDraft, setSaveAsDraft] = useState(false);
+  const [isDraft, setIsDraft] = useState(false);
+  const [completionScore, setCompletionScore] = useState(0);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const [draftId, setDraftId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Initialize the form
-  const form = useForm<FormValues>({
-    resolver: zodResolver(listingSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      categoryId: "",
-      condition: "",
-      location: "",
-      listingType: "fixed",
-      price: "",
-      currency: "JOD",
-      startPrice: "",
-      reservePrice: "",
-      endDate: "",
-      endTime: "",
+  // Load draft from local storage
+  const [savedDraft, setSavedDraft] = useLocalStorage<ProductFormValues | null>('product_draft', null);
+
+  // Define form
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(productSchema),
+    defaultValues: savedDraft || {
+      title: '',
+      description: '',
+      category: '',
+      subcategory: '',
+      condition: '',
+      listing_type: 'fixed_price',
+      price: 0,
+      is_negotiable: false,
+      start_price: 0,
+      reserve_price: 0,
+      auction_duration: 7,
       quantity: 1,
-      isDeliveryAvailable: false,
-      shippingOptions: "",
-      shippingFee: "",
-      brand: "",
-      model: "",
-      color: "",
-      size: "",
-      tags: "",
-      acceptOffers: false,
-      isDraft: false,
-      customAttributes: []
+      allow_offers: false,
+      location: '',
+      free_shipping: false,
+      local_pickup: true,
+      shipping_worldwide: false,
+      shipping_options: [{ method: 'Standard', price: 0 }],
+      tags: [],
+      images: [],
+      attributes: {},
+      status: 'active'
     },
-    mode: "onChange"
   });
+
+  // Get the field array for images
+  const { fields: imageFields, append: appendImage, remove: removeImage, update: updateImage } = 
+    useFieldArray({
+      control: form.control,
+      name: "images"
+    });
+    
+  // Get the field array for shipping options
+  const { fields: shippingFields, append: appendShipping, remove: removeShipping } = 
+    useFieldArray({
+      control: form.control,
+      name: "shipping_options"
+    });
+
+  const listingType = form.watch('listing_type');
+  const watchedImages = form.watch('images');
+  
+  // Calculate completion score
+  useEffect(() => {
+    const formData = form.getValues();
+    let score = 0;
+    const requiredFields = [
+      { name: 'title', weight: 15 },
+      { name: 'description', weight: 15 },
+      { name: 'category', weight: 10 },
+      { name: 'condition', weight: 10 },
+      { name: 'location', weight: 10 }
+    ];
+    
+    // Check if required fields are filled
+    requiredFields.forEach(field => {
+      if (formData[field.name as keyof typeof formData]) {
+        score += field.weight;
+      }
+    });
+    
+    // Check if pricing is set correctly
+    if ((listingType === 'fixed_price' || listingType === 'both') && formData.price && formData.price > 0) {
+      score += 15;
+    }
+    
+    if ((listingType === 'auction' || listingType === 'both') && formData.start_price && formData.start_price > 0) {
+      score += 10;
+    }
+    
+    // Check if images are added
+    if (formData.images && formData.images.length > 0) {
+      score += Math.min(15, formData.images.length * 5); // Up to 15% for 3+ images
+    }
+    
+    // Shipping details
+    if (formData.shipping_options && formData.shipping_options.length > 0) {
+      score += 5;
+    }
+    
+    // Extra points for additional details
+    if (formData.brand) score += 2;
+    if (formData.model) score += 2;
+    if (formData.tags && formData.tags.length > 0) score += 1;
+    
+    setCompletionScore(score);
+  }, [form.watch(), listingType]);
+  
+  // Auto-save as draft
+  useEffect(() => {
+    const draftTimer = setTimeout(() => {
+      const currentValues = form.getValues();
+      if (currentValues.title || currentValues.description) {
+        setSavedDraft(currentValues);
+        setDraftSaved(true);
+        setTimeout(() => setDraftSaved(false), 3000);
+      }
+    }, 10000); // Save every 10 seconds if changes
+    
+    return () => clearTimeout(draftTimer);
+  }, [form.watch(), setSavedDraft]);
   
   // Handle image upload
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      const newFiles = Array.from(event.target.files);
-      
-      if (images.length + newFiles.length > 10) {
-        toast.error("Maximum 10 images allowed");
-        return;
-      }
-      
-      const newImages: File[] = [...images];
-      const newImageUrls: string[] = [...imageUrls];
-      
-      newFiles.forEach(file => {
-        if (file.size > 5 * 1024 * 1024) {
-          toast.error(`${file.name} exceeds 5MB limit`);
-          return;
-        }
-        
-        const url = URL.createObjectURL(file);
-        newImages.push(file);
-        newImageUrls.push(url);
-      });
-      
-      setImages(newImages);
-      setImageUrls(newImageUrls);
-      updateCompletionScore();
-    }
-  };
-  
-  // Remove uploaded image
-  const removeImage = (index: number) => {
-    const newImages = [...images];
-    const newImageUrls = [...imageUrls];
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
     
-    URL.revokeObjectURL(newImageUrls[index]);
-    newImages.splice(index, 1);
-    newImageUrls.splice(index, 1);
+    const newFiles = Array.from(e.target.files);
+    const currentImagesCount = watchedImages.length;
     
-    setImages(newImages);
-    setImageUrls(newImageUrls);
-    updateCompletionScore();
-  };
-  
-  // Reorder images
-  const moveImage = (index: number, direction: 'up' | 'down') => {
-    if ((direction === 'up' && index === 0) || 
-        (direction === 'down' && index === images.length - 1)) {
-      return;
-    }
-    
-    const newImages = [...images];
-    const newImageUrls = [...imageUrls];
-    
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    
-    // Swap images
-    [newImages[index], newImages[targetIndex]] = [newImages[targetIndex], newImages[index]];
-    [newImageUrls[index], newImageUrls[targetIndex]] = [newImageUrls[targetIndex], newImageUrls[index]];
-    
-    setImages(newImages);
-    setImageUrls(newImageUrls);
-  };
-  
-  // Upload images to storage
-  const uploadImages = async (productId: string) => {
-    if (images.length === 0) return [];
-    
-    setIsUploading(true);
-    const uploadedImages = [];
-    
-    for (let i = 0; i < images.length; i++) {
-      const file = images[i];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${productId}/${uuidv4()}.${fileExt}`;
-      const filePath = `${fileName}`;
-      
-      try {
-        const { error: uploadError, data } = await supabase.storage
-          .from('product_images')
-          .upload(filePath, file);
-          
-        if (uploadError) {
-          toast.error(`Error uploading ${file.name}: ${uploadError.message}`);
-          continue;
-        }
-        
-        const { data: { publicUrl } } = supabase.storage
-          .from('product_images')
-          .getPublicUrl(filePath);
-          
-        uploadedImages.push({
-          product_id: productId,
-          image_url: publicUrl,
-          display_order: i
+    newFiles.forEach((file, index) => {
+      if (currentImagesCount + index < 10) { // Limit to 10 images
+        const imageUrl = URL.createObjectURL(file);
+        appendImage({ 
+          id: uuidv4(), 
+          file: file, 
+          url: imageUrl,
+          order: currentImagesCount + index
         });
-        
-        setUploadProgress(Math.round(((i + 1) / images.length) * 100));
-      } catch (error) {
-        console.error("Upload error:", error);
-        toast.error(`Error uploading image: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
-    }
+    });
     
-    setIsUploading(false);
-    return uploadedImages;
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+  
+  // Handle image reordering
+  const moveImage = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index > 0) {
+      const newImages = [...watchedImages];
+      const temp = newImages[index];
+      newImages[index] = newImages[index - 1];
+      newImages[index - 1] = temp;
+      
+      // Update order property
+      newImages[index].order = index;
+      newImages[index - 1].order = index - 1;
+      
+      // Update form
+      form.setValue('images', newImages);
+    } 
+    else if (direction === 'down' && index < watchedImages.length - 1) {
+      const newImages = [...watchedImages];
+      const temp = newImages[index];
+      newImages[index] = newImages[index + 1];
+      newImages[index + 1] = temp;
+      
+      // Update order property
+      newImages[index].order = index;
+      newImages[index + 1].order = index + 1;
+      
+      // Update form
+      form.setValue('images', newImages);
+    }
   };
   
   // Handle category selection
-  const handleCategorySelect = (category: Category) => {
+  const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
-    form.setValue('categoryId', category.id);
-    form.trigger('categoryId');
-    updateCompletionScore();
+    form.setValue('category', category);
   };
-  
-  // Calculate completion score
-  const updateCompletionScore = () => {
-    const formValues = form.getValues();
-    let score = 0;
-    let totalFields = 0;
-    
-    // Required fields
-    const requiredFields = ['title', 'description', 'categoryId', 'condition'];
-    requiredFields.forEach(field => {
-      totalFields++;
-      if (formValues[field as keyof FormValues]) {
-        score++;
-      }
-    });
-    
-    // Check if images are added
-    totalFields++;
-    if (images.length > 0) {
-      score++;
-    }
-    
-    // Pricing based on listing type
-    totalFields++;
-    if (
-      (formValues.listingType === 'fixed' && formValues.price) || 
-      (formValues.listingType === 'auction' && formValues.startPrice && formValues.endDate && formValues.endTime) ||
-      (formValues.listingType === 'both' && formValues.price && formValues.startPrice && formValues.endDate)
-    ) {
-      score++;
-    }
-    
-    // Optional fields
-    const optionalFields = ['location', 'shippingOptions', 'shippingFee'];
-    optionalFields.forEach(field => {
-      totalFields += 0.5;
-      if (formValues[field as keyof FormValues]) {
-        score += 0.5;
-      }
-    });
-    
-    // Category-specific fields
-    if (selectedCategory) {
-      const categorySpecificFields = ['brand', 'model', 'color', 'size'];
-      const categoryName = selectedCategory.name.toLowerCase();
-      
-      // Electronics generally have brand and model
-      if (categoryName.includes('electronics') || 
-          categoryName.includes('phone') || 
-          categoryName.includes('computer')) {
-        
-        totalFields += 1;
-        if (formValues.brand && formValues.model) {
-          score += 1;
-        }
-      }
-      
-      // Fashion has color and size
-      if (categoryName.includes('fashion') || 
-          categoryName.includes('clothing') || 
-          categoryName.includes('shoes')) {
-        
-        totalFields += 1;
-        if (formValues.color && formValues.size) {
-          score += 1;
-        }
-      }
-    }
-    
-    // Custom attributes
-    if (customAttributes.length > 0) {
-      totalFields += 0.5;
-      score += 0.5;
-    }
-    
-    // Calculate percentage
-    const percentage = Math.min(100, Math.round((score / totalFields) * 100));
-    setCompletionScore(percentage);
-  };
-  
-  // Update when form values change
-  useEffect(() => {
-    const subscription = form.watch(() => updateCompletionScore());
-    return () => subscription.unsubscribe();
-  }, [form.watch, selectedCategory, customAttributes]);
   
   // Handle form submission
-  const onSubmit = async (values: FormValues) => {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
+  const onSubmit = async (data: ProductFormValues) => {
+    if (!session?.user) {
+      toast({
+        title: "Authentication required",
+        description: "You need to be logged in to create a listing",
+        variant: "destructive"
+      });
+      navigate("/auth/login");
+      return;
+    }
     
     try {
-      if (!session?.user) {
-        toast.error("You must be logged in to create a listing");
-        navigate('/auth/login');
-        return;
+      setIsSubmitting(true);
+      
+      // Set status based on button clicked
+      data.status = isDraft ? 'draft' : 'active';
+      
+      // Format the end time for auctions
+      if ((data.listing_type === 'auction' || data.listing_type === 'both') && data.auction_duration) {
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + data.auction_duration);
+        data.end_time = endDate.toISOString();
       }
       
-      // For non-draft listings, validate images
-      if (!saveAsDraft && images.length === 0) {
-        toast.error("Please add at least one product image");
-        setActiveTab("images");
-        setIsSubmitting(false);
-        return;
-      }
+      // Generate a product ID
+      const productId = draftId || uuidv4();
       
-      // For auction listings, validate required fields
-      if ((values.listingType === "auction" || values.listingType === "both") && !saveAsDraft) {
-        if (!values.startPrice) {
-          toast.error("Please set a starting price for your auction");
-          setActiveTab("pricing");
-          setIsSubmitting(false);
-          return;
+      // Upload images first
+      const imagePromises = data.images.map(async (image, index) => {
+        // If the image was already uploaded (has a URL but no file), skip upload
+        if (image.url && !image.url.startsWith('blob:') && !image.file) {
+          return {
+            id: image.id,
+            product_id: productId,
+            image_url: image.url,
+            display_order: index
+          };
         }
         
-        if (!values.endDate || !values.endTime) {
-          toast.error("Please set an end date and time for your auction");
-          setActiveTab("pricing");
-          setIsSubmitting(false);
-          return;
-        }
-      }
-      
-      // For fixed price listings, validate price
-      if ((values.listingType === "fixed" || values.listingType === "both") && !saveAsDraft && !values.price) {
-        toast.error("Please set a price for your listing");
-        setActiveTab("pricing");
-        setIsSubmitting(false);
-        return;
-      }
-      
-      const productId = uuidv4();
-      
-      // Prepare end time for auctions
-      let endTime = null;
-      if ((values.listingType === "auction" || values.listingType === "both") && values.endDate) {
-        const endDate = new Date(values.endDate);
-        if (values.endTime) {
-          const [hours, minutes] = values.endTime.split(':').map(Number);
-          endDate.setHours(hours, minutes);
-        }
-        endTime = endDate.toISOString();
-      }
-      
-      // Get category information
-      const selectedCat = selectedCategory ? findCategoryById(selectedCategory.id) : null;
-      const categoryPath = selectedCat ? selectedCat.name : '';
-      
-      // Enhanced title formatting
-      let enhancedTitle = values.title;
-      if (values.brand && values.model) {
-        // Only enhance if title doesn't already mention brand/model
-        if (!enhancedTitle.toLowerCase().includes(values.brand.toLowerCase()) && 
-            !enhancedTitle.toLowerCase().includes(values.model.toLowerCase())) {
-          const formattedTitle = [values.brand, values.model];
+        if (image.file) {
+          // Upload to Supabase storage
+          const fileExt = image.file.name.split('.').pop();
+          const filePath = `products/${productId}/${image.id}.${fileExt}`;
           
-          if (values.color) formattedTitle.push(values.color);
-          if (values.size) formattedTitle.push(values.size);
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('images')
+            .upload(filePath, image.file);
+            
+          if (uploadError) {
+            throw new Error(`Image upload failed: ${uploadError.message}`);
+          }
           
-          enhancedTitle = `${formattedTitle.join(' ')} - ${enhancedTitle}`;
+          // Get the public URL
+          const { data: publicUrlData } = supabase.storage
+            .from('images')
+            .getPublicUrl(filePath);
+            
+          return {
+            id: image.id,
+            product_id: productId,
+            image_url: publicUrlData.publicUrl,
+            display_order: index
+          };
         }
-      }
+        
+        return null;
+      });
       
-      // Set appropriate price values based on listing type
-      const price = values.listingType === "fixed" || values.listingType === "both" 
-        ? Number(values.price) 
-        : values.startPrice ? Number(values.startPrice) : 0;
+      // Wait for all image uploads to complete
+      const uploadedImages = (await Promise.all(imagePromises)).filter(Boolean);
       
-      // Create product data object
+      // Prepare the product data for database
       const productData = {
         id: productId,
-        title: enhancedTitle,
-        description: values.description,
-        price: price,
-        currency: values.currency,
-        condition: values.condition,
-        category: categoryPath,
-        category_id: values.categoryId,
+        title: data.title,
+        description: data.description,
+        price: data.listing_type === 'auction' ? data.start_price : data.price,
+        currency: 'USD', // Default to USD for now
+        condition: data.condition,
+        category: data.category,
+        category_id: data.category, // Using category as ID for now
         seller_id: session.user.id,
-        location: values.location || null,
-        shipping: values.shippingOptions || null,
-        shipping_fee: values.shippingFee ? Number(values.shippingFee) : null,
-        is_auction: values.listingType === "auction" || values.listingType === "both",
-        start_price: (values.listingType === "auction" || values.listingType === "both") ? Number(values.startPrice) : null,
-        current_bid: (values.listingType === "auction" || values.listingType === "both") ? Number(values.startPrice) : null,
-        reserve_price: (values.listingType === "auction" || values.listingType === "both") && values.reservePrice ? Number(values.reservePrice) : null,
-        end_time: endTime,
-        status: saveAsDraft ? 'draft' : 'active',
-        quantity: values.quantity,
-        accept_offers: values.acceptOffers,
-        tags: values.tags ? values.tags.split(',').map(tag => tag.trim()) : [],
-        brand: values.brand || null,
-        model: values.model || null,
-        color: values.color || null,
-        size: values.size || null,
-        custom_attributes: customAttributes.length > 0 ? JSON.stringify(customAttributes) : null,
+        location: data.location,
+        shipping: JSON.stringify(data.shipping_options || []),
+        shipping_fee: data.shipping_options?.[0]?.price || 0,
+        is_auction: data.listing_type === 'auction' || data.listing_type === 'both',
+        start_price: data.start_price,
+        reserve_price: data.reserve_price,
+        end_time: data.end_time,
+        status: data.status,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        quantity: data.quantity,
+        accept_offers: data.allow_offers,
+        brand: data.brand,
+        model: data.model,
+        color: data.color,
+        size: data.size,
+        custom_attributes: JSON.stringify(data.attributes || {})
       };
-      
-      console.log("Submitting product data:", productData);
       
       // Insert product into database
       const { error: productError } = await supabase
         .from('products')
-        .insert(productData);
+        .upsert(productData);
         
       if (productError) {
-        console.error("Product insert error:", productError);
-        throw new Error(productError.message);
+        throw new Error(`Failed to create listing: ${productError.message}`);
       }
       
-      // Upload images if any
-      if (images.length > 0) {
-        const uploadedImages = await uploadImages(productId);
-        
-        if (uploadedImages.length > 0) {
-          console.log("Uploading image data:", uploadedImages);
+      // Insert images into database
+      if (uploadedImages.length > 0) {
+        const { error: imagesError } = await supabase
+          .from('product_images')
+          .upsert(uploadedImages);
           
-          const { error: imagesError } = await supabase
-            .from('product_images')
-            .insert(uploadedImages);
-            
-          if (imagesError) {
-            console.error("Image insert error:", imagesError);
-            toast.error(`Error saving image details: ${imagesError.message}`);
-          }
+        if (imagesError) {
+          throw new Error(`Failed to save product images: ${imagesError.message}`);
         }
       }
       
-      toast.success(saveAsDraft ? "Draft saved successfully!" : "Listing created successfully!");
-      navigate(saveAsDraft ? "/profile/drafts" : `/product/${productId}`);
+      // Clear draft from local storage if successful
+      setSavedDraft(null);
+      setDraftId(productId);
       
-    } catch (error) {
-      console.error("Form submission error:", error);
-      toast.error(`Error creating listing: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast({
+        title: data.status === 'draft' ? "Draft saved" : "Listing published",
+        description: data.status === 'draft' 
+          ? "Your listing draft has been saved" 
+          : "Your listing is now live and visible to buyers",
+        variant: "default",
+      });
+      
+      // Redirect based on status
+      if (data.status === 'active') {
+        navigate(`/product/${productId}`);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create listing",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
   
-  // Handle draft saving
-  const handleSaveAsDraft = () => {
-    setSaveAsDraft(true);
-    form.setValue('isDraft', true);
+  // Helper function to check if tab has errors
+  const tabHasErrors = (tabName: string) => {
+    const errors = form.formState.errors;
     
-    // Run form validation but with fewer required fields
-    form.trigger(['title', 'categoryId']).then(isValid => {
-      if (isValid || form.getValues('title')) {
-        form.handleSubmit(onSubmit)();
-      } else {
-        toast.error("Please add at least a title to save as draft");
-        setSaveAsDraft(false);
-        form.setValue('isDraft', false);
-      }
-    });
+    switch(tabName) {
+      case 'details':
+        return !!(errors.title || errors.description || errors.category || errors.condition || 
+                  errors.brand || errors.model || errors.year || errors.color || errors.size);
+      case 'pricing':
+        return !!(errors.listing_type || errors.price || errors.start_price || 
+                  errors.reserve_price || errors.auction_duration || errors.quantity);
+      case 'shipping':
+        return !!(errors.shipping_options || errors.handling_time || 
+                  errors.location || errors.shipping_worldwide);
+      case 'images':
+        return !!(errors.images);
+      default:
+        return false;
+    }
   };
   
-  // Update listingType state when form field changes
-  const watchListingType = form.watch("listingType");
-  useEffect(() => {
-    if (watchListingType !== listingType) {
-      setListingType(watchListingType as "fixed" | "auction" | "both");
+  // Render completion indicator
+  const renderCompletionIndicator = () => {
+    let statusColor = 'bg-red-500';
+    let statusText = 'Incomplete';
+    
+    if (completionScore >= 85) {
+      statusColor = 'bg-green-500';
+      statusText = 'Complete';
+    } else if (completionScore >= 60) {
+      statusColor = 'bg-amber-500';
+      statusText = 'Almost Complete';
+    } else if (completionScore >= 30) {
+      statusColor = 'bg-orange-500';
+      statusText = 'In Progress';
     }
-  }, [watchListingType]);
+    
+    return (
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm font-medium">Listing Completion: {completionScore}%</span>
+          <Badge variant={completionScore >= 85 ? "default" : "outline"} className={`${statusColor === 'bg-green-500' ? 'bg-green-500 hover:bg-green-600' : ''}`}>
+            {statusText}
+          </Badge>
+        </div>
+        <Progress value={completionScore} className="h-2" />
+      </div>
+    );
+  };
   
-  // Update category when categoryId changes
-  useEffect(() => {
-    const categoryId = form.watch('categoryId');
-    if (categoryId && (!selectedCategory || selectedCategory.id !== categoryId)) {
-      const category = findCategoryById(categoryId);
-      if (category) {
-        setSelectedCategory(category);
-      }
-    }
-  }, [form.watch('categoryId')]);
-  
+  if (!session?.user) {
+    return (
+      <Layout>
+        <div className="container mx-auto py-8 px-4">
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle>Login Required</CardTitle>
+              <CardDescription>
+                You need to be logged in to create a listing
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>Please log in to your account to create a listing.</p>
+            </CardContent>
+            <CardFooter className="flex justify-end">
+              <Button onClick={() => navigate("/auth/login")}>
+                Login Now
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">Create a Listing</h1>
-          <Button 
-            variant="outline" 
-            onClick={handleSaveAsDraft}
-            disabled={isSubmitting}
-            className="gap-2"
-          >
-            <Save size={16} />
-            Save as Draft
-          </Button>
-        </div>
-        
-        {/* Completion meter */}
-        <div className="bg-white rounded-lg shadow-sm border mb-6 p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-sm">{completionScore}% Complete</span>
-              <div className="text-xs text-gray-500">(higher score attracts more views)</div>
-            </div>
-            
-            {completionScore >= 80 ? (
-              <Badge className="bg-green-500 text-xs">
-                <ShieldCheck className="h-3 w-3 mr-1" /> Perfect Listing
-              </Badge>
-            ) : completionScore >= 60 ? (
-              <Badge className="bg-amber-500 text-xs">Good Listing</Badge>
-            ) : (
-              <Badge variant="outline" className="text-xs bg-gray-100">Basic Listing</Badge>
-            )}
+      <div className="container mx-auto py-8 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold">Create Listing</h1>
+            <p className="text-muted-foreground mt-1">
+              Fill in the details to create your listing
+            </p>
           </div>
-          <Progress value={completionScore} className="h-2" />
-          <p className="text-xs text-gray-500 mt-2">
-            Complete all the details to increase visibility and sell faster.
-          </p>
-        </div>
-        
-        {/* Main form area with tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="details" className="relative">
-              Details
-              {completionScore < 70 && activeTab !== "details" && (
-                <span className="absolute top-0 right-2 h-2 w-2 bg-red-500 rounded-full"></span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="images" className="relative">
-              Images
-              {images.length === 0 && activeTab !== "images" && (
-                <span className="absolute top-0 right-2 h-2 w-2 bg-red-500 rounded-full"></span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="pricing" className="relative">
-              Pricing
-              {((!form.getValues('price') && listingType !== 'auction') || 
-               (!form.getValues('startPrice') && listingType !== 'fixed')) && 
-                activeTab !== "pricing" && (
-                <span className="absolute top-0 right-2 h-2 w-2 bg-red-500 rounded-full"></span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="shipping" className="relative">
-              Shipping
-            </TabsTrigger>
-          </TabsList>
+          
+          {renderCompletionIndicator()}
           
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Details Tab */}
-              <TabsContent value="details">
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="space-y-6">
-                      {/* Category Selection */}
-                      <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
-                        <div className="flex">
-                          <Info className="h-5 w-5 mr-2" />
-                          <div className="text-sm text-blue-700">
-                            <p className="font-medium">Choose the most specific category</p>
-                            <p>This helps buyers find your item more easily</p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="categoryId"
-                        render={({ field }) => (
-                          <FormItem className="mb-6">
-                            <FormLabel className="text-base font-medium">Category*</FormLabel>
-                            <FormControl>
-                              <div className="mb-1">
-                                <CategoryDisplay 
-                                  categoryId={field.value || null} 
-                                  onClick={() => setCategorySelectOpen(true)}
-                                  onClear={() => {
-                                    field.onChange('');
-                                    setSelectedCategory(null);
-                                  }}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-
-                            <CategorySelectDialog
-                              open={categorySelectOpen}
-                              onOpenChange={setCategorySelectOpen}
-                              onCategorySelect={handleCategorySelect}
-                              initialCategoryId={field.value || undefined}
-                            />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      {/* Basic Listing Details */}
-                      <div className="pt-4 border-t">
-                        <h3 className="text-lg font-medium mb-4">Listing Details</h3>
-                        
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <Tabs 
+                value={activeTab} 
+                onValueChange={setActiveTab} 
+                className="space-y-6"
+              >
+                <TabsList className="grid grid-cols-4 md:w-[600px]">
+                  <TabsTrigger 
+                    value="details" 
+                    className="relative"
+                    data-error={tabHasErrors('details')}
+                  >
+                    Details
+                    {tabHasErrors('details') && (
+                      <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="pricing" 
+                    className="relative"
+                    data-error={tabHasErrors('pricing')}
+                  >
+                    Pricing
+                    {tabHasErrors('pricing') && (
+                      <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="shipping" 
+                    className="relative"
+                    data-error={tabHasErrors('shipping')}
+                  >
+                    Shipping
+                    {tabHasErrors('shipping') && (
+                      <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="images" 
+                    className="relative"
+                    data-error={tabHasErrors('images')}
+                  >
+                    Images
+                    {tabHasErrors('images') && (
+                      <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                    )}
+                  </TabsTrigger>
+                </TabsList>
+                
+                {/* ===== DETAILS TAB ===== */}
+                <TabsContent value="details" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Basic Information */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center">
+                          <FileText className="w-5 h-5 mr-2" />
+                          Basic Information
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Title */}
                         <FormField
                           control={form.control}
                           name="title"
                           render={({ field }) => (
-                            <FormItem className="mb-4">
-                              <FormLabel className="text-base">Title*</FormLabel>
+                            <FormItem>
+                              <FormLabel required>Title</FormLabel>
                               <FormControl>
-                                <Input placeholder="e.g. Samsung Galaxy S23 Ultra 256GB - Black" {...field} />
+                                <Input placeholder="Enter title" {...field} />
                               </FormControl>
                               <FormDescription>
-                                A clear, concise title will attract more buyers
+                                Clear title describing your item (10-100 characters)
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                         
+                        {/* Description */}
                         <FormField
                           control={form.control}
                           name="description"
                           render={({ field }) => (
-                            <FormItem className="mb-4">
-                              <FormLabel className="text-base">Description*</FormLabel>
+                            <FormItem>
+                              <FormLabel required>Description</FormLabel>
                               <FormControl>
                                 <Textarea 
-                                  placeholder="Describe your product in detail..." 
-                                  className="min-h-32" 
+                                  placeholder="Describe your item in detail" 
+                                  className="min-h-[120px]" 
                                   {...field} 
                                 />
                               </FormControl>
                               <FormDescription>
-                                Include important details like features, condition issues, and why you're selling
+                                Detailed description (30-5000 characters)
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                         
+                        {/* Category */}
+                        <FormField
+                          control={form.control}
+                          name="category"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel required>Category</FormLabel>
+                              <FormControl>
+                                <CategorySelector 
+                                  onCategorySelect={(category) => {
+                                    handleCategorySelect(category);
+                                    field.onChange(category);
+                                  }}
+                                  selectedCategory={field.value}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        {/* Condition */}
                         <FormField
                           control={form.control}
                           name="condition"
                           render={({ field }) => (
-                            <FormItem className="mb-4">
-                              <FormLabel className="text-base">Condition*</FormLabel>
-                              <FormControl>
-                                <RadioGroup
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                  className="flex flex-wrap gap-2"
-                                >
-                                  {conditions.map((condition) => (
-                                    <div key={condition} className="flex items-center border rounded-md p-2 hover:bg-gray-50">
-                                      <RadioGroupItem value={condition} id={`condition-${condition}`} className="mr-2" />
-                                      <label htmlFor={`condition-${condition}`} className="cursor-pointer">{condition}</label>
-                                    </div>
-                                  ))}
-                                </RadioGroup>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
-                          <FormField
-                            control={form.control}
-                            name="location"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Location</FormLabel>
-                                <Select 
-                                  onValueChange={field.onChange} 
-                                  value={field.value || ""}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select your city" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {jordanianCities.map((city) => (
-                                      <SelectItem key={city} value={city}>
-                                        {city}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormDescription>
-                                  Where the item is located
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        {/* Tags input */}
-                        <FormField
-                          control={form.control}
-                          name="tags"
-                          render={({ field }) => (
-                            <FormItem className="mb-4">
-                              <FormLabel className="text-base">Tags (separated by commas)</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="e.g. smartphone, electronics, samsung" 
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Add keywords to help buyers find your item
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        {/* Quantity/Inventory */}
-                        <FormField
-                          control={form.control}
-                          name="quantity"
-                          render={({ field }) => (
-                            <FormItem className="mb-4">
-                              <FormLabel className="text-base">Quantity Available</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  min={1} 
-                                  step={1}
-                                  {...field}
-                                  onChange={(e) => field.onChange(parseInt(e.target.value))}
-                                  value={field.value}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                How many items are you selling? Will decrease with each sale
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                    
-                    {/* Dynamic category-specific attributes */}
-                    {selectedCategory && (
-                      <div className="mt-6 pt-4 border-t">
-                        <h3 className="text-lg font-medium mb-4">Item Specifics</h3>
-                        <DynamicAttributesForm 
-                          category={selectedCategory}
-                          form={form}
-                          customAttributes={customAttributes}
-                          setCustomAttributes={setCustomAttributes}
-                        />
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              {/* Images Tab */}
-              <TabsContent value="images">
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
-                      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-                        <div className="flex">
-                          <Info className="h-5 w-5 mr-2" />
-                          <div className="text-sm text-blue-700">
-                            <p className="font-medium">Clear photos sell faster</p>
-                            <p>Upload at least 4 photos from different angles to increase buyer interest</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
-                        <div className="text-center">
-                          <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                          <p className="text-sm text-gray-600 mb-1">Drag and drop images here or click to upload</p>
-                          <p className="text-xs text-gray-500 mb-2">Upload up to 10 images (Max 5MB each)</p>
-                          
-                          <div className="relative">
-                            <label htmlFor="image-upload" className="cursor-pointer">
-                              <div className="bg-mzad-primary text-white text-sm py-2 px-4 rounded hover:bg-mzad-primary/90">
-                                Choose Images
-                              </div>
-                              <input
-                                id="image-upload"
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                onChange={handleImageUpload}
-                                className="hidden"
-                              />
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-
-                      {imageUrls.length > 0 && (
-                        <div>
-                          <div className="flex justify-between items-center mb-2">
-                            <h3 className="font-medium">Selected Images ({imageUrls.length}/10)</h3>
-                            {imageUrls.length < 4 && (
-                              <span className="text-amber-600 text-sm flex items-center">
-                                <Info className="h-4 w-4 mr-1" />
-                                Add {4 - imageUrls.length} more photos for better results
-                              </span>
-                            )}
-                          </div>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {imageUrls.map((url, index) => (
-                              <div key={index} className="relative group">
-                                <div className="aspect-square rounded-md overflow-hidden border">
-                                  <img 
-                                    src={url} 
-                                    alt={`Upload preview ${index + 1}`}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                                <div className="absolute top-1 right-1 flex space-x-1">
-                                  <button
-                                    type="button"
-                                    onClick={() => removeImage(index)}
-                                    className="bg-white/80 hover:bg-white text-red-500 rounded-full p-1"
-                                    aria-label="Remove image"
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </button>
-                                </div>
-                                <div className="absolute bottom-1 right-1 flex space-x-1">
-                                  {index > 0 && (
-                                    <button
-                                      type="button"
-                                      onClick={() => moveImage(index, 'up')}
-                                      className="bg-white/80 hover:bg-white text-gray-700 rounded-full p-1"
-                                      aria-label="Move image up"
-                                    >
-                                      <ArrowLeft className="h-4 w-4" />
-                                    </button>
-                                  )}
-                                  {index < imageUrls.length - 1 && (
-                                    <button
-                                      type="button"
-                                      onClick={() => moveImage(index, 'down')}
-                                      className="bg-white/80 hover:bg-white text-gray-700 rounded-full p-1"
-                                      aria-label="Move image down"
-                                    >
-                                      <ArrowRight className="h-4 w-4" />
-                                    </button>
-                                  )}
-                                </div>
-                                {index === 0 && (
-                                  <span className="absolute top-1 left-1 bg-mzad-primary text-white text-xs px-2 py-0.5 rounded">
-                                    Main
-                                  </span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className="pt-4">
-                        <h3 className="text-base font-medium mb-3">Image Tips:</h3>
-                        <ul className="text-sm text-gray-600 space-y-2">
-                          <li className="flex items-start">
-                            <div className="bg-green-100 rounded-full p-1 mr-2 mt-0.5">
-                              <Check className="h-3 w-3 text-green-600" />
-                            </div>
-                            Use natural lighting and a clean background
-                          </li>
-                          <li className="flex items-start">
-                            <div className="bg-green-100 rounded-full p-1 mr-2 mt-0.5">
-                              <Check className="h-3 w-3 text-green-600" />
-                            </div>
-                            Include photos from multiple angles
-                          </li>
-                          <li className="flex items-start">
-                            <div className="bg-green-100 rounded-full p-1 mr-2 mt-0.5">
-                              <Check className="h-3 w-3 text-green-600" />
-                            </div>
-                            Show any flaws or damage for transparency
-                          </li>
-                          <li className="flex items-start">
-                            <div className="bg-green-100 rounded-full p-1 mr-2 mt-0.5">
-                              <Check className="h-3 w-3 text-green-600" />
-                            </div>
-                            Include original packaging if available
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              {/* Pricing Tab */}
-              <TabsContent value="pricing">
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="space-y-6">
-                      <FormField
-                        control={form.control}
-                        name="listingType"
-                        render={({ field }) => (
-                          <FormItem className="space-y-3">
-                            <FormLabel className="text-base font-medium">Listing Type*</FormLabel>
-                            <FormControl>
-                              <RadioGroup
-                                onValueChange={field.onChange}
-                                value={field.value}
-                                className="flex flex-col space-y-3"
+                            <FormItem>
+                              <FormLabel required>Condition</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                defaultValue={field.value}
                               >
-                                <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-gray-50">
-                                  <RadioGroupItem value="fixed" id="fixed" />
-                                  <div className="flex-1">
-                                    <label htmlFor="fixed" className="font-medium cursor-pointer flex items-center">
-                                      <Tag className="h-4 w-4 mr-2 text-mzad-primary" />
-                                      Fixed Price
-                                    </label>
-                                    <p className="text-sm text-gray-500 ml-6">Sell to the first buyer who pays your price</p>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-gray-50">
-                                  <RadioGroupItem value="auction" id="auction" />
-                                  <div className="flex-1">
-                                    <label htmlFor="auction" className="font-medium cursor-pointer flex items-center">
-                                      <Package className="h-4 w-4 mr-2 text-mzad-primary" />
-                                      Auction
-                                    </label>
-                                    <p className="text-sm text-gray-500 ml-6">Let buyers bid and sell to the highest bidder</p>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-gray-50">
-                                  <RadioGroupItem value="both" id="both" />
-                                  <div className="flex-1">
-                                    <label htmlFor="both" className="font-medium cursor-pointer flex items-center">
-                                      <Package className="h-4 w-4 mr-2 text-mzad-primary" />
-                                      Auction with Buy Now
-                                    </label>
-                                    <p className="text-sm text-gray-500 ml-6">Buyers can bid or purchase immediately at your fixed price</p>
-                                  </div>
-                                </div>
-                              </RadioGroup>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      {/* Fixed price fields */}
-                      <div className={listingType === "fixed" || listingType === "both" ? "block border-t pt-4" : "hidden"}>
-                        <h3 className="text-lg font-medium mb-4 flex items-center">
-                          <Tag className="h-5 w-5 mr-2 text-mzad-primary" />
-                          Fixed Price Details
-                        </h3>
-                        
-                        <div className="grid md:grid-cols-2 gap-4">
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select condition" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="new">New</SelectItem>
+                                  <SelectItem value="like_new">Like New</SelectItem>
+                                  <SelectItem value="excellent">Excellent</SelectItem>
+                                  <SelectItem value="good">Good</SelectItem>
+                                  <SelectItem value="fair">Fair</SelectItem>
+                                  <SelectItem value="for_parts">For Parts</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                    </Card>
+                    
+                    {/* Category-specific Attributes */}
+                    <div className="space-y-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg flex items-center">
+                            <Tag className="w-5 h-5 mr-2" />
+                            Item Specifics
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {/* Brand */}
                           <FormField
                             control={form.control}
-                            name="price"
+                            name="brand"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Price*</FormLabel>
+                                <FormLabel>Brand</FormLabel>
                                 <FormControl>
-                                  <div className="flex">
-                                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
-                                      <DollarSign className="h-4 w-4" />
-                                    </span>
-                                    <Input 
-                                      type="number" 
-                                      step="0.01" 
-                                      min="0" 
-                                      placeholder="0.00" 
-                                      className="rounded-l-none"
-                                      {...field} 
-                                    />
-                                  </div>
+                                  <Input placeholder="Brand name" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
-                        </div>
-                        
-                        <div className="mt-4">
+                          
+                          {/* Model */}
                           <FormField
                             control={form.control}
-                            name="acceptOffers"
+                            name="model"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Model</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Model number" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          {/* Render category-specific form fields */}
+                          {selectedCategory === 'mobile-phones' && (
+                            <PhoneSpecsSelector 
+                              onSpecsChange={(specs) => {
+                                // Update form values with phone specifications
+                                form.setValue('attributes', {
+                                  ...form.getValues('attributes'),
+                                  ...specs
+                                });
+                              }}
+                              currentValues={form.getValues('attributes')}
+                            />
+                          )}
+                          
+                          {/* For other categories */}
+                          {selectedCategory && selectedCategory !== 'mobile-phones' && (
+                            <DynamicAttributesForm
+                              category={selectedCategory}
+                              onAttributesChange={(attrs) => {
+                                form.setValue('attributes', {
+                                  ...form.getValues('attributes'),
+                                  ...attrs
+                                });
+                              }}
+                              currentValues={form.getValues('attributes')}
+                            />
+                          )}
+                        </CardContent>
+                      </Card>
+                      
+                      <div className="flex justify-end">
+                        <Button
+                          type="button"
+                          onClick={() => setActiveTab('pricing')}
+                          className="flex items-center"
+                        >
+                          Next: Pricing <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                {/* ===== PRICING TAB ===== */}
+                <TabsContent value="pricing" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center">
+                          <Tag className="w-5 h-5 mr-2" />
+                          Listing Type & Pricing
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Listing Type */}
+                        <FormField
+                          control={form.control}
+                          name="listing_type"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel required>Listing Type</FormLabel>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <div
+                                  className={`border rounded-md p-3 cursor-pointer ${
+                                    field.value === 'fixed_price' 
+                                      ? 'border-primary bg-primary/5' 
+                                      : 'border-muted'
+                                  }`}
+                                  onClick={() => field.onChange('fixed_price')}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                      <CreditCard className="h-4 w-4" />
+                                      <span>Fixed Price</span>
+                                    </div>
+                                    {field.value === 'fixed_price' && (
+                                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                                    )}
+                                  </div>
+                                </div>
+                                
+                                <div
+                                  className={`border rounded-md p-3 cursor-pointer ${
+                                    field.value === 'auction' 
+                                      ? 'border-primary bg-primary/5' 
+                                      : 'border-muted'
+                                  }`}
+                                  onClick={() => field.onChange('auction')}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                      <Gavel className="h-4 w-4" />
+                                      <span>Auction</span>
+                                    </div>
+                                    {field.value === 'auction' && (
+                                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                                    )}
+                                  </div>
+                                </div>
+                                
+                                <div
+                                  className={`border rounded-md p-3 cursor-pointer ${
+                                    field.value === 'both' 
+                                      ? 'border-primary bg-primary/5' 
+                                      : 'border-muted'
+                                  }`}
+                                  onClick={() => field.onChange('both')}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                      <ShoppingCart className="h-4 w-4" />
+                                      <span>Both</span>
+                                    </div>
+                                    {field.value === 'both' && (
+                                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <FormDescription>
+                                Choose how you want to sell your item
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        {/* Fixed Price Section */}
+                        {(listingType === 'fixed_price' || listingType === 'both') && (
+                          <div className="space-y-4 border rounded-md p-4">
+                            <h3 className="font-medium flex items-center">
+                              <CreditCard className="h-4 w-4 mr-2" />
+                              Fixed Price Details
+                            </h3>
+                            
+                            <FormField
+                              control={form.control}
+                              name="price"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel required>Price ($)</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      step="0.01" 
+                                      min="0.01"
+                                      placeholder="0.00" 
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="is_negotiable"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>
+                                      Price is negotiable
+                                    </FormLabel>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="allow_offers"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>
+                                      Allow buyers to make offers
+                                    </FormLabel>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Auction Section */}
+                        {(listingType === 'auction' || listingType === 'both') && (
+                          <div className="space-y-4 border rounded-md p-4">
+                            <h3 className="font-medium flex items-center">
+                              <Gavel className="h-4 w-4 mr-2" />
+                              Auction Details
+                            </h3>
+                            
+                            <FormField
+                              control={form.control}
+                              name="start_price"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel required>Starting Price ($)</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      step="0.01" 
+                                      min="0.01"
+                                      placeholder="0.00" 
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="reserve_price"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Reserve Price ($)</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      step="0.01" 
+                                      min="0"
+                                      placeholder="0.00 (optional)" 
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    />
+                                  </FormControl>
+                                  <FormDescription>
+                                    Minimum price you'll accept (optional)
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="auction_duration"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel required>Duration (days)</FormLabel>
+                                  <Select 
+                                    onValueChange={(value) => field.onChange(parseInt(value))} 
+                                    defaultValue={field.value?.toString()}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select duration" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="1">1 day</SelectItem>
+                                      <SelectItem value="3">3 days</SelectItem>
+                                      <SelectItem value="5">5 days</SelectItem>
+                                      <SelectItem value="7">7 days</SelectItem>
+                                      <SelectItem value="10">10 days</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                    
+                    <div className="space-y-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg flex items-center">
+                            <Package className="w-5 h-5 mr-2" />
+                            Inventory
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {/* Quantity */}
+                          <FormField
+                            control={form.control}
+                            name="quantity"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel required>Quantity</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number" 
+                                    min="1" 
+                                    step="1"
+                                    placeholder="1" 
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                    disabled={listingType === 'auction'}
+                                  />
+                                </FormControl>
+                                {listingType === 'auction' && (
+                                  <FormDescription>
+                                    Auctions are limited to quantity of 1
+                                  </FormDescription>
+                                )}
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          {/* SKU/Item ID (if managing inventory) */}
+                          <FormField
+                            control={form.control}
+                            name="sku"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>SKU/Item ID (Optional)</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Your inventory reference" {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                  For your internal inventory tracking
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </CardContent>
+                      </Card>
+                      
+                      <div className="flex justify-between">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setActiveTab('details')}
+                        >
+                          Back: Details
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => setActiveTab('shipping')}
+                          className="flex items-center"
+                        >
+                          Next: Shipping <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                {/* ===== SHIPPING TAB ===== */}
+                <TabsContent value="shipping" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center">
+                          <Truck className="w-5 h-5 mr-2" />
+                          Shipping Options
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Location */}
+                        <FormField
+                          control={form.control}
+                          name="location"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel required>Item Location</FormLabel>
+                              <FormControl>
+                                <Input placeholder="City, State" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        {/* Shipping Methods */}
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <Label>Shipping Methods</Label>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => appendShipping({ method: '', price: 0 })}
+                            >
+                              <Plus className="w-4 h-4 mr-1" /> Add Method
+                            </Button>
+                          </div>
+                          
+                          {shippingFields.map((field, index) => (
+                            <div key={field.id} className="flex items-end gap-2">
+                              <FormField
+                                control={form.control}
+                                name={`shipping_options.${index}.method`}
+                                render={({ field }) => (
+                                  <FormItem className="flex-1">
+                                    <FormControl>
+                                      <Input placeholder="Shipping method" {...field} />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name={`shipping_options.${index}.price`}
+                                render={({ field }) => (
+                                  <FormItem className="w-24">
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        placeholder="Price" 
+                                        {...field}
+                                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <Button 
+                                type="button"
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => removeShipping(index)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Shipping Options */}
+                        <div className="space-y-3 pt-2">
+                          <FormField
+                            control={form.control}
+                            name="free_shipping"
                             render={({ field }) => (
                               <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                                 <FormControl>
-                                  <Switch
+                                  <Checkbox
                                     checked={field.value}
                                     onCheckedChange={field.onChange}
                                   />
                                 </FormControl>
-                                <div className="space-y-1">
-                                  <FormLabel>Allow buyers to make offers</FormLabel>
-                                  <FormDescription>
-                                    Let potential buyers suggest prices below your listing price
-                                  </FormDescription>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel>
+                                    Offer free shipping
+                                  </FormLabel>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="local_pickup"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel>
+                                    Allow local pickup
+                                  </FormLabel>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="shipping_worldwide"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel>
+                                    Ship worldwide
+                                  </FormLabel>
                                 </div>
                               </FormItem>
                             )}
                           />
                         </div>
-                      </div>
+                        
+                        {/* Handling Time */}
+                        <FormField
+                          control={form.control}
+                          name="handling_time"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Handling Time</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select handling time" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="same_day">Same Business Day</SelectItem>
+                                  <SelectItem value="1_day">1 Business Day</SelectItem>
+                                  <SelectItem value="2_days">2 Business Days</SelectItem>
+                                  <SelectItem value="3_days">3 Business Days</SelectItem>
+                                  <SelectItem value="5_days">5 Business Days</SelectItem>
+                                  <SelectItem value="10_days">10 Business Days</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                    </Card>
+                    
+                    <div className="space-y-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg flex items-center">
+                            <Award className="w-5 h-5 mr-2" />
+                            Return Policy
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {/* Return Policy */}
+                          <FormField
+                            control={form.control}
+                            name="return_policy"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Return Policy</FormLabel>
+                                <Select 
+                                  onValueChange={field.onChange} 
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select return policy" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="no_returns">No Returns</SelectItem>
+                                    <SelectItem value="30_days">30 Days Return</SelectItem>
+                                    <SelectItem value="14_days">14 Days Return</SelectItem>
+                                    <SelectItem value="7_days">7 Days Return</SelectItem>
+                                    <SelectItem value="custom">Custom Policy</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          {/* Warranty Information */}
+                          <FormField
+                            control={form.control}
+                            name="warranty"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Warranty</FormLabel>
+                                <Select 
+                                  onValueChange={field.onChange} 
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select warranty option" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="none">No Warranty</SelectItem>
+                                    <SelectItem value="30_days">30 Days</SelectItem>
+                                    <SelectItem value="60_days">60 Days</SelectItem>
+                                    <SelectItem value="90_days">90 Days</SelectItem>
+                                    <SelectItem value="6_months">6 Months</SelectItem>
+                                    <SelectItem value="1_year">1 Year</SelectItem>
+                                    <SelectItem value="manufacturer">Manufacturer Warranty</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          {/* Tags */}
+                          <FormField
+                            control={form.control}
+                            name="tags"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Tags (Optional)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="Enter tags separated by commas" 
+                                    {...field}
+                                    value={field.value?.join(', ') || ''}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      const tags = value.split(',')
+                                        .map(tag => tag.trim())
+                                        .filter(tag => tag.length > 0);
+                                      field.onChange(tags);
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  Add relevant keywords to help buyers find your item
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </CardContent>
+                      </Card>
                       
-                      {/* Auction fields */}
-                      <div className={listingType === "auction" || listingType === "both" ? "block border-t pt-4" : "hidden"}>
-                        <h3 className="text-lg font-medium mb-4 flex items-center">
-                          <Package className="h-5 w-5 mr-2 text-mzad-primary" />
-                          Auction Details
-                        </h3>
-                        
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="startPrice"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Starting Price*</FormLabel>
-                                <FormControl>
-                                  <div className="flex">
-                                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
-                                      <DollarSign className="h-4 w-4" />
-                                    </span>
-                                    <Input 
-                                      type="number" 
-                                      step="0.01" 
-                                      min="0" 
-                                      placeholder="0.00" 
-                                      className="rounded-l-none"
-                                      {...field} 
-                                    />
-                                  </div>
-                                </FormControl>
-                                <FormDescription>
-                                  The price bidding will start from
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="reservePrice"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Reserve Price (Optional)</FormLabel>
-                                <FormControl>
-                                  <div className="flex">
-                                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
-                                      <DollarSign className="h-4 w-4" />
-                                    </span>
-                                    <Input 
-                                      type="number" 
-                                      step="0.01" 
-                                      min="0" 
-                                      placeholder="0.00" 
-                                      className="rounded-l-none"
-                                      {...field} 
-                                    />
-                                  </div>
-                                </FormControl>
-                                <FormDescription>
-                                  Minimum price you're willing to accept
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        <div className="grid md:grid-cols-2 gap-4 mt-4">
-                          <FormField
-                            control={form.control}
-                            name="endDate"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>End Date*</FormLabel>
-                                <FormControl>
-                                  <div className="flex">
-                                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
-                                      <Calendar className="h-4 w-4" />
-                                    </span>
-                                    <Input 
-                                      type="date" 
-                                      className="rounded-l-none"
-                                      min={new Date().toISOString().split('T')[0]}
-                                      {...field} 
-                                    />
-                                  </div>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="endTime"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>End Time*</FormLabel>
-                                <FormControl>
-                                  <div className="flex">
-                                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
-                                      <Clock className="h-4 w-4" />
-                                    </span>
-                                    <Input 
-                                      type="time" 
-                                      className="rounded-l-none"
-                                      {...field} 
-                                    />
-                                  </div>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                      <div className="flex justify-between">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setActiveTab('pricing')}
+                        >
+                          Back: Pricing
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => setActiveTab('images')}
+                          className="flex items-center"
+                        >
+                          Next: Images <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              {/* Shipping Tab */}
-              <TabsContent value="shipping">
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="space-y-6">
-                      <h3 className="text-lg font-medium mb-4 flex items-center">
-                        <Truck className="h-5 w-5 mr-2 text-mzad-primary" />
-                        Shipping & Delivery Options
-                      </h3>
-                      
+                  </div>
+                </TabsContent>
+                
+                {/* ===== IMAGES TAB ===== */}
+                <TabsContent value="images" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center">
+                        <ImageIcon className="w-5 h-5 mr-2" />
+                        Product Images
+                      </CardTitle>
+                      <CardDescription>
+                        Add up to 10 images. First image will be the main display image.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
                       <FormField
                         control={form.control}
-                        name="isDeliveryAvailable"
+                        name="images"
                         render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div className="space-y-1">
-                              <FormLabel>Offer delivery</FormLabel>
-                              <FormDescription>
-                                Enable if you can deliver or ship this item to buyers
-                              </FormDescription>
+                          <FormItem>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                              {/* Image upload button */}
+                              {watchedImages.length < 10 && (
+                                <div 
+                                  className="border-2 border-dashed rounded-md flex flex-col items-center justify-center p-4 h-40 cursor-pointer hover:border-primary transition-colors"
+                                  onClick={() => fileInputRef.current?.click()}
+                                >
+                                  <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+                                  <p className="text-sm text-center text-muted-foreground">
+                                    Click to upload
+                                  </p>
+                                  <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={handleImageUpload}
+                                  />
+                                </div>
+                              )}
+                              
+                              {/* Display uploaded images */}
+                              {watchedImages.map((image, index) => (
+                                <div
+                                  key={image.id}
+                                  className="relative border rounded-md overflow-hidden group h-40"
+                                >
+                                  {/* Main image indicator */}
+                                  {index === 0 && (
+                                    <Badge className="absolute top-2 left-2 z-10">
+                                      Main
+                                    </Badge>
+                                  )}
+                                  
+                                  {/* Image */}
+                                  <img
+                                    src={image.url}
+                                    alt={`Product ${index + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  
+                                  {/* Image controls */}
+                                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
+                                    <div className="flex justify-end">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-white"
+                                        onClick={() => removeImage(index)}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                    
+                                    <div className="flex justify-between">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-white"
+                                        onClick={() => moveImage(index, 'up')}
+                                        disabled={index === 0}
+                                      >
+                                        <ArrowRight className="h-4 w-4 rotate-180" />
+                                      </Button>
+                                      
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-white"
+                                        onClick={() => moveImage(index, 'down')}
+                                        disabled={index === watchedImages.length - 1}
+                                      >
+                                        <ArrowRight className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
-                      {form.watch('isDeliveryAvailable') && (
-                        <>
-                          <FormField
-                            control={form.control}
-                            name="shippingOptions"
-                            render={({ field }) => (
-                              <FormItem className="mb-4">
-                                <FormLabel className="text-base">Shipping Options</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    placeholder="e.g. Standard shipping, Express delivery, Local pickup" 
-                                    {...field} 
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="shippingFee"
-                            render={({ field }) => (
-                              <FormItem className="mb-4">
-                                <FormLabel className="text-base">Shipping Fee</FormLabel>
-                                <FormControl>
-                                  <div className="flex">
-                                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
-                                      <DollarSign className="h-4 w-4" />
-                                    </span>
-                                    <Input 
-                                      type="number" 
-                                      step="0.01" 
-                                      min="0" 
-                                      placeholder="0.00" 
-                                      className="rounded-l-none"
-                                      {...field} 
-                                    />
-                                  </div>
-                                </FormControl>
-                                <FormDescription>
-                                  Leave empty if shipping is free or included in the price
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </>
-                      )}
-                      
-                      {!form.watch('isDeliveryAvailable') && (
-                        <div className="bg-gray-50 p-4 rounded-md">
-                          <p className="text-sm text-gray-600">
-                            You have indicated that delivery is not available. Buyers will need to arrange pickup from your location.
-                          </p>
-                        </div>
-                      )}
-                      
-                      <Separator />
-                      
-                      <div className="pt-2">
-                        <h3 className="text-base font-medium mb-3">Listing Summary</h3>
-                        <div className="bg-gray-50 p-4 rounded-md">
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Category:</span>
-                              <span className="font-medium">{selectedCategory?.name || 'Not specified'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Listing Type:</span>
-                              <span className="font-medium">
-                                {listingType === 'fixed' ? 'Fixed Price' : 
-                                 listingType === 'auction' ? 'Auction' : 'Auction with Buy Now'}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Price:</span>
-                              <span className="font-medium">
-                                {(listingType === 'fixed' || listingType === 'both') && form.watch('price') 
-                                  ? `${form.watch('price')} ${form.watch('currency')}` 
-                                  : 'Not set'}
-                              </span>
-                            </div>
-                            {(listingType === 'auction' || listingType === 'both') && (
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Starting Bid:</span>
-                                <span className="font-medium">
-                                  {form.watch('startPrice') 
-                                    ? `${form.watch('startPrice')} ${form.watch('currency')}` 
-                                    : 'Not set'}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Quantity:</span>
-                              <span className="font-medium">{form.watch('quantity')}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Delivery:</span>
-                              <span className="font-medium">{form.watch('isDeliveryAvailable') ? 'Available' : 'Not available'}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="border-t pt-6 flex justify-end">
-                    <Button 
-                      type="submit"
-                      disabled={isSubmitting || isUploading}
-                      className="bg-mzad-primary hover:bg-mzad-primary/90"
+                    </CardContent>
+                  </Card>
+                  
+                  <div className="flex justify-between items-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setActiveTab('shipping')}
                     >
-                      {isSubmitting || isUploading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          {isUploading ? 'Uploading...' : 'Processing...'}
-                        </>
-                      ) : (
-                        'Create Listing'
-                      )}
+                      Back: Shipping
                     </Button>
-                  </CardFooter>
-                </Card>
-              </TabsContent>
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setIsDraft(true);
+                          form.handleSubmit(onSubmit)();
+                        }}
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting && isDraft ? (
+                          <Loader className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Save className="mr-2 h-4 w-4" />
+                        )}
+                        Save as Draft
+                      </Button>
+                      
+                      <Button 
+                        type="submit" 
+                        disabled={isSubmitting || completionScore < 60}
+                        onClick={() => setIsDraft(false)}
+                      >
+                        {isSubmitting && !isDraft ? (
+                          <Loader className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Tag className="mr-2 h-4 w-4" />
+                        )}
+                        Publish Listing
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {draftSaved && (
+                    <div className="flex items-center gap-2 text-sm text-green-600 justify-center mt-2">
+                      <Check className="h-4 w-4" />
+                      <span>Draft saved automatically</span>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </form>
           </Form>
-        </Tabs>
+        </div>
       </div>
     </Layout>
   );

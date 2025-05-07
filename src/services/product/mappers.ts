@@ -21,3 +21,17 @@ export const mapProductToCardProps = (product: ProductWithImages): ProductCardPr
     brand: product.brand
   };
 };
+
+// Process product data to add main image url
+export const processProductData = (data: any[]): ProductWithImages[] => {
+  return data.map(product => {
+    const images = product.images || [];
+    const sortedImages = [...images].sort((a, b) => a.display_order - b.display_order);
+    const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
+    
+    return {
+      ...product,
+      main_image_url: mainImageUrl
+    };
+  });
+};
