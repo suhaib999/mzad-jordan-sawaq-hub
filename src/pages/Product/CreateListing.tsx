@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -940,4 +941,635 @@ const CreateListing = () => {
                         )}
                         
                         {/* Auction Section */}
-                        {(listing
+                        {(listingType === 'auction' || listingType === 'both') && (
+                          <div className="space-y-4 border rounded-md p-4">
+                            <h3 className="font-medium flex items-center">
+                              <Gavel className="h-4 w-4 mr-2" />
+                              Auction Details
+                            </h3>
+                            
+                            <FormField
+                              control={form.control}
+                              name="start_price"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Starting Price ($) <span className="text-red-500">*</span></FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      step="0.01" 
+                                      min="0.01"
+                                      placeholder="0.00" 
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="reserve_price"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Reserve Price ($)</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      step="0.01" 
+                                      min="0"
+                                      placeholder="0.00 (optional)" 
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    />
+                                  </FormControl>
+                                  <FormDescription>
+                                    Minimum price for which you're willing to sell
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="auction_duration"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Duration (days) <span className="text-red-500">*</span></FormLabel>
+                                  <Select 
+                                    onValueChange={(value) => field.onChange(parseInt(value))} 
+                                    defaultValue={field.value?.toString()}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select duration" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="1">1 day</SelectItem>
+                                      <SelectItem value="3">3 days</SelectItem>
+                                      <SelectItem value="5">5 days</SelectItem>
+                                      <SelectItem value="7">7 days</SelectItem>
+                                      <SelectItem value="10">10 days</SelectItem>
+                                      <SelectItem value="14">14 days</SelectItem>
+                                      <SelectItem value="30">30 days</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Quantity */}
+                        <FormField
+                          control={form.control}
+                          name="quantity"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Quantity <span className="text-red-500">*</span></FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number"
+                                  min="1"
+                                  placeholder="1" 
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="allow_offers"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel>Allow Offers</FormLabel>
+                                <FormDescription>
+                                  Allow buyers to make offers on your listing
+                                </FormDescription>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                    </Card>
+                    
+                    <div className="space-y-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg flex items-center">
+                            <Info className="w-5 h-5 mr-2" />
+                            Pricing Guidelines
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="text-sm space-y-4">
+                            <div className="flex items-start space-x-2">
+                              <CreditCard className="h-4 w-4 mt-1 text-blue-500" />
+                              <p><strong>Fixed Price:</strong> Set a specific price for immediate purchase.</p>
+                            </div>
+                            
+                            <div className="flex items-start space-x-2">
+                              <Gavel className="h-4 w-4 mt-1 text-amber-500" />
+                              <p><strong>Auction:</strong> Start with a lower price and let buyers bid up.</p>
+                            </div>
+                            
+                            <div className="flex items-start space-x-2">
+                              <ShoppingCart className="h-4 w-4 mt-1 text-green-500" />
+                              <p><strong>Both:</strong> Allow immediate purchase at your fixed price, while also accepting bids.</p>
+                            </div>
+                            
+                            <div className="flex items-start space-x-2">
+                              <AlertCircle className="h-4 w-4 mt-1 text-red-500" />
+                              <p><strong>Tip:</strong> Research similar items to determine a competitive price.</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      <div className="flex justify-between">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setActiveTab('details')}
+                          className="flex items-center"
+                        >
+                          Back: Details
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => setActiveTab('shipping')}
+                          className="flex items-center"
+                        >
+                          Next: Shipping <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                {/* ===== SHIPPING TAB ===== */}
+                <TabsContent value="shipping" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center">
+                          <Truck className="w-5 h-5 mr-2" />
+                          Shipping Details
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {/* Location */}
+                        <FormField
+                          control={form.control}
+                          name="location"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Item Location <span className="text-red-500">*</span></FormLabel>
+                              <FormControl>
+                                <Input placeholder="City, State" {...field} />
+                              </FormControl>
+                              <FormDescription>
+                                Where is the item located? (City, State)
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        {/* Shipping Options */}
+                        <div>
+                          <FormLabel className="block mb-2">Shipping Options</FormLabel>
+                          
+                          <FormField
+                            control={form.control}
+                            name="free_shipping"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mb-3">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={(checked) => {
+                                      field.onChange(checked);
+                                      if (checked) {
+                                        // Set all shipping prices to 0
+                                        const currentOptions = form.getValues('shipping_options') || [];
+                                        const updatedOptions = currentOptions.map(option => ({
+                                          ...option,
+                                          price: 0
+                                        }));
+                                        form.setValue('shipping_options', updatedOptions);
+                                      }
+                                    }}
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel>Offer Free Shipping</FormLabel>
+                                  <FormDescription>
+                                    Buyers often prefer listings with free shipping
+                                  </FormDescription>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="local_pickup"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mb-3">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel>Allow Local Pickup</FormLabel>
+                                  <FormDescription>
+                                    Buyer can pick up the item in person
+                                  </FormDescription>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <div className="border rounded-md p-4">
+                            <h3 className="font-medium mb-3">Shipping Methods</h3>
+                            
+                            {shippingFields.map((field, index) => (
+                              <div key={field.id} className="flex gap-3 items-end mb-3">
+                                <FormField
+                                  control={form.control}
+                                  name={`shipping_options.${index}.method`}
+                                  render={({ field }) => (
+                                    <FormItem className="flex-1">
+                                      <FormLabel className={index !== 0 ? "sr-only" : undefined}>
+                                        {index === 0 && "Method"}
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Input 
+                                          placeholder="e.g. Standard, Express" 
+                                          {...field} 
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                
+                                <FormField
+                                  control={form.control}
+                                  name={`shipping_options.${index}.price`}
+                                  render={({ field }) => (
+                                    <FormItem className="w-24">
+                                      <FormLabel className={index !== 0 ? "sr-only" : undefined}>
+                                        {index === 0 && "Price ($)"}
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Input 
+                                          type="number" 
+                                          step="0.01" 
+                                          placeholder="0.00"
+                                          disabled={form.watch('free_shipping')} 
+                                          {...field}
+                                          onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                
+                                {index > 0 && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="mb-2"
+                                    onClick={() => removeShipping(index)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Remove</span>
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                            
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="mt-2"
+                              onClick={() => appendShipping({ method: '', price: 0 })}
+                            >
+                              <Plus className="mr-2 h-4 w-4" />
+                              Add Shipping Option
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {/* Handling Time */}
+                        <FormField
+                          control={form.control}
+                          name="handling_time"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Handling Time</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || ""}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select handling time" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="same_day">Same Business Day</SelectItem>
+                                  <SelectItem value="one_day">1 Business Day</SelectItem>
+                                  <SelectItem value="two_days">2 Business Days</SelectItem>
+                                  <SelectItem value="three_days">3 Business Days</SelectItem>
+                                  <SelectItem value="four_days">4 Business Days</SelectItem>
+                                  <SelectItem value="five_days">5 Business Days</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormDescription>
+                                How long it takes to process and ship after receiving payment
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                    </Card>
+                    
+                    <div className="space-y-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg flex items-center">
+                            <Package2 className="w-5 h-5 mr-2" />
+                            Return Policy
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <FormField
+                            control={form.control}
+                            name="return_policy"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Return Policy</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value || ""}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select return policy" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="no_returns">No Returns</SelectItem>
+                                    <SelectItem value="14_days">14 Day Returns</SelectItem>
+                                    <SelectItem value="30_days">30 Day Returns</SelectItem>
+                                    <SelectItem value="60_days">60 Day Returns</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormDescription>
+                                  Your policy for returns and refunds
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="shipping_worldwide"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel>Ship Worldwide</FormLabel>
+                                  <FormDescription>
+                                    You're willing to ship this item internationally
+                                  </FormDescription>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 text-sm text-blue-700 mt-4">
+                            <div className="flex">
+                              <Info className="h-5 w-5 mr-2" />
+                              <p>Clear shipping and return policies help set buyer expectations and reduce questions.</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      <div className="flex justify-between">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setActiveTab('pricing')}
+                          className="flex items-center"
+                        >
+                          Back: Pricing
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => setActiveTab('images')}
+                          className="flex items-center"
+                        >
+                          Next: Images <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                {/* ===== IMAGES TAB ===== */}
+                <TabsContent value="images" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center">
+                        <ImageIcon className="w-5 h-5 mr-2" />
+                        Product Images
+                      </CardTitle>
+                      <CardDescription>
+                        Upload high-quality images of your item (up to 10 images)
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6">
+                        <input 
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleImageUpload}
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                        />
+                        
+                        <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+                        <div className="text-center">
+                          <p className="text-sm text-muted-foreground">
+                            Drag & drop images here or click to browse
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            JPG, PNG or GIF, max 5MB each
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="mt-4"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Images
+                        </Button>
+                      </div>
+
+                      {/* Image Preview and Management */}
+                      {watchedImages.length > 0 && (
+                        <div className="space-y-4">
+                          <h3 className="font-medium">Uploaded Images ({watchedImages.length}/10)</h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            {watchedImages.map((image, index) => (
+                              <div key={image.id} className="relative group border rounded-lg overflow-hidden aspect-square">
+                                <img
+                                  src={image.url}
+                                  alt={`Product image ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center space-y-2 p-2">
+                                  <div className="flex space-x-1">
+                                    <Button
+                                      type="button"
+                                      variant="secondary"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      onClick={() => moveImage(index, 'up')}
+                                      disabled={index === 0}
+                                    >
+                                      <ArrowRight className="h-4 w-4 -rotate-90" />
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="secondary"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      onClick={() => moveImage(index, 'down')}
+                                      disabled={index === watchedImages.length - 1}
+                                    >
+                                      <ArrowRight className="h-4 w-4 rotate-90" />
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="destructive"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      onClick={() => removeImage(index)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                  {index === 0 && (
+                                    <Badge className="bg-primary">Main Image</Badge>
+                                  )}
+                                </div>
+                                {index === 0 && (
+                                  <Badge className="absolute top-1 left-1 bg-primary">Main</Badge>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          
+                          <div className="bg-amber-50 border-l-4 border-amber-500 p-4 text-sm text-amber-700">
+                            <div className="flex">
+                              <Info className="h-5 w-5 mr-2" />
+                              <div>
+                                <p className="font-medium">Image Tips:</p>
+                                <ul className="list-disc list-inside mt-1 space-y-1">
+                                  <li>The first image will be your main listing image</li>
+                                  <li>Use well-lit photos against a clean background</li>
+                                  <li>Include images from multiple angles</li>
+                                  <li>Show any defects or flaws for accurate representation</li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                    <CardFooter className="flex justify-between">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setActiveTab('shipping')}
+                        className="flex items-center"
+                      >
+                        Back: Shipping
+                      </Button>
+                      <div className="flex space-x-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setIsDraft(true);
+                            form.handleSubmit(onSubmit)();
+                          }}
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting && isDraft ? (
+                            <Loader className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Save className="mr-2 h-4 w-4" />
+                          )}
+                          Save as Draft
+                        </Button>
+                        <Button
+                          type="submit"
+                          onClick={() => {
+                            setIsDraft(false);
+                            form.handleSubmit(onSubmit)();
+                          }}
+                          disabled={isSubmitting || completionScore < 75}
+                        >
+                          {isSubmitting && !isDraft ? (
+                            <Loader className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                          )}
+                          Create Listing
+                        </Button>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </form>
+          </Form>
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default CreateListing;
