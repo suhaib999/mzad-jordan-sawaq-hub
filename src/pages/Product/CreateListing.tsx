@@ -8,7 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
-import { Button } from '@/components/ui/button';
 
 // UI Components
 import Layout from '@/components/layout/Layout';
@@ -32,6 +31,7 @@ import TabsShipping from '@/components/product/listing/TabsShipping';
 import TabsImages from '@/components/product/listing/TabsImages';
 import CompletionIndicator from '@/components/product/listing/CompletionIndicator';
 import RequireAuth from '@/components/auth/RequireAuth';
+import { Button } from '@/components/ui/button';
 
 // Types and Services
 import { ProductFormValues, productSchema } from '@/types/product';
@@ -111,7 +111,21 @@ const CreateListing = () => {
   const loadDraft = () => {
     if (savedDraft) {
       console.log("Loading saved draft:", savedDraft);
-      form.reset(savedDraft);
+      form.reset({
+        ...savedDraft,
+        brand: savedDraft.brand || '',
+        model: savedDraft.model || '',
+        year: savedDraft.year || '',
+        color: savedDraft.color || '',
+        size: savedDraft.size || '',
+        price: savedDraft.price || undefined,
+        start_price: savedDraft.start_price || undefined,
+        reserve_price: savedDraft.reserve_price || undefined,
+        auction_duration: savedDraft.auction_duration || 7,
+        handling_time: savedDraft.handling_time || '',
+        return_policy: savedDraft.return_policy || '',
+        images: savedDraft.images || []
+      });
       
       // Set selected category
       if (savedDraft.category) {
@@ -155,7 +169,7 @@ const CreateListing = () => {
     });
 
   const listingType = form.watch('listing_type');
-  const watchedImages = form.watch('images');
+  const watchedImages = form.watch('images') || [];
   
   // Calculate completion score
   useEffect(() => {
@@ -208,7 +222,18 @@ const CreateListing = () => {
     const draftTimer = setTimeout(() => {
       const currentValues = form.getValues();
       if (currentValues.title || currentValues.description) {
-        setSavedDraft(currentValues as ExtendedProductFormValues);
+        // Make sure images are properly serialized
+        const draftToSave = {
+          ...currentValues,
+          images: currentValues.images?.map(img => ({
+            id: img.id,
+            url: img.url,
+            order: img.order,
+            // Don't include file objects as they can't be serialized
+          }))
+        };
+        
+        setSavedDraft(draftToSave as ExtendedProductFormValues);
         setDraftSaved(true);
         setHasDraft(true);
         setTimeout(() => setDraftSaved(false), 3000);
@@ -305,7 +330,7 @@ const CreateListing = () => {
       // Format the end time for auctions
       if ((formData.listing_type === 'auction' || formData.listing_type === 'both') && formData.auction_duration) {
         const endDate = new Date();
-        endDate.setDate(endDate.getDate() + formData.auction_duration);
+        endDate.setDate(endDate.getDate() + (formData.auction_duration || 7));
         formData.end_time = endDate.toISOString();
       }
       

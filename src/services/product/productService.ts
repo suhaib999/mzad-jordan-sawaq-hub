@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProductWithImages, ProductFilterParams } from './types';
 import { processProductData } from './mappers';
@@ -229,8 +230,7 @@ export const createOrUpdateProduct = async (
     const { data: insertedProduct, error: productError } = await supabase
       .from('products')
       .upsert(productToInsert)
-      .select()
-      .maybeSingle();
+      .select('id');
       
     if (productError) {
       console.error("Error inserting product:", productError);
@@ -240,13 +240,20 @@ export const createOrUpdateProduct = async (
       };
     }
     
-    const productId = insertedProduct?.id;
+    if (!insertedProduct || insertedProduct.length === 0) {
+      return {
+        success: false,
+        error: "No product was created/updated"
+      };
+    }
+    
+    const productId = insertedProduct[0]?.id;
     console.log("Product created/updated successfully with ID:", productId);
     
     // Insert/update images if any
     if (images && images.length > 0 && productId) {
       const imageInserts = images.map((img, index) => ({
-        id: img.id,
+        id: img.id || undefined,
         product_id: productId,
         image_url: img.url,
         display_order: index
@@ -256,7 +263,7 @@ export const createOrUpdateProduct = async (
       
       const { error: imagesError } = await supabase
         .from('product_images')
-        .upsert(imageInserts);
+        .upsert(imageInserts, { onConflict: 'id,product_id' });
         
       if (imagesError) {
         console.error("Error inserting images:", imagesError);

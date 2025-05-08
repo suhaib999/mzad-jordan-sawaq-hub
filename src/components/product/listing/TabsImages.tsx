@@ -127,7 +127,7 @@ const TabsImages: React.FC<TabsImagesProps> = ({
         </div>
 
         {/* Image Preview and Management */}
-        {watchedImages.length > 0 && (
+        {watchedImages && watchedImages.length > 0 && (
           <div className="space-y-4">
             <h3 className="font-medium">Uploaded Images ({watchedImages.length}/10)</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
