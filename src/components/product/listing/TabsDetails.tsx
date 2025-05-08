@@ -184,7 +184,11 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
                 <FormItem>
                   <FormLabel>Brand</FormLabel>
                   <FormControl>
-                    <Input placeholder="Brand name" {...field} />
+                    <Input 
+                      placeholder="Brand name" 
+                      {...field} 
+                      value={field.value?.toString() || ""} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -199,7 +203,11 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
                 <FormItem>
                   <FormLabel>Model</FormLabel>
                   <FormControl>
-                    <Input placeholder="Model number" {...field} />
+                    <Input 
+                      placeholder="Model number" 
+                      {...field} 
+                      value={field.value?.toString() || ""} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

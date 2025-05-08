@@ -190,7 +190,10 @@ const TabsShipping: React.FC<TabsShippingProps> = ({ form, setActiveTab }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Handling Time</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value || ""}>
+                <Select 
+                  onValueChange={field.onChange} 
+                  value={typeof field.value === 'string' ? field.value : ''}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select handling time" />
@@ -230,7 +233,10 @@ const TabsShipping: React.FC<TabsShippingProps> = ({ form, setActiveTab }) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Return Policy</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ""}>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={typeof field.value === 'string' ? field.value : ''}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select return policy" />
