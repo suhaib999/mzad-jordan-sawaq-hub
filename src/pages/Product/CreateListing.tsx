@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -366,7 +365,8 @@ const CreateListing = () => {
         status: formData.status,
         quantity: formData.quantity,
         brand: formData.brand?.toString() || null,
-        model: formData.model?.toString() || null
+        model: formData.model?.toString() || null,
+        attributes: formData.attributes || {},
       };
       
       // Handle image uploads
