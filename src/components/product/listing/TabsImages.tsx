@@ -40,13 +40,26 @@ const TabsImages: React.FC<TabsImagesProps> = ({
   const handleCreateListing = () => {
     console.log("Creating listing, validation will run");
     setIsDraft(false);
-    // Get the current form values
+    
+    // Check for required fields before submitting
     const formData = form.getValues();
     console.log("Form data before submission:", formData);
+    
+    // Make sure we have at least one image
+    if (!formData.images || formData.images.length === 0) {
+      toast({
+        title: "Image required",
+        description: "Please upload at least one product image",
+        variant: "destructive"
+      });
+      return;
+    }
     
     // Use form.handleSubmit to ensure validation runs
     form.handleSubmit((validData) => {
       console.log("Form validated successfully, submitting:", validData);
+      // Set status to active explicitly
+      validData.status = 'active';
       onSubmit(validData);
     })();
   };
@@ -55,6 +68,8 @@ const TabsImages: React.FC<TabsImagesProps> = ({
     console.log("Saving draft, bypassing validation");
     setIsDraft(true);
     const formData = form.getValues();
+    // Set status to draft explicitly
+    formData.status = 'draft';
     console.log("Saving draft with data:", formData);
     onSubmit(formData);
   };
@@ -185,6 +200,7 @@ const TabsImages: React.FC<TabsImagesProps> = ({
             type="button"
             onClick={handleCreateListing}
             disabled={isSubmitting || completionScore < 75}
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {isSubmitting && !isDraft ? (
               <Loader className="mr-2 h-4 w-4 animate-spin" />

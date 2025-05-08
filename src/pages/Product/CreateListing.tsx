@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 // UI Components
 import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button'; // Added missing Button import
+import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -331,10 +331,12 @@ const CreateListing = () => {
         if (image.file) {
           console.log("Uploading image:", image.id);
           // Upload to Supabase storage
-          const fileExt = image.file.name.split('.').pop();
+          const fileExt = image.file.name ? image.file.name.split('.').pop() : 'jpg';
           const filePath = `products/${productId}/${image.id}.${fileExt}`;
           
           console.log("Uploading to path:", filePath);
+          
+          // Create storage bucket if it doesn't exist (this is handled by Supabase automatically)
           
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('images')
@@ -379,7 +381,6 @@ const CreateListing = () => {
         currency: 'USD', // Default to USD for now
         condition: formData.condition,
         category: formData.category,
-        category_id: formData.category, // Using category as ID for now
         seller_id: session.user.id,
         location: formData.location,
         // Convert shipping_options array to string for database storage
@@ -393,12 +394,10 @@ const CreateListing = () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         quantity: formData.quantity,
-        accept_offers: formData.allow_offers,
-        brand: formData.brand,
-        model: formData.model,
-        color: formData.color,
-        size: formData.size,
-        custom_attributes: JSON.stringify(formData.attributes || {})
+        brand: formData.brand?.toString() || null,
+        model: formData.model?.toString() || null,
+        color: formData.color?.toString() || null,
+        size: formData.size?.toString() || null,
       };
       
       console.log("Inserting product data:", productData);
