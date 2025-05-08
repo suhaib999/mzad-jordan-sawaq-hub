@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   ShoppingCart, Heart, Menu, LogIn, LogOut, User, 
-  PlusSquare, Settings, Bell, ChevronDown
+  PlusSquare, Settings, Bell, ChevronDown, Tag, Bookmark
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
