@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,30 +44,41 @@ interface ExtendedProductFormValues extends ProductFormValues {
 }
 
 const CreateListing = () => {
-  const { session, user } = useAuth();
+  const { session } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('details');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDraft, setIsDraft] = useState(false);
-  const [hasDraft, setHasDraft] = useState(false);
-  const [draftSaved, setDraftSaved] = useState(false);
   const [completionScore, setCompletionScore] = useState(0);
-  const [loadDraftDialogOpen, setLoadDraftDialogOpen] = useState(false);
-  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
-  const [customAttributes, setCustomAttributes] = useState<Record<string, string>>({});
+  const [draftSaved, setDraftSaved] = useState(false);
   const [draftId, setDraftId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [savedDraft, setSavedDraft] = useLocalStorage<ExtendedProductFormValues>('product_draft', null);
+  const [customAttributes, setCustomAttributes] = useState<{ name: string; value: string }[]>([]);
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
+  const [loadDraftDialogOpen, setLoadDraftDialogOpen] = useState(false);
+  
+  // Load draft from local storage
+  const [savedDraft, setSavedDraft] = useLocalStorage<ExtendedProductFormValues | null>('product_draft', null);
 
-  // Handle category selection
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategory(category);
-  };
+  // Check for existing draft
+  useEffect(() => {
+    if (savedDraft) {
+      setHasDraft(true);
+      // Prompt to load draft if we have a saved one and form is empty
+      const currentTitle = form.getValues('title') || '';
+      const currentDesc = form.getValues('description') || '';
+      
+      if (!currentTitle && !currentDesc) {
+        setLoadDraftDialogOpen(true);
+      }
+    }
+  }, []);
 
-  // Initialize form
-  const form = useForm<ExtendedProductFormValues>({
+  // Define form
+  const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       title: '',
@@ -92,43 +104,8 @@ const CreateListing = () => {
       attributes: {},
       status: 'active'
     },
-    mode: 'onBlur' // Validate fields when they lose focus
+    mode: 'onBlur', // Validate fields when they lose focus
   });
-
-  // Image field array and watch
-  const { fields: imageFields, append: appendImage, remove: removeImage, update: updateImage } = useFieldArray({
-    control: form.control,
-    name: "images"
-  });
-  const watchedImages = form.watch('images');
-
-  // Calculate completion score
-  useEffect(() => {
-    const formData = form.getValues();
-    let score = 0;
-    const total = 100;
-
-    // Required fields
-    if (formData.title) score += 20;
-    if (formData.description) score += 20;
-    if (formData.category) score += 10;
-
-    // Price requirements based on listing type
-    if (formData.listing_type === 'auction') {
-      if (formData.start_price) score += 15;
-      if (formData.reserve_price) score += 15;
-      if (formData.auction_duration) score += 20;
-    } else {
-      if (formData.price) score += 20;
-    }
-
-    // Images
-    if (formData.images && formData.images.length > 0) {
-      score += 20;
-    }
-
-    setCompletionScore(Math.round((score / total) * 100));
-  }, [form]);
 
   // Load saved draft into form
   const loadDraft = () => {
@@ -193,6 +170,62 @@ const CreateListing = () => {
     });
   };
 
+  // Get the field array for images
+  const { fields: imageFields, append: appendImage, remove: removeImage, update: updateImage } = 
+    useFieldArray({
+      control: form.control,
+      name: "images"
+    });
+
+  const listingType = form.watch('listing_type');
+  const watchedImages = form.watch('images') || [];
+  
+  // Calculate completion score
+  useEffect(() => {
+    const formData = form.getValues();
+    let score = 0;
+    const requiredFields = [
+      { name: 'title', weight: 15 },
+      { name: 'description', weight: 15 },
+      { name: 'category', weight: 10 },
+      { name: 'condition', weight: 10 },
+      { name: 'location', weight: 10 }
+    ];
+    
+    // Check if required fields are filled
+    requiredFields.forEach(field => {
+      if (formData[field.name as keyof typeof formData]) {
+        score += field.weight;
+      }
+    });
+    
+    // Check if pricing is set correctly based on the listing type
+    if ((listingType === 'fixed_price' || listingType === 'both') && formData.price && formData.price > 0) {
+      score += 15;
+    }
+    
+    if ((listingType === 'auction' || listingType === 'both') && formData.start_price && formData.start_price > 0) {
+      score += 10;
+    }
+    
+    // Check if images are added
+    if (formData.images && formData.images.length > 0) {
+      score += Math.min(15, formData.images.length * 5); // Up to 15% for 3+ images
+    }
+    
+    // Shipping details
+    if (formData.shipping_options && formData.shipping_options.length > 0) {
+      score += 5;
+    }
+    
+    // Extra points for additional details
+    if (formData.brand) score += 2;
+    if (formData.model) score += 2;
+    if (formData.tags && formData.tags.length > 0) score += 1;
+    
+    setCompletionScore(score);
+  }, [form.watch(), listingType]);
+  
   // Auto-save as draft
   useEffect(() => {
     const draftTimer = setTimeout(() => {
@@ -205,7 +238,7 @@ const CreateListing = () => {
             id: img.id,
             url: img.url,
             order: img.order,
-            file: img.file // Include the file property for draft
+            // Don't include file objects as they can't be serialized
           }))
         };
         
@@ -214,80 +247,139 @@ const CreateListing = () => {
         setHasDraft(true);
         setTimeout(() => setDraftSaved(false), 3000);
       }
-    }, 10000); // Save every 10 seconds
-
+    }, 10000); // Save every 10 seconds if changes
+    
     return () => clearTimeout(draftTimer);
-  }, [form.getValues()]);
-
+  }, [form.watch(), setSavedDraft]);
+  
+  // Handle image upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    const newFiles = Array.from(e.target.files);
+    const currentImagesCount = watchedImages?.length || 0;
+    
+    newFiles.forEach((file, index) => {
+      if (currentImagesCount + index < 10) { // Limit to 10 images
+        const imageUrl = URL.createObjectURL(file);
+        appendImage({ 
+          id: uuidv4(), 
+          file: file, 
+          url: imageUrl,
+          order: currentImagesCount + index
+        });
+      }
+    });
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+  
+  // Handle image reordering
+  const moveImage = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index > 0) {
+      const newImages = [...(watchedImages || [])];
+      const temp = newImages[index];
+      newImages[index] = newImages[index - 1];
+      newImages[index - 1] = temp;
+      
+      // Update order property
+      newImages[index].order = index;
+      newImages[index - 1].order = index - 1;
+      
+      // Update form
+      form.setValue('images', newImages);
+    } 
+    else if (direction === 'down' && index < (watchedImages?.length || 0) - 1) {
+      const newImages = [...(watchedImages || [])];
+      const temp = newImages[index];
+      newImages[index] = newImages[index + 1];
+      newImages[index + 1] = temp;
+      
+      // Update order property
+      newImages[index].order = index;
+      newImages[index + 1].order = index + 1;
+      
+      // Update form
+      form.setValue('images', newImages);
+    }
+  };
+  
+  // Handle category selection
+  const handleCategorySelect = (category: any) => {
+    console.log("Category selected in parent:", category);
+    setSelectedCategory(category.id);
+    form.setValue('category', category.id);
+  };
+  
   // Handle form submission
   const onSubmit = async (data?: ProductFormValues) => {
+    // If no data is provided (save draft case), get values from form
     const formData = data || form.getValues();
-    setIsSubmitting(true);
-
-    // Validate user
-    if (!user?.id) {
-      throw new Error('User not authenticated');
+    
+    console.log("Form submitted with data:", formData);
+    
+    if (!session?.user) {
+      toast({
+        title: "Authentication required",
+        description: "You need to be logged in to create a listing",
+        variant: "destructive"
+      });
+      navigate("/auth/login");
+      return;
     }
-
+    
     try {
-      // Validate required fields
-      if (!formData.title) {
-        throw new Error('Title is required');
+      setIsSubmitting(true);
+      
+      // Set status based on button clicked
+      formData.status = isDraft ? 'draft' : 'active';
+      
+      // Format the end time for auctions
+      if ((formData.listing_type === 'auction' || formData.listing_type === 'both') && formData.auction_duration) {
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + (formData.auction_duration || 7));
+        formData.end_time = endDate.toISOString();
       }
-      if (!formData.description) {
-        throw new Error('Description is required');
-      }
-      if (!formData.category) {
-        throw new Error('Category is required');
-      }
-      if (!formData.images || formData.images.length === 0) {
-        throw new Error('At least one image is required');
-      }
-
-      // Validate pricing based on listing type
-      if (formData.listing_type === 'fixed_price' || formData.listing_type === 'both') {
-        if (!formData.price || formData.price <= 0) {
-          throw new Error('Price is required for fixed price listings');
-        }
-      }
-      if (formData.listing_type === 'auction' || formData.listing_type === 'both') {
-        if (!formData.start_price || formData.start_price <= 0) {
-          throw new Error('Starting price is required for auctions');
-        }
-      }
-
+      
+      // Generate a product ID if needed
+      const productId = draftId || uuidv4();
+      console.log("Product ID:", productId);
+      
       // Prepare product data
       const productData = {
-        ...formData,
-        user_id: user.id,
-        status: 'active',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        id: productId,
+        title: formData.title,
+        description: formData.description,
+        price: formData.price,
+        currency: 'USD', // Default to USD for now
+        condition: formData.condition,
+        category: formData.category,
+        seller_id: session.user.id,
+        location: formData.location,
+        shipping: JSON.stringify(formData.shipping_options || []),
+        is_auction: formData.listing_type === 'auction' || formData.listing_type === 'both',
+        start_price: (formData.listing_type === 'auction' || formData.listing_type === 'both') ? formData.start_price : null,
+        reserve_price: (formData.listing_type === 'auction' || formData.listing_type === 'both') ? formData.reserve_price : null,
+        end_time: formData.end_time,
+        status: formData.status,
+        quantity: formData.quantity,
+        brand: formData.brand?.toString() || null,
+        model: formData.model?.toString() || null
       };
-
-      // Create or update product
-      const { data: product, error: productError } = await supabase
-        .from('products')
-        .insert([productData])
-        .select()
-        .single();
-
-      if (productError) {
-        throw new Error(productError.message || 'Failed to create product');
-      }
-
+      
       // Handle image uploads
-      const uploadedImages: { id: string; url: string; order: number }[] = [];
-      const productId = product.id;
-
+      const uploadedImages = [];
+      
       for (const image of formData.images || []) {
         let imageUrl = image.url;
-
+        
         // Only upload images that haven't been uploaded already
         if (image.file && (imageUrl.startsWith('blob:') || !imageUrl.includes('storage'))) {
           const fileExt = image.file.name.split('.').pop();
           const filePath = `products/${productId}/${image.id}.${fileExt}`;
-
+          
           try {
             // Create storage bucket if it doesn't exist
             const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('images');
@@ -296,182 +388,110 @@ const CreateListing = () => {
                 public: true
               });
             }
-
+            
             // Upload the file
             const { data: uploadData, error: uploadError } = await supabase.storage
               .from('images')
-              .upload(filePath, image.file, {
-                cacheControl: '3600',
-                upsert: true
-              });
-
+              .upload(filePath, image.file);
+              
             if (uploadError) {
-              throw new Error(uploadError.message || 'Failed to upload image');
+              console.error("Upload error:", uploadError);
+              throw new Error(`Image upload failed: ${uploadError.message}`);
             }
-
+            
             // Get the public URL
-            const { data: publicUrlData } = await supabase.storage
+            const { data: publicUrlData } = supabase.storage
               .from('images')
               .getPublicUrl(filePath);
-
+              
             imageUrl = publicUrlData.publicUrl;
-
-            // Add to uploaded images
-            uploadedImages.push({
-              id: image.id,
-              url: imageUrl,
-              order: image.order || 0
-            });
           } catch (error) {
-            console.error('Error uploading image:', error);
-            throw error;
+            console.error("Error uploading image:", error);
+            toast({
+              title: "Image upload failed",
+              description: "One or more images failed to upload. Please try again.",
+              variant: "destructive"
+            });
           }
+        }
+        
+        // Add to uploaded images array
+        uploadedImages.push({
+          id: image.id,
+          url: imageUrl,
+          order: image.order
+        });
+      }
+      
+      console.log("Processed images:", uploadedImages);
+      
+      // Create or update the product
+      const { success, productId: createdProductId, error } = await createOrUpdateProduct(
+        productData,
+        uploadedImages,
+        session.user.id
+      );
+      
+      if (!success) {
+        throw new Error(error || "Failed to create listing");
+      }
+      
+      // Clear draft from local storage if successful
+      if (success) {
+        setSavedDraft(null);
+        setHasDraft(false);
+        
+        toast({
+          title: formData.status === 'draft' ? "Draft saved" : "Listing published",
+          description: formData.status === 'draft' 
+            ? "Your listing draft has been saved" 
+            : "Your listing is now live and visible to buyers",
+          variant: "default",
+        });
+        
+        // Redirect based on status
+        if (formData.status === 'active') {
+          navigate(`/product/${createdProductId || productId}`);
         } else {
-          // Add existing image to uploaded images
-          uploadedImages.push({
-            id: image.id,
-            url: imageUrl,
-            order: image.order || 0
-          });
+          navigate(`/profile/listings`);
         }
       }
-
-      // Update product with image URLs
-      const { error: updateError } = await supabase
-        .from('products')
-        .update({ images: uploadedImages })
-        .eq('id', productId);
-
-      if (updateError) {
-        throw new Error(updateError.message || 'Failed to update product images');
-      }
-
-      // Save draft if it exists
-      if (draftId) {
-        try {
-          await saveDraft(formData, draftId);
-        } catch (error) {
-          console.error('Error saving draft:', error);
-          toast({
-            title: 'Warning',
-            description: 'Failed to save draft, but product was created successfully',
-            variant: 'warning'
-          });
-        }
-      }
-
-      // Navigate to product page
-      navigate(`/product/${productId}`);
-
+    } catch (error: any) {
+      console.error("Submission error:", error);
       toast({
-        title: 'Success',
-        description: 'Product created successfully',
-        variant: 'default'
-      });
-
-      // Reset form and state
-      form.reset();
-      setIsSubmitting(false);
-      setIsDraft(false);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create product',
-        variant: 'destructive'
+        title: "Error",
+        description: error.message || "Failed to create listing",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  // Handle image upload
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-
-    const newFiles = Array.from(e.target.files);
-    const productId = uuidv4(); // Generate a new product ID for the images
-
-    try {
-      const uploadedImages = [];
-      const formData = form.getValues();
-
-      for (const image of formData.images || []) {
-        let imageUrl = image.url;
-
-        // Only upload images that haven't been uploaded already
-        if (image.file && (imageUrl.startsWith('blob:') || !imageUrl.includes('storage'))) {
-          const fileExt = image.file.name.split('.').pop();
-          const filePath = `products/${productId}/${image.id}.${fileExt}`;
-
-          try {
-            // Create storage bucket if it doesn't exist
-            const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('images');
-            if (bucketError && bucketError.message.includes('does not exist')) {
-              await supabase.storage.createBucket('images', {
-                public: true
-              });
-            }
-
-            // Upload the file
-            const { data: uploadData, error: uploadError } = await supabase.storage
-              .from('images')
-              .upload(filePath, image.file);
-
-            if (uploadError) {
-              console.error("Upload error:", uploadError);
-              throw new Error(`Image upload failed: ${uploadError.message}`);
-            }
-
-            // Get the public URL
-            const { data: publicUrlData } = await supabase.storage
-              .from('images')
-              .getPublicUrl(filePath);
-
-            imageUrl = publicUrlData.publicUrl;
-
-            // Add to uploaded images
-            uploadedImages.push({
-              id: image.id,
-              url: imageUrl,
-              order: image.order || 0
-            });
-          } catch (error) {
-            console.error("Error uploading image:", error);
-            throw error;
-          }
-        } else {
-          // Add existing image to uploaded images
-          uploadedImages.push({
-            id: image.id,
-            url: imageUrl,
-            order: image.order || 0
-          });
-        }
-      }
-
-      // Update form with uploaded images
-      uploadedImages.forEach((image, index) => {
-        updateImage(index, image);
-      });
-
-      toast({
-        title: "Success",
-        description: "Images uploaded successfully",
-        variant: "default"
-      });
-    } catch (error) {
-      console.error("Error uploading images:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to upload images",
-        variant: "destructive"
-      });
+  
+  // Helper function to check if tab has errors
+  const tabHasErrors = (tabName: string) => {
+    const errors = form.formState.errors;
+    
+    switch(tabName) {
+      case 'details':
+        return !!(errors.title || errors.description || errors.category || errors.condition || 
+                  errors.brand || errors.model || errors.year || errors.color || errors.size);
+      case 'pricing':
+        return !!(errors.listing_type || errors.price || errors.start_price || 
+                  errors.reserve_price || errors.auction_duration || errors.quantity);
+      case 'shipping':
+        return !!(errors.shipping_options || errors.handling_time || 
+                  errors.location || errors.shipping_worldwide);
+      case 'images':
+        return !!(errors.images);
+      default:
+        return false;
     }
   };
 
   return (
-    <RequireAuth message="You need to be logged in to create a listing">
+    <Layout>
+      <RequireAuth message="You need to be logged in to create a listing">
         <div className="container mx-auto py-8 px-4">
           <div className="max-w-5xl mx-auto">
             <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
