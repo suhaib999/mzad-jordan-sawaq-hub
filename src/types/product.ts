@@ -47,6 +47,20 @@ export const productSchema = z.object({
   ).min(1, "At least one image is required"),
   attributes: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string())])).optional(),
   status: z.enum(['active', 'draft']),
+}).refine(data => {
+  // If listing type is fixed_price or both, price must be defined
+  if ((data.listing_type === 'fixed_price' || data.listing_type === 'both') && !data.price) {
+    return false;
+  }
+  // If listing type is auction or both, start_price and auction_duration must be defined
+  if ((data.listing_type === 'auction' || data.listing_type === 'both') && 
+      (!data.start_price || !data.auction_duration)) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Required pricing fields are missing for the selected listing type",
+  path: ["listing_type"],
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;

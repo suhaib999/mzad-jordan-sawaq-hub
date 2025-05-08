@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
@@ -17,6 +16,18 @@ interface TabsPricingProps {
 }
 
 const TabsPricing: React.FC<TabsPricingProps> = ({ form, listingType, setActiveTab }) => {
+  // Reset fields that aren't relevant to the current listing type
+  useEffect(() => {
+    if (listingType === 'fixed_price') {
+      form.setValue('start_price', undefined);
+      form.setValue('reserve_price', undefined);
+      form.setValue('auction_duration', undefined);
+    } else if (listingType === 'auction') {
+      form.setValue('price', undefined);
+      form.setValue('is_negotiable', false);
+    }
+  }, [listingType, form]);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Card>
@@ -121,7 +132,11 @@ const TabsPricing: React.FC<TabsPricingProps> = ({ form, listingType, setActiveT
                         min="0.01"
                         placeholder="0.00" 
                         {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                        value={field.value || ''}
+                        onChange={(e) => {
+                          const value = e.target.value ? parseFloat(e.target.value) : undefined;
+                          field.onChange(value);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -136,7 +151,7 @@ const TabsPricing: React.FC<TabsPricingProps> = ({ form, listingType, setActiveT
                   <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                     <FormControl>
                       <Checkbox
-                        checked={field.value}
+                        checked={field.value || false}
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
@@ -169,7 +184,11 @@ const TabsPricing: React.FC<TabsPricingProps> = ({ form, listingType, setActiveT
                         min="0.01"
                         placeholder="0.00" 
                         {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                        value={field.value || ''}
+                        onChange={(e) => {
+                          const value = e.target.value ? parseFloat(e.target.value) : undefined;
+                          field.onChange(value);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -190,7 +209,11 @@ const TabsPricing: React.FC<TabsPricingProps> = ({ form, listingType, setActiveT
                         min="0"
                         placeholder="0.00 (optional)" 
                         {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                        value={field.value || ''}
+                        onChange={(e) => {
+                          const value = e.target.value ? parseFloat(e.target.value) : undefined;
+                          field.onChange(value);
+                        }}
                       />
                     </FormControl>
                     <FormDescription>
@@ -209,7 +232,7 @@ const TabsPricing: React.FC<TabsPricingProps> = ({ form, listingType, setActiveT
                     <FormLabel>Duration (days) <span className="text-red-500">*</span></FormLabel>
                     <Select 
                       onValueChange={(value) => field.onChange(parseInt(value))} 
-                      defaultValue={field.value?.toString()}
+                      value={field.value?.toString() || ''}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -246,7 +269,11 @@ const TabsPricing: React.FC<TabsPricingProps> = ({ form, listingType, setActiveT
                     min="1"
                     placeholder="1" 
                     {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                    value={field.value || '1'}
+                    onChange={(e) => {
+                      const value = e.target.value ? parseInt(e.target.value) : 1;
+                      field.onChange(value);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -261,7 +288,7 @@ const TabsPricing: React.FC<TabsPricingProps> = ({ form, listingType, setActiveT
               <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                 <FormControl>
                   <Checkbox
-                    checked={field.value}
+                    checked={field.value || false}
                     onCheckedChange={field.onChange}
                   />
                 </FormControl>

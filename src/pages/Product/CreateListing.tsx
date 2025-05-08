@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,10 +8,10 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
+import { Button } from '@/components/ui/button';
 
 // UI Components
 import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -30,11 +31,10 @@ import TabsPricing from '@/components/product/listing/TabsPricing';
 import TabsShipping from '@/components/product/listing/TabsShipping';
 import TabsImages from '@/components/product/listing/TabsImages';
 import CompletionIndicator from '@/components/product/listing/CompletionIndicator';
-import AuthCheck from '@/components/product/listing/AuthCheck';
 import RequireAuth from '@/components/auth/RequireAuth';
 
 // Types
-import { ProductFormValues, productSchema, Category } from '@/types/product';
+import { ProductFormValues, productSchema } from '@/types/product';
 
 // Update the ProductFormValues type to include the id property
 // We'll extend it locally since we don't want to modify the original type file
@@ -86,10 +86,10 @@ const CreateListing = () => {
       subcategory: '',
       condition: '',
       listing_type: 'fixed_price',
-      price: 0,
+      price: undefined,
       is_negotiable: false,
-      start_price: 0,
-      reserve_price: 0,
+      start_price: undefined,
+      reserve_price: undefined,
       auction_duration: 7,
       quantity: 1,
       allow_offers: false,
@@ -174,7 +174,7 @@ const CreateListing = () => {
       }
     });
     
-    // Check if pricing is set correctly
+    // Check if pricing is set correctly based on the listing type
     if ((listingType === 'fixed_price' || listingType === 'both') && formData.price && formData.price > 0) {
       score += 15;
     }
@@ -206,7 +206,7 @@ const CreateListing = () => {
     const draftTimer = setTimeout(() => {
       const currentValues = form.getValues();
       if (currentValues.title || currentValues.description) {
-        setSavedDraft(currentValues);
+        setSavedDraft(currentValues as ExtendedProductFormValues);
         setDraftSaved(true);
         setHasDraft(true);
         setTimeout(() => setDraftSaved(false), 3000);
@@ -294,6 +294,17 @@ const CreateListing = () => {
       return;
     }
     
+    // Validate required fields based on listing type
+    const isValid = await form.trigger();
+    if (!isValid) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors in the form before submitting",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     try {
       setIsSubmitting(true);
       
@@ -336,7 +347,13 @@ const CreateListing = () => {
           
           console.log("Uploading to path:", filePath);
           
-          // Create storage bucket if it doesn't exist (this is handled by Supabase automatically)
+          // Create storage bucket if it doesn't exist
+          const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('images');
+          if (bucketError && bucketError.message.includes('does not exist')) {
+            await supabase.storage.createBucket('images', {
+              public: true
+            });
+          }
           
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('images')
@@ -377,7 +394,7 @@ const CreateListing = () => {
         id: productId,
         title: formData.title,
         description: formData.description,
-        price: formData.listing_type === 'auction' ? formData.start_price : formData.price,
+        price: formData.listing_type === 'auction' ? null : formData.price,
         currency: 'USD', // Default to USD for now
         condition: formData.condition,
         category: formData.category,
@@ -387,8 +404,8 @@ const CreateListing = () => {
         shipping: JSON.stringify(formData.shipping_options || []),
         shipping_fee: formData.shipping_options?.[0]?.price || 0,
         is_auction: formData.listing_type === 'auction' || formData.listing_type === 'both',
-        start_price: formData.start_price,
-        reserve_price: formData.reserve_price,
+        start_price: (formData.listing_type === 'auction' || formData.listing_type === 'both') ? formData.start_price : null,
+        reserve_price: (formData.listing_type === 'auction' || formData.listing_type === 'both') ? formData.reserve_price : null,
         end_time: formData.end_time,
         status: formData.status,
         created_at: new Date().toISOString(),
