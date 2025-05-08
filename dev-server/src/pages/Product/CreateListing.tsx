@@ -42,6 +42,13 @@ interface ExtendedProductFormValues extends ProductFormValues {
   id?: string;
 }
 
+// Add this interface above the CreateListing component
+interface UploadedImage {
+  id: string;
+  url: string;
+  order: number;
+}
+
 const CreateListing = () => {
   const { session } = useAuth();
   const navigate = useNavigate();
@@ -382,7 +389,7 @@ const CreateListing = () => {
       };
       
       // Handle image uploads
-      const uploadedImages = [];
+      const uploadedImages: UploadedImage[] = [];
       
       for (const image of formData.images || []) {
         let imageUrl = image.url;
@@ -421,7 +428,7 @@ const CreateListing = () => {
             uploadedImages.push({
               id: image.id,
               url: imageUrl,
-              order_index: image.order
+              order: image.order
             });
           } catch (error) {
             console.error("Error uploading image:", error);
