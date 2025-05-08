@@ -348,25 +348,37 @@ const CreateListing = () => {
       
       // Prepare product data
       const productData = {
-        id: productId,
         title: formData.title,
         description: formData.description,
-        price: formData.price,
-        currency: 'USD', // Default to USD for now
+        category_id: formData.category,
+        subcategory_id: formData.subcategory,
         condition: formData.condition,
-        category: formData.category,
-        seller_id: session.user.id,
-        location: formData.location,
-        shipping: JSON.stringify(formData.shipping_options || []),
-        is_auction: formData.listing_type === 'auction' || formData.listing_type === 'both',
-        start_price: (formData.listing_type === 'auction' || formData.listing_type === 'both') ? formData.start_price : null,
-        reserve_price: (formData.listing_type === 'auction' || formData.listing_type === 'both') ? formData.reserve_price : null,
+        brand: formData.brand,
+        model: formData.model,
+        year: formData.year,
+        color: formData.color,
+        size: formData.size,
+        listing_type: formData.listing_type,
+        price: formData.price,
+        is_negotiable: formData.is_negotiable,
+        start_price: formData.start_price,
+        reserve_price: formData.reserve_price,
+        auction_duration: formData.auction_duration,
         end_time: formData.end_time,
-        status: formData.status,
         quantity: formData.quantity,
-        brand: formData.brand?.toString() || null,
-        model: formData.model?.toString() || null,
-        attributes: formData.attributes || {},
+        allow_offers: formData.allow_offers,
+        location: formData.location,
+        free_shipping: formData.free_shipping,
+        local_pickup: formData.local_pickup,
+        shipping_worldwide: formData.shipping_worldwide,
+        shipping_exclusions: formData.shipping_exclusions,
+        handling_time: formData.handling_time,
+        return_policy: formData.return_policy,
+        warranty: formData.warranty,
+        tags: formData.tags,
+        status: formData.status,
+        attributes: formData.attributes,
+        user_id: session.user.id
       };
       
       // Handle image uploads
@@ -395,85 +407,94 @@ const CreateListing = () => {
               .upload(filePath, image.file);
               
             if (uploadError) {
-              console.error("Upload error:", uploadError);
-              throw new Error(`Image upload failed: ${uploadError.message}`);
-            }
-            
-            // Get the public URL
-            const { data: publicUrlData } = supabase.storage
-              .from('images')
-              .getPublicUrl(filePath);
-              
-            imageUrl = publicUrlData.publicUrl;
-          } catch (error) {
-            console.error("Error uploading image:", error);
-            toast({
-              title: "Image upload failed",
-              description: "One or more images failed to upload. Please try again.",
-              variant: "destructive"
             });
           }
+
+          // Upload the file
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('images')
+            .upload(filePath, image.file);
+
+          if (uploadError) {
+            console.error("Upload error:", uploadError);
+            throw new Error(`Image upload failed: ${uploadError.message}`);
+          }
+
+          // Get the public URL
+          const { data: publicUrlData } = await supabase.storage
+            .from('images')
+            .getPublicUrl(filePath);
+
+          imageUrl = publicUrlData.publicUrl;
+
+          // Add to uploaded images
+          uploadedImages.push({
+            id: image.id,
+            url: imageUrl,
+            order_index: image.order
+          });
+        } catch (error) {
+          console.error("Error uploading image:", error);
+          throw error;
         }
-        
-        // Add to uploaded images array
-        uploadedImages.push({
-          id: image.id,
-          url: imageUrl,
-          order: image.order
-        });
       }
-      
-      console.log("Processed images:", uploadedImages);
-      
-      // Create or update the product
-      const { success, productId: createdProductId, error } = await createOrUpdateProduct(
-        productData,
-        uploadedImages,
-        session.user.id
-      );
-      
+
+      // Add to uploaded images array
+      uploadedImages.push({
+        id: image.id,
+        url: imageUrl,
+        order: image.order
+      });
+    }
+
+    console.log("Processed images:", uploadedImages);
+
+    // Create the product
+    try {
+      const { success, error: productError } = await createOrUpdateProduct(productData, uploadedImages, session.user.id);
+
       if (!success) {
-        throw new Error(error || "Failed to create listing");
-      }
-      
-      // Clear draft from local storage if successful
-      if (success) {
-        setSavedDraft(null);
-        setHasDraft(false);
-        
+        console.error("Product creation failed:", productError);
         toast({
-          title: formData.status === 'draft' ? "Draft saved" : "Listing published",
-          description: formData.status === 'draft' 
-            ? "Your listing draft has been saved" 
-            : "Your listing is now live and visible to buyers",
-          variant: "default",
+          title: "Error",
+          description: productError || "Failed to create listing",
+          variant: "destructive"
         });
-        
-        // Redirect based on status
-        if (formData.status === 'active') {
-          navigate(`/product/${createdProductId || productId}`);
-        } else {
-          navigate(`/profile/listings`);
-        }
+        setIsSubmitting(false);
+        return;
       }
-    } catch (error: any) {
-      console.error("Submission error:", error);
+
+      // Clear form and show success message
+      form.reset();
+      toast({
+        title: "Success",
+        description: isDraft ? "Draft saved successfully" : "Listing created successfully",
+        variant: "default"
+      });
+
+      // Navigate to the listing page
+      if (!isDraft) {
+        navigate(`/product/${productId}`);
+      }
+    } catch (error) {
+      console.error("Error creating listing:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create listing",
+        description: "An unexpected error occurred while creating the listing",
         variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
     }
-  };
-  
-  // Helper function to check if tab has errors
-  const tabHasErrors = (tabName: string) => {
-    const errors = form.formState.errors;
-    
-    switch(tabName) {
-      case 'details':
+  } catch (error: any) {
+    console.error("Submission error:", error);
+    toast({
+      title: "Error",
+      description: error.message || "Failed to create listing",
+      variant: "destructive"
+    });
+  }
+};
         return !!(errors.title || errors.description || errors.category || errors.condition || 
                   errors.brand || errors.model || errors.year || errors.color || errors.size);
       case 'pricing':
