@@ -400,111 +400,70 @@ const CreateListing = () => {
                 public: true
               });
             }
-            
-            // Upload the file
-            const { data: uploadData, error: uploadError } = await supabase.storage
-              .from('images')
-              .upload(filePath, image.file);
-              
-            if (uploadError) {
-            });
-          }
-
-          // Upload the file
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('images')
-            .upload(filePath, image.file);
-
-          if (uploadError) {
-            console.error("Upload error:", uploadError);
-            throw new Error(`Image upload failed: ${uploadError.message}`);
-          }
-
-          // Get the public URL
-          const { data: publicUrlData } = await supabase.storage
-            .from('images')
-            .getPublicUrl(filePath);
-
-          imageUrl = publicUrlData.publicUrl;
-
-          // Add to uploaded images
-          uploadedImages.push({
-            id: image.id,
-            url: imageUrl,
-            order_index: image.order
-          });
-        } catch (error) {
-          console.error("Error uploading image:", error);
-          throw error;
-        }
+    try {
+      // Create storage bucket if it doesn't exist
+      const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('images');
+      if (bucketError && bucketError.message.includes('does not exist')) {
+        await supabase.storage.createBucket('images', {
+          public: true
+        });
       }
-
-      // Add to uploaded images array
+            
+      // Upload the file
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(filePath, image.file);
+            
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        throw new Error(`Image upload failed: ${uploadError.message}`);
+      }
+            
+      // Get the public URL
+      const { data: publicUrlData } = await supabase.storage
+        .from('images')
+        .getPublicUrl(filePath);
+            
+      imageUrl = publicUrlData.publicUrl;
+            
+      // Add to uploaded images
       uploadedImages.push({
         id: image.id,
         url: imageUrl,
-        order: image.order
+        order_index: image.order
       });
-    }
-
-    console.log("Processed images:", uploadedImages);
-
-    // Create the product
-    try {
-      const { success, error: productError } = await createOrUpdateProduct(productData, uploadedImages, session.user.id);
-
-      if (!success) {
-        console.error("Product creation failed:", productError);
-        toast({
-          title: "Error",
-          description: productError || "Failed to create listing",
-          variant: "destructive"
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Clear form and show success message
-      form.reset();
-      toast({
-        title: "Success",
-        description: isDraft ? "Draft saved successfully" : "Listing created successfully",
-        variant: "default"
-      });
-
-      // Navigate to the listing page
-      if (!isDraft) {
-        navigate(`/product/${productId}`);
-      }
     } catch (error) {
-      console.error("Error creating listing:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred while creating the listing",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
+      console.error("Error uploading image:", error);
+      throw error;
     }
-  } catch (error: any) {
-    console.error("Submission error:", error);
-    toast({
-      title: "Error",
-      description: error.message || "Failed to create listing",
-      variant: "destructive"
+  } else {
+    // Add existing image to uploaded images
+    uploadedImages.push({
+      id: image.id,
+      url: imageUrl,
+      order_index: image.order
     });
   }
-};
-        return !!(errors.title || errors.description || errors.category || errors.condition || 
-                  errors.brand || errors.model || errors.year || errors.color || errors.size);
-      case 'pricing':
-        return !!(errors.listing_type || errors.price || errors.start_price || 
-                  errors.reserve_price || errors.auction_duration || errors.quantity);
-      case 'shipping':
-        return !!(errors.shipping_options || errors.handling_time || 
-                  errors.location || errors.shipping_worldwide);
-      case 'images':
-        return !!(errors.images);
+}
+
+console.log("Processed images:", uploadedImages);
+
+// ...
+
+// Create the product
+try {
+  const { success, error: productError } = await createOrUpdateProduct(productData, uploadedImages, session.user.id);
+
+  if (!success) {
+    console.error("Product creation failed:", productError);
+    toast({
+      title: "Error",
+      description: productError || "Failed to create listing",
+      variant: "destructive"
+    });
+    setIsSubmitting(false);
+    return;
+  }
       default:
         return false;
     }
