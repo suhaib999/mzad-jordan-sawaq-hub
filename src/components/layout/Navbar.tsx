@@ -88,20 +88,7 @@ const Navbar = ({ toggleMobileMenu }: { toggleMobileMenu: () => void }) => {
               </div>
               
               {/* User dropdown menu */}
-              <UserDropdownMenu>
-                <DropdownMenuItem asChild>
-                  <Link to="/profile/listings" className="flex items-center">
-                    <Tag className="mr-2 h-4 w-4" />
-                    My Listings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/seller/saved" className="flex items-center">
-                    <Bookmark className="mr-2 h-4 w-4" />
-                    Saved Sellers
-                  </Link>
-                </DropdownMenuItem>
-              </UserDropdownMenu>
+              <UserDropdownMenu />
             </>
           ) : (
             <>
