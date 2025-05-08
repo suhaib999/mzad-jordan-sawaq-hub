@@ -111,6 +111,15 @@ const CreateListing = () => {
   const loadDraft = () => {
     if (savedDraft) {
       console.log("Loading saved draft:", savedDraft);
+      
+      // Process images to ensure they have proper format
+      const processedImages = savedDraft.images ? savedDraft.images.map((img, idx) => ({
+        id: img.id || uuidv4(),
+        url: img.url || '',
+        file: null, // We can't store file objects in localStorage
+        order: img.order || idx
+      })) : [];
+      
       form.reset({
         ...savedDraft,
         brand: savedDraft.brand || '',
@@ -124,7 +133,7 @@ const CreateListing = () => {
         auction_duration: savedDraft.auction_duration || 7,
         handling_time: savedDraft.handling_time || '',
         return_policy: savedDraft.return_policy || '',
-        images: savedDraft.images || []
+        images: processedImages
       });
       
       // Set selected category
@@ -443,6 +452,8 @@ const CreateListing = () => {
         // Redirect based on status
         if (formData.status === 'active') {
           navigate(`/product/${createdProductId || productId}`);
+        } else {
+          navigate(`/profile/listings`);
         }
       }
     } catch (error: any) {

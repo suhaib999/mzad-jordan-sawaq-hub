@@ -1,95 +1,80 @@
 
-import { PostgrestFilterBuilder } from '@supabase/postgrest-js';
 import { ProductFilterParams } from './types';
 
-// Apply filters to a Supabase query based on filter parameters
-export const applyFilters = <T>(
-  query: PostgrestFilterBuilder<any, any, any, T>,
-  filterParams: ProductFilterParams
-): PostgrestFilterBuilder<any, any, any, T> => {
-  let filteredQuery = query.eq('status', 'active'); // Always filter for active products
+// Helper function to apply filters
+export function applyFilters(query: any, filterParams: ProductFilterParams) {
+  let result = query.eq('status', 'active');
+  
+  const { 
+    category, 
+    condition, 
+    price_min, 
+    price_max, 
+    location, 
+    is_auction, 
+    with_shipping,
+    query: searchQuery
+  } = filterParams;
 
-  // Filter by category
-  if (filterParams.category && filterParams.category !== 'all') {
-    filteredQuery = filteredQuery.ilike('category', `%${filterParams.category}%`);
+  if (category) {
+    result = result.ilike('category', `%${category}%`);
   }
 
-  // Filter by condition
-  if (filterParams.condition && filterParams.condition.length > 0) {
-    filteredQuery = filteredQuery.in('condition', filterParams.condition);
+  if (condition && condition.length > 0) {
+    result = result.in('condition', condition);
   }
 
-  // Filter by price range
-  if (filterParams.price_min !== undefined) {
-    filteredQuery = filteredQuery.gte('price', filterParams.price_min);
+  if (price_min !== undefined) {
+    result = result.gte('price', price_min);
   }
 
-  if (filterParams.price_max !== undefined && filterParams.price_max > 0) {
-    filteredQuery = filteredQuery.lte('price', filterParams.price_max);
+  if (price_max !== undefined) {
+    result = result.lte('price', price_max);
   }
 
-  // Filter by location
-  if (filterParams.location && filterParams.location.length > 0) {
-    filteredQuery = filteredQuery.in('location', filterParams.location);
+  if (location && location.length > 0) {
+    result = result.in('location', location);
   }
 
-  // Filter by auction/fixed price
-  if (filterParams.is_auction !== undefined) {
-    filteredQuery = filteredQuery.eq('is_auction', filterParams.is_auction);
+  if (is_auction !== undefined) {
+    result = result.eq('is_auction', is_auction);
   }
 
-  // Filter by shipping availability
-  if (filterParams.with_shipping === true) {
-    filteredQuery = filteredQuery.not('shipping', 'is', null);
+  if (with_shipping) {
+    result = result.not('shipping', 'is', null);
   }
 
-  // Search by keyword (in title and description)
-  if (filterParams.query) {
-    const searchTerm = filterParams.query.toLowerCase();
-    filteredQuery = filteredQuery.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+  if (searchQuery) {
+    result = result.ilike('title', `%${searchQuery}%`);
   }
 
-  // Sort results
-  if (filterParams.sort_by) {
-    switch (filterParams.sort_by) {
-      case 'price_asc':
-        filteredQuery = filteredQuery.order('price', { ascending: true });
-        break;
-      case 'price_desc':
-        filteredQuery = filteredQuery.order('price', { ascending: false });
-        break;
-      case 'newest':
-        filteredQuery = filteredQuery.order('created_at', { ascending: false });
-        break;
-      case 'oldest':
-        filteredQuery = filteredQuery.order('created_at', { ascending: true });
-        break;
-      default:
-        filteredQuery = filteredQuery.order('created_at', { ascending: false });
-    }
-  } else {
-    // Default sort by newest first
-    filteredQuery = filteredQuery.order('created_at', { ascending: false });
-  }
+  return result;
+}
 
-  return filteredQuery;
-};
-
-// Apply pagination to a query
-export const applyPagination = <T>(
-  query: PostgrestFilterBuilder<any, any, any, T>,
-  limit?: number,
-  offset?: number
-): PostgrestFilterBuilder<any, any, any, T> => {
-  let paginatedQuery = query;
-
+// Helper function to apply pagination
+export function applyPagination(query: any, limit?: number, offset?: number) {
   if (limit !== undefined) {
-    paginatedQuery = paginatedQuery.limit(limit);
+    query = query.limit(limit);
   }
-
+  
   if (offset !== undefined) {
-    paginatedQuery = paginatedQuery.range(offset, offset + (limit || 10) - 1);
+    query = query.offset(offset);
   }
+  
+  return query;
+}
 
-  return paginatedQuery;
-};
+// Helper function to apply sorting
+export function applySorting(query: any, sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'oldest') {
+  switch (sortBy) {
+    case 'price_asc':
+      return query.order('price', { ascending: true });
+    case 'price_desc':
+      return query.order('price', { ascending: false });
+    case 'oldest':
+      return query.order('created_at', { ascending: true });
+    case 'newest':
+    default:
+      return query.order('created_at', { ascending: false });
+  }
+}

@@ -5,7 +5,7 @@ import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tag, Package, Settings, ShieldCheck, ArrowRight, Layers, Plus } from 'lucide-react';
+import { Tag, Package, ShieldCheck, ArrowRight, Layers, Plus } from 'lucide-react';
 
 const SellPage = () => {
   const { session } = useAuth();
@@ -39,13 +39,13 @@ const SellPage = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-12">
                 <Card className="border-2 border-mzad-primary overflow-hidden shadow hover:shadow-md transition-shadow">
                   <CardHeader className="bg-mzad-primary/5">
                     <div className="flex items-start justify-between">
                       <div>
-                        <CardTitle className="text-xl">New Listing</CardTitle>
-                        <CardDescription>Create a listing from scratch</CardDescription>
+                        <CardTitle className="text-xl">Create Listing</CardTitle>
+                        <CardDescription>Create a new listing to sell your item</CardDescription>
                       </div>
                       <Plus size={24} className="text-mzad-primary" />
                     </div>
@@ -70,37 +70,6 @@ const SellPage = () => {
                     <Button className="w-full" asChild>
                       <Link to="/sell/create">
                         Start Creating <ArrowRight size={16} className="ml-1" />
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-
-                <Card className="overflow-hidden shadow hover:shadow-md transition-shadow">
-                  <CardHeader className="bg-gray-50">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-xl">Legacy Form</CardTitle>
-                        <CardDescription>Use the previous listing form</CardDescription>
-                      </div>
-                      <Settings size={24} className="text-gray-400" />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    <ul className="space-y-3">
-                      <li className="flex items-center gap-2">
-                        <Package size={18} className="text-gray-500" />
-                        <span>Basic listing features</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Tag size={18} className="text-gray-500" />
-                        <span>Fixed price and auction options</span>
-                      </li>
-                    </ul>
-                  </CardContent>
-                  <CardFooter className="pt-2">
-                    <Button variant="outline" className="w-full" asChild>
-                      <Link to="/sell/add-product">
-                        Use Legacy Form
                       </Link>
                     </Button>
                   </CardFooter>

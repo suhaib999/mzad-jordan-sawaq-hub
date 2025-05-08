@@ -41,7 +41,7 @@ export const productSchema = z.object({
     z.object({
       id: z.string(),
       file: z.any().optional(),
-      url: z.string().optional(),
+      url: z.string(),
       order: z.number(),
     })
   ).min(1, "At least one image is required"),
@@ -49,7 +49,7 @@ export const productSchema = z.object({
   status: z.enum(['active', 'draft']),
 }).superRefine((data, ctx) => {
   // Conditional validation based on listing type
-  if (data.listing_type === 'fixed_price' && !data.price) {
+  if ((data.listing_type === 'fixed_price' || data.listing_type === 'both') && !data.price) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: "Price is required for fixed price listings",
@@ -57,48 +57,20 @@ export const productSchema = z.object({
     });
   }
   
-  if (data.listing_type === 'auction' && (!data.start_price || !data.auction_duration)) {
-    if (!data.start_price) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Starting price is required for auction listings",
-        path: ["start_price"]
-      });
-    }
-    
-    if (!data.auction_duration) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Auction duration is required for auction listings",
-        path: ["auction_duration"]
-      });
-    }
+  if ((data.listing_type === 'auction' || data.listing_type === 'both') && (!data.start_price)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Starting price is required for auction listings",
+      path: ["start_price"]
+    });
   }
   
-  if (data.listing_type === 'both') {
-    if (!data.price) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Price is required for both listing types",
-        path: ["price"]
-      });
-    }
-    
-    if (!data.start_price) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Starting price is required for both listing types",
-        path: ["start_price"]
-      });
-    }
-    
-    if (!data.auction_duration) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Auction duration is required for both listing types",
-        path: ["auction_duration"]
-      });
-    }
+  if ((data.listing_type === 'auction' || data.listing_type === 'both') && (!data.auction_duration)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Auction duration is required for auction listings",
+      path: ["auction_duration"]
+    });
   }
 });
 

@@ -54,24 +54,23 @@ const TabsImages: React.FC<TabsImagesProps> = ({
       });
       return;
     }
-    
-    // Use form.handleSubmit to ensure validation runs
-    form.handleSubmit(async (validData) => {
-      console.log("Form validated successfully, submitting:", validData);
-      // Set status to active explicitly
-      validData.status = 'active';
-      
-      try {
+
+    try {
+      // Use form.handleSubmit to ensure validation runs
+      await form.handleSubmit(async (validData) => {
+        console.log("Form validated successfully, submitting:", validData);
+        // Set status to active explicitly
+        validData.status = 'active';
         await onSubmit(validData);
-      } catch (error) {
-        console.error("Error submitting form:", error);
-        toast({
-          title: "Error creating listing",
-          description: "Something went wrong. Please try again.",
-          variant: "destructive"
-        });
-      }
-    })();
+      })();
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        title: "Error creating listing",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSaveDraft = () => {
@@ -132,7 +131,7 @@ const TabsImages: React.FC<TabsImagesProps> = ({
             <h3 className="font-medium">Uploaded Images ({watchedImages.length}/10)</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {watchedImages.map((image, index) => (
-                <div key={image.id} className="relative group border rounded-lg overflow-hidden aspect-square">
+                <div key={image.id || index} className="relative group border rounded-lg overflow-hidden aspect-square">
                   <img
                     src={image.url}
                     alt={`Product image ${index + 1}`}

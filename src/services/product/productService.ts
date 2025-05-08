@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ProductWithImages, ProductFilterParams } from './types';
 import { processProductData } from './mappers';
-import { applyFilters, applyPagination } from './queryBuilders';
+import { applyFilters, applyPagination, applySorting } from './queryBuilders';
 
 export const fetchProducts = async (
   limit: number | undefined,
@@ -38,8 +38,11 @@ export const fetchProducts = async (
     // Add filters one by one
     const filteredQuery = applyFilters(query, filterParams);
     
+    // Apply sorting
+    const sortedQuery = applySorting(filteredQuery, filterParams.sort_by);
+    
     // Apply pagination
-    const paginatedQuery = applyPagination(filteredQuery, limit, offset);
+    const paginatedQuery = applyPagination(sortedQuery, limit, offset);
     
     // Execute the query
     const { data, error } = await paginatedQuery;
