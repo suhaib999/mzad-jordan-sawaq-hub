@@ -37,7 +37,7 @@ const TabsImages: React.FC<TabsImagesProps> = ({
   completionScore,
   setActiveTab
 }) => {
-  const handleCreateListing = () => {
+  const handleCreateListing = async () => {
     console.log("Creating listing, validation will run");
     setIsDraft(false);
     
@@ -56,11 +56,21 @@ const TabsImages: React.FC<TabsImagesProps> = ({
     }
     
     // Use form.handleSubmit to ensure validation runs
-    form.handleSubmit((validData) => {
+    form.handleSubmit(async (validData) => {
       console.log("Form validated successfully, submitting:", validData);
       // Set status to active explicitly
       validData.status = 'active';
-      onSubmit(validData);
+      
+      try {
+        await onSubmit(validData);
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        toast({
+          title: "Error creating listing",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive"
+        });
+      }
     })();
   };
 

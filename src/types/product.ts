@@ -47,20 +47,59 @@ export const productSchema = z.object({
   ).min(1, "At least one image is required"),
   attributes: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string())])).optional(),
   status: z.enum(['active', 'draft']),
-}).refine(data => {
-  // If listing type is fixed_price or both, price must be defined
-  if ((data.listing_type === 'fixed_price' || data.listing_type === 'both') && !data.price) {
-    return false;
+}).superRefine((data, ctx) => {
+  // Conditional validation based on listing type
+  if (data.listing_type === 'fixed_price' && !data.price) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Price is required for fixed price listings",
+      path: ["price"]
+    });
   }
-  // If listing type is auction or both, start_price and auction_duration must be defined
-  if ((data.listing_type === 'auction' || data.listing_type === 'both') && 
-      (!data.start_price || !data.auction_duration)) {
-    return false;
+  
+  if (data.listing_type === 'auction' && (!data.start_price || !data.auction_duration)) {
+    if (!data.start_price) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Starting price is required for auction listings",
+        path: ["start_price"]
+      });
+    }
+    
+    if (!data.auction_duration) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Auction duration is required for auction listings",
+        path: ["auction_duration"]
+      });
+    }
   }
-  return true;
-}, {
-  message: "Required pricing fields are missing for the selected listing type",
-  path: ["listing_type"],
+  
+  if (data.listing_type === 'both') {
+    if (!data.price) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Price is required for both listing types",
+        path: ["price"]
+      });
+    }
+    
+    if (!data.start_price) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Starting price is required for both listing types",
+        path: ["start_price"]
+      });
+    }
+    
+    if (!data.auction_duration) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Auction duration is required for both listing types",
+        path: ["auction_duration"]
+      });
+    }
+  }
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;

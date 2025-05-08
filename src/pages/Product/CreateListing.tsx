@@ -33,8 +33,9 @@ import TabsImages from '@/components/product/listing/TabsImages';
 import CompletionIndicator from '@/components/product/listing/CompletionIndicator';
 import RequireAuth from '@/components/auth/RequireAuth';
 
-// Types
+// Types and Services
 import { ProductFormValues, productSchema } from '@/types/product';
+import { createOrUpdateProduct } from '@/services/product/productService';
 
 // Update the ProductFormValues type to include the id property
 // We'll extend it locally since we don't want to modify the original type file
@@ -103,6 +104,7 @@ const CreateListing = () => {
       attributes: {},
       status: 'active'
     },
+    mode: 'onBlur', // Validate fields when they lose focus
   });
 
   // Load saved draft into form
@@ -221,7 +223,7 @@ const CreateListing = () => {
     if (!e.target.files || e.target.files.length === 0) return;
     
     const newFiles = Array.from(e.target.files);
-    const currentImagesCount = watchedImages.length;
+    const currentImagesCount = watchedImages?.length || 0;
     
     newFiles.forEach((file, index) => {
       if (currentImagesCount + index < 10) { // Limit to 10 images
@@ -243,7 +245,7 @@ const CreateListing = () => {
   // Handle image reordering
   const moveImage = (index: number, direction: 'up' | 'down') => {
     if (direction === 'up' && index > 0) {
-      const newImages = [...watchedImages];
+      const newImages = [...(watchedImages || [])];
       const temp = newImages[index];
       newImages[index] = newImages[index - 1];
       newImages[index - 1] = temp;
@@ -255,8 +257,8 @@ const CreateListing = () => {
       // Update form
       form.setValue('images', newImages);
     } 
-    else if (direction === 'down' && index < watchedImages.length - 1) {
-      const newImages = [...watchedImages];
+    else if (direction === 'down' && index < (watchedImages?.length || 0) - 1) {
+      const newImages = [...(watchedImages || [])];
       const temp = newImages[index];
       newImages[index] = newImages[index + 1];
       newImages[index + 1] = temp;
@@ -294,17 +296,6 @@ const CreateListing = () => {
       return;
     }
     
-    // Validate required fields based on listing type
-    const isValid = await form.trigger();
-    if (!isValid) {
-      toast({
-        title: "Validation Error",
-        description: "Please fix the errors in the form before submitting",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     try {
       setIsSubmitting(true);
       
@@ -318,155 +309,116 @@ const CreateListing = () => {
         formData.end_time = endDate.toISOString();
       }
       
-      // Generate a product ID
+      // Generate a product ID if needed
       const productId = draftId || uuidv4();
-      
       console.log("Product ID:", productId);
-      console.log("Uploading images...");
       
-      // Upload images first
-      const imagePromises = formData.images.map(async (image, index) => {
-        console.log(`Processing image ${index}:`, image);
-        
-        // If the image was already uploaded (has a URL but no file), skip upload
-        if (image.url && !image.url.startsWith('blob:') && !image.file) {
-          console.log("Image already uploaded:", image.url);
-          return {
-            id: image.id,
-            product_id: productId,
-            image_url: image.url,
-            display_order: index
-          };
-        }
-        
-        if (image.file) {
-          console.log("Uploading image:", image.id);
-          // Upload to Supabase storage
-          const fileExt = image.file.name ? image.file.name.split('.').pop() : 'jpg';
-          const filePath = `products/${productId}/${image.id}.${fileExt}`;
-          
-          console.log("Uploading to path:", filePath);
-          
-          // Create storage bucket if it doesn't exist
-          const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('images');
-          if (bucketError && bucketError.message.includes('does not exist')) {
-            await supabase.storage.createBucket('images', {
-              public: true
-            });
-          }
-          
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('images')
-            .upload(filePath, image.file);
-            
-          if (uploadError) {
-            console.error("Upload error:", uploadError);
-            throw new Error(`Image upload failed: ${uploadError.message}`);
-          }
-          
-          console.log("Upload successful:", uploadData);
-          
-          // Get the public URL
-          const { data: publicUrlData } = supabase.storage
-            .from('images')
-            .getPublicUrl(filePath);
-            
-          console.log("Public URL:", publicUrlData.publicUrl);
-          
-          return {
-            id: image.id,
-            product_id: productId,
-            image_url: publicUrlData.publicUrl,
-            display_order: index
-          };
-        }
-        
-        return null;
-      });
-      
-      // Wait for all image uploads to complete
-      console.log("Waiting for all image uploads...");
-      const uploadedImages = (await Promise.all(imagePromises)).filter(Boolean);
-      console.log(`Uploaded ${uploadedImages.length} images successfully`);
-      
-      // Prepare the product data for database
+      // Prepare product data
       const productData = {
         id: productId,
         title: formData.title,
         description: formData.description,
-        price: formData.listing_type === 'auction' ? null : formData.price,
+        price: formData.price,
         currency: 'USD', // Default to USD for now
         condition: formData.condition,
         category: formData.category,
         seller_id: session.user.id,
         location: formData.location,
-        // Convert shipping_options array to string for database storage
         shipping: JSON.stringify(formData.shipping_options || []),
-        shipping_fee: formData.shipping_options?.[0]?.price || 0,
         is_auction: formData.listing_type === 'auction' || formData.listing_type === 'both',
         start_price: (formData.listing_type === 'auction' || formData.listing_type === 'both') ? formData.start_price : null,
         reserve_price: (formData.listing_type === 'auction' || formData.listing_type === 'both') ? formData.reserve_price : null,
         end_time: formData.end_time,
         status: formData.status,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
         quantity: formData.quantity,
         brand: formData.brand?.toString() || null,
-        model: formData.model?.toString() || null,
-        color: formData.color?.toString() || null,
-        size: formData.size?.toString() || null,
+        model: formData.model?.toString() || null
       };
       
-      console.log("Inserting product data:", productData);
+      // Handle image uploads
+      const uploadedImages = [];
       
-      // Insert product into database
-      const { data: insertData, error: productError } = await supabase
-        .from('products')
-        .upsert(productData)
-        .select();
+      for (const image of formData.images || []) {
+        let imageUrl = image.url;
         
-      if (productError) {
-        console.error("Error inserting product:", productError);
-        throw new Error(`Failed to create listing: ${productError.message}`);
-      }
-      
-      console.log("Product created successfully:", insertData);
-      
-      // Insert images into database
-      if (uploadedImages.length > 0) {
-        console.log("Saving image references to database:", uploadedImages);
-        const { data: imageInsertData, error: imagesError } = await supabase
-          .from('product_images')
-          .upsert(uploadedImages)
-          .select();
+        // Only upload images that haven't been uploaded already
+        if (image.file && (imageUrl.startsWith('blob:') || !imageUrl.includes('storage'))) {
+          const fileExt = image.file.name.split('.').pop();
+          const filePath = `products/${productId}/${image.id}.${fileExt}`;
           
-        if (imagesError) {
-          console.error("Error saving images:", imagesError);
-          throw new Error(`Failed to save product images: ${imagesError.message}`);
+          try {
+            // Create storage bucket if it doesn't exist
+            const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('images');
+            if (bucketError && bucketError.message.includes('does not exist')) {
+              await supabase.storage.createBucket('images', {
+                public: true
+              });
+            }
+            
+            // Upload the file
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from('images')
+              .upload(filePath, image.file);
+              
+            if (uploadError) {
+              console.error("Upload error:", uploadError);
+              throw new Error(`Image upload failed: ${uploadError.message}`);
+            }
+            
+            // Get the public URL
+            const { data: publicUrlData } = supabase.storage
+              .from('images')
+              .getPublicUrl(filePath);
+              
+            imageUrl = publicUrlData.publicUrl;
+          } catch (error) {
+            console.error("Error uploading image:", error);
+            toast({
+              title: "Image upload failed",
+              description: "One or more images failed to upload. Please try again.",
+              variant: "destructive"
+            });
+          }
         }
         
-        console.log("Product images saved successfully:", imageInsertData);
+        // Add to uploaded images array
+        uploadedImages.push({
+          id: image.id,
+          url: imageUrl,
+          order: image.order
+        });
+      }
+      
+      console.log("Processed images:", uploadedImages);
+      
+      // Create or update the product
+      const { success, productId: createdProductId, error } = await createOrUpdateProduct(
+        productData,
+        uploadedImages,
+        session.user.id
+      );
+      
+      if (!success) {
+        throw new Error(error || "Failed to create listing");
       }
       
       // Clear draft from local storage if successful
-      setSavedDraft(null);
-      setHasDraft(false);
-      setDraftId(productId);
-      
-      toast({
-        title: formData.status === 'draft' ? "Draft saved" : "Listing published",
-        description: formData.status === 'draft' 
-          ? "Your listing draft has been saved" 
-          : "Your listing is now live and visible to buyers",
-        variant: "default",
-      });
-      
-      // Redirect based on status
-      if (formData.status === 'active') {
-        navigate(`/product/${productId}`);
-      } else {
-        // Reset form after successful draft save if needed
-        // form.reset();
+      if (success) {
+        setSavedDraft(null);
+        setHasDraft(false);
+        
+        toast({
+          title: formData.status === 'draft' ? "Draft saved" : "Listing published",
+          description: formData.status === 'draft' 
+            ? "Your listing draft has been saved" 
+            : "Your listing is now live and visible to buyers",
+          variant: "default",
+        });
+        
+        // Redirect based on status
+        if (formData.status === 'active') {
+          navigate(`/product/${createdProductId || productId}`);
+        }
       }
     } catch (error: any) {
       console.error("Submission error:", error);
@@ -627,7 +579,7 @@ const CreateListing = () => {
                   <TabsContent value="images">
                     <TabsImages 
                       form={form}
-                      watchedImages={watchedImages}
+                      watchedImages={watchedImages || []}
                       handleImageUpload={handleImageUpload}
                       moveImage={moveImage}
                       removeImage={(index) => removeImage(index)}

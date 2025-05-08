@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProductWithImages, ProductFilterParams } from './types';
 import { processProductData } from './mappers';
@@ -109,7 +108,7 @@ export const fetchProductById = async (id: string): Promise<ProductWithImages | 
       .from('products')
       .select('*, images:product_images(*)')
       .eq('id', id)
-      .single();
+      .maybeSingle();  // Using maybeSingle instead of single to prevent error
 
     if (error) {
       console.error('Error fetching product:', error);
@@ -199,5 +198,81 @@ export const searchProducts = async (
   } catch (error) {
     console.error('Error in searchProducts:', error);
     return { products: [], count: 0 };
+  }
+};
+
+// Add a function to create or update a product
+export const createOrUpdateProduct = async (
+  productData: any,
+  images: any[],
+  userId: string
+): Promise<{ success: boolean; productId?: string; error?: string }> => {
+  try {
+    console.log("Creating/updating product with data:", productData);
+    
+    // Format data for insertion
+    const productToInsert = {
+      ...productData,
+      seller_id: userId,
+      is_auction: productData.listing_type === 'auction' || productData.listing_type === 'both',
+      updated_at: new Date().toISOString(),
+    };
+    
+    // If updating, keep the created_at field
+    if (!productToInsert.created_at) {
+      productToInsert.created_at = new Date().toISOString();
+    }
+    
+    console.log("Final product data to insert:", productToInsert);
+    
+    // Insert/update the product
+    const { data: insertedProduct, error: productError } = await supabase
+      .from('products')
+      .upsert(productToInsert)
+      .select()
+      .maybeSingle();
+      
+    if (productError) {
+      console.error("Error inserting product:", productError);
+      return { 
+        success: false, 
+        error: `Failed to create product: ${productError.message}` 
+      };
+    }
+    
+    const productId = insertedProduct?.id;
+    console.log("Product created/updated successfully with ID:", productId);
+    
+    // Insert/update images if any
+    if (images && images.length > 0 && productId) {
+      const imageInserts = images.map((img, index) => ({
+        id: img.id,
+        product_id: productId,
+        image_url: img.url,
+        display_order: index
+      }));
+      
+      console.log("Inserting images:", imageInserts);
+      
+      const { error: imagesError } = await supabase
+        .from('product_images')
+        .upsert(imageInserts);
+        
+      if (imagesError) {
+        console.error("Error inserting images:", imagesError);
+        // We don't fail the whole operation for image errors
+      }
+    }
+    
+    return { 
+      success: true, 
+      productId 
+    };
+  } catch (error: any) {
+    console.error("Error in createOrUpdateProduct:", error);
+    return { 
+      success: false, 
+      error: error?.message || "Unknown error occurred" 
+    };
   }
 };

@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +27,7 @@ const TabsPricing: React.FC<TabsPricingProps> = ({ form, listingType, setActiveT
       form.setValue('price', undefined);
       form.setValue('is_negotiable', false);
     }
+    // We don't clear any fields for "both" since it needs all fields
   }, [listingType, form]);
 
   return (
