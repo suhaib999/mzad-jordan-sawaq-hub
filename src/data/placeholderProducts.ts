@@ -9,7 +9,8 @@ export const placeholderFeaturedProducts = [
     imageUrl: '/public/lovable-uploads/0bd7877a-0725-40f8-8292-cd4d69ab06ef.png',
     condition: 'Pre-owned',
     shipping: 'Free shipping',
-    location: 'Amman'
+    location: 'Amman',
+    isAuction: false
   },
   {
     id: '2',
@@ -19,7 +20,8 @@ export const placeholderFeaturedProducts = [
     imageUrl: '/public/lovable-uploads/8fb76dea-fcf5-46af-9836-578964a4f7ca.png',
     condition: 'New',
     shipping: '+10.00 shipping',
-    location: 'Irbid'
+    location: 'Irbid',
+    isAuction: false
   },
   {
     id: '3',
@@ -29,7 +31,8 @@ export const placeholderFeaturedProducts = [
     imageUrl: '/public/lovable-uploads/48e92a81-8038-455f-a3aa-db3567b0da7c.png',
     condition: 'New',
     shipping: 'Free shipping',
-    location: 'Zarqa'
+    location: 'Zarqa',
+    isAuction: false
   },
   {
     id: '4',
@@ -39,7 +42,8 @@ export const placeholderFeaturedProducts = [
     imageUrl: '/public/lovable-uploads/12f0e13e-f59b-4e63-8f3c-862b091352d1.png',
     condition: 'Pre-owned',
     shipping: 'Free local pickup',
-    location: 'Aqaba'
+    location: 'Aqaba',
+    isAuction: false
   },
   {
     id: '5',
@@ -49,7 +53,8 @@ export const placeholderFeaturedProducts = [
     imageUrl: 'https://via.placeholder.com/300x200',
     condition: 'New',
     shipping: 'Free shipping',
-    location: 'Amman'
+    location: 'Amman',
+    isAuction: false
   }
 ];
 
