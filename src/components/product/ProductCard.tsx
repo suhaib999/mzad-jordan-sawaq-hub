@@ -8,8 +8,9 @@ import { fetchProductById } from '@/services/product';
 import { fetchHighestBid, formatTimeRemaining } from '@/services/biddingService';
 import { Badge } from '@/components/ui/badge';
 import { WishlistButton } from './WishlistButton';
+import { ProductCardProps } from '@/services/product/types';
 
-export interface ProductCardProps {
+export interface ProductCardPropsFull {
   id: string;
   title: string;
   price: number;
@@ -27,7 +28,7 @@ export interface ProductCardProps {
   };
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({
+const ProductCard: React.FC<ProductCardPropsFull> = ({
   id,
   title,
   price,

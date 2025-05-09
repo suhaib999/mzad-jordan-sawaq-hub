@@ -11,7 +11,11 @@ export interface Product {
   category_id?: string;
   category?: string;
   seller_id: string;
-  location?: string;
+  location?: string | {
+    city: string;
+    neighborhood: string;
+    street?: string;
+  };
   shipping?: string;
   is_auction: boolean;
   start_price?: number;
@@ -48,7 +52,11 @@ export interface ProductCardProps {
   imageUrl: string;
   condition: string;
   isAuction: boolean;
-  location?: string;
+  location?: string | {
+    city: string;
+    neighborhood: string;
+    street?: string;
+  };
   endTime?: string;
 }
 
