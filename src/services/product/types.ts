@@ -32,7 +32,8 @@ export interface Product {
   size?: string;
   delivery_available?: boolean;
   screen_size?: string;
-  custom_attributes?: string; // Stored as JSON string
+  custom_attributes?: any; // Changed from string to any to match Json type
+  attributes?: any; // Also updated for consistency
 }
 
 export interface ProductImage {

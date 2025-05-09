@@ -46,6 +46,7 @@ export const productSchema = z.object({
     })
   ).min(1, "At least one image is required"),
   attributes: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string())])).optional(),
+  custom_attributes: z.any().optional(), // Changed from string to any to match Json type
   status: z.enum(['active', 'draft']),
 }).superRefine((data, ctx) => {
   // Conditional validation based on listing type
