@@ -37,7 +37,7 @@ const RecentlyViewedSection = () => {
             isAuction: product!.is_auction,
             location: product!.location,
             endTime: product!.end_time
-          }));
+          } as ProductCardProps));
         
         setProducts(validProducts);
       } catch (error) {

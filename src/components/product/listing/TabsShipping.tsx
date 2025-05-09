@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowRight, Truck, Package2, Info, Trash2, Plus, MapPin, ShippingFast, PackageCheck } from 'lucide-react';
+import { ArrowRight, Truck, Package2, Info, Trash2, Plus, MapPin, PackageCheck } from 'lucide-react';
 import { ProductFormValues } from '@/types/product';
 import LocationDropdown from './LocationDropdown';
 
@@ -128,7 +128,7 @@ const TabsShipping: React.FC<TabsShippingProps> = ({ form, setActiveTab }) => {
                 {/* Your Shipping Method */}
                 <div className="border rounded-md p-4">
                   <h3 className="font-medium mb-3 flex items-center">
-                    <ShippingFast className="h-4 w-4 mr-2" />
+                    <Truck className="h-4 w-4 mr-2" />
                     Your Shipping Method
                   </h3>
                   

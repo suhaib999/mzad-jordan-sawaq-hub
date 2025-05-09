@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -94,10 +93,13 @@ const CreateListing = () => {
       auction_duration: 7,
       quantity: 1,
       allow_offers: false,
-      location: '',
+      location: {
+        city: '',
+        neighborhood: '',
+        street: ''
+      },
       free_shipping: false,
       local_pickup: true,
-      shipping_worldwide: false,
       shipping_options: [{ method: 'Standard', price: 0 }],
       tags: [],
       images: [],
@@ -347,6 +349,10 @@ const CreateListing = () => {
       const productId = draftId || uuidv4();
       console.log("Product ID:", productId);
       
+      // Format location to string for display
+      const locationString = formData.location ? 
+        `${formData.location.city}, ${formData.location.neighborhood}${formData.location.street ? `, ${formData.location.street}` : ''}` : '';
+      
       // Prepare product data
       const productData = {
         id: productId,
@@ -359,7 +365,7 @@ const CreateListing = () => {
         category_id: formData.category,
         subcategory_id: formData.subcategory,
         seller_id: session.user.id,
-        location: formData.location,
+        location: locationString,
         shipping: JSON.stringify(formData.shipping_options || []),
         is_auction: formData.listing_type === 'auction' || formData.listing_type === 'both',
         listing_type: formData.listing_type,
@@ -372,8 +378,6 @@ const CreateListing = () => {
         end_time: formData.end_time,
         free_shipping: formData.free_shipping,
         local_pickup: formData.local_pickup,
-        shipping_worldwide: formData.shipping_worldwide,
-        shipping_exclusions: formData.shipping_exclusions,
         handling_time: formData.handling_time,
         return_policy: formData.return_policy,
         warranty: formData.warranty,
@@ -384,7 +388,9 @@ const CreateListing = () => {
         model: formData.model?.toString() || null,
         year: formData.year?.toString() || null,
         color: formData.color?.toString() || null,
-        size: formData.size?.toString() || null
+        size: formData.size?.toString() || null,
+        provides_shipping: formData.provides_shipping,
+        mzadkumsooq_delivery: formData.mzadkumsooq_delivery,
       };
       
       // Handle image uploads
@@ -499,7 +505,7 @@ const CreateListing = () => {
                   errors.reserve_price || errors.auction_duration || errors.quantity);
       case 'shipping':
         return !!(errors.shipping_options || errors.handling_time || 
-                  errors.location || errors.shipping_worldwide);
+                  errors.location);
       case 'images':
         return !!(errors.images);
       default:

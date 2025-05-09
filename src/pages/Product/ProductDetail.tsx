@@ -102,6 +102,13 @@ const ProductDetail = () => {
     return <ProductError />;
   }
 
+  // Format location string from object if needed
+  const displayLocation = product.location ? 
+    (typeof product.location === 'string' ? 
+      product.location : 
+      `${product.location.city}, ${product.location.neighborhood}${product.location.street ? `, ${product.location.street}` : ''}`) 
+    : '';
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
@@ -142,9 +149,9 @@ const ProductDetail = () => {
               productId={product.id}
             />
             
-            {product.location && (
+            {displayLocation && (
               <div className="text-sm text-gray-500 mb-4">
-                Location: {product.location}
+                Location: {displayLocation}
               </div>
             )}
             
@@ -166,7 +173,7 @@ const ProductDetail = () => {
             {/* Additional product details */}
             <ProductSpecs 
               condition={product.condition}
-              location={product.location}
+              location={displayLocation}
               shipping={product.shipping}
               id={product.id}
             />

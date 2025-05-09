@@ -20,7 +20,11 @@ export interface ProductCardProps {
   endTime?: string;
   currentBid?: number;
   shipping?: string;
-  location?: string;
+  location?: string | {
+    city: string;
+    neighborhood: string;
+    street?: string;
+  };
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -74,6 +78,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
   
   // For auctions, display the highest bid, current bid or starting price
   const displayPrice = isAuction ? (highestBid || currentBid || price) : price;
+
+  // Format location string from object if needed
+  const displayLocation = location ? 
+    (typeof location === 'string' ? 
+      location : 
+      `${location.city}, ${location.neighborhood}${location.street ? `, ${location.street}` : ''}`) 
+    : '';
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
@@ -140,9 +151,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
           {shipping && <span>{shipping}</span>}
         </div>
         
-        {location && (
+        {displayLocation && (
           <div className="mt-2 text-xs text-gray-500">
-            {location}
+            {displayLocation}
           </div>
         )}
         

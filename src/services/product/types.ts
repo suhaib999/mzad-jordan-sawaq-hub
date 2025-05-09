@@ -66,7 +66,11 @@ export interface ProductCardProps {
   imageUrl: string;
   condition: string;
   isAuction: boolean;
-  location?: string;
+  location?: string | {
+    city: string;
+    neighborhood: string;
+    street?: string;
+  };
   endTime?: string;
   quantity?: number;
   brand?: string;
