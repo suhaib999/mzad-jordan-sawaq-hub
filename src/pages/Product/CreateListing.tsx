@@ -44,7 +44,7 @@ interface ExtendedProductFormValues extends ProductFormValues {
 }
 
 const CreateListing = () => {
-  const { session } = useAuth();
+  const { user, session } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('details');
@@ -352,21 +352,39 @@ const CreateListing = () => {
         id: productId,
         title: formData.title,
         description: formData.description,
-        price: formData.price,
+        price: formData.price || 0,
         currency: 'USD', // Default to USD for now
         condition: formData.condition,
         category: formData.category,
+        category_id: formData.category,
+        subcategory_id: formData.subcategory,
         seller_id: session.user.id,
         location: formData.location,
         shipping: JSON.stringify(formData.shipping_options || []),
         is_auction: formData.listing_type === 'auction' || formData.listing_type === 'both',
+        listing_type: formData.listing_type,
+        is_negotiable: formData.is_negotiable,
+        allow_offers: formData.allow_offers,
+        quantity: formData.quantity,
         start_price: (formData.listing_type === 'auction' || formData.listing_type === 'both') ? formData.start_price : null,
         reserve_price: (formData.listing_type === 'auction' || formData.listing_type === 'both') ? formData.reserve_price : null,
+        auction_duration: (formData.listing_type === 'auction' || formData.listing_type === 'both') ? formData.auction_duration : null,
         end_time: formData.end_time,
+        free_shipping: formData.free_shipping,
+        local_pickup: formData.local_pickup,
+        shipping_worldwide: formData.shipping_worldwide,
+        shipping_exclusions: formData.shipping_exclusions,
+        handling_time: formData.handling_time,
+        return_policy: formData.return_policy,
+        warranty: formData.warranty,
+        tags: formData.tags,
         status: formData.status,
-        quantity: formData.quantity,
+        attributes: formData.attributes,
         brand: formData.brand?.toString() || null,
-        model: formData.model?.toString() || null
+        model: formData.model?.toString() || null,
+        year: formData.year?.toString() || null,
+        color: formData.color?.toString() || null,
+        size: formData.size?.toString() || null
       };
       
       // Handle image uploads

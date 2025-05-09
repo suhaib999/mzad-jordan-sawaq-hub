@@ -123,70 +123,133 @@ export type Database = {
       }
       products: {
         Row: {
+          allow_offers: boolean | null
           attributes: Json | null
+          auction_duration: number | null
+          brand: string | null
           category: string
+          category_id: string | null
+          color: string | null
           condition: string
           created_at: string
           currency: string
           current_bid: number | null
+          custom_attributes: Json | null
           description: string
           end_time: string | null
+          free_shipping: boolean | null
+          handling_time: string | null
           id: string
           is_auction: boolean
+          is_negotiable: boolean | null
+          listing_type: string | null
+          local_pickup: boolean | null
           location: string | null
           main_image_url: string | null
+          model: string | null
           price: number
+          quantity: number | null
           reserve_price: number | null
+          return_policy: string | null
           seller_id: string
           shipping: string | null
+          shipping_exclusions: string[] | null
+          shipping_worldwide: boolean | null
+          size: string | null
           start_price: number | null
           status: string
+          subcategory_id: string | null
+          tags: string[] | null
           title: string
           updated_at: string
+          warranty: string | null
+          year: string | null
         }
         Insert: {
+          allow_offers?: boolean | null
           attributes?: Json | null
+          auction_duration?: number | null
+          brand?: string | null
           category: string
+          category_id?: string | null
+          color?: string | null
           condition: string
           created_at?: string
           currency?: string
           current_bid?: number | null
+          custom_attributes?: Json | null
           description: string
           end_time?: string | null
+          free_shipping?: boolean | null
+          handling_time?: string | null
           id?: string
           is_auction?: boolean
+          is_negotiable?: boolean | null
+          listing_type?: string | null
+          local_pickup?: boolean | null
           location?: string | null
           main_image_url?: string | null
+          model?: string | null
           price: number
+          quantity?: number | null
           reserve_price?: number | null
+          return_policy?: string | null
           seller_id: string
           shipping?: string | null
+          shipping_exclusions?: string[] | null
+          shipping_worldwide?: boolean | null
+          size?: string | null
           start_price?: number | null
           status?: string
+          subcategory_id?: string | null
+          tags?: string[] | null
           title: string
           updated_at?: string
+          warranty?: string | null
+          year?: string | null
         }
         Update: {
+          allow_offers?: boolean | null
           attributes?: Json | null
+          auction_duration?: number | null
+          brand?: string | null
           category?: string
+          category_id?: string | null
+          color?: string | null
           condition?: string
           created_at?: string
           currency?: string
           current_bid?: number | null
+          custom_attributes?: Json | null
           description?: string
           end_time?: string | null
+          free_shipping?: boolean | null
+          handling_time?: string | null
           id?: string
           is_auction?: boolean
+          is_negotiable?: boolean | null
+          listing_type?: string | null
+          local_pickup?: boolean | null
           location?: string | null
           main_image_url?: string | null
+          model?: string | null
           price?: number
+          quantity?: number | null
           reserve_price?: number | null
+          return_policy?: string | null
           seller_id?: string
           shipping?: string | null
+          shipping_exclusions?: string[] | null
+          shipping_worldwide?: boolean | null
+          size?: string | null
           start_price?: number | null
           status?: string
+          subcategory_id?: string | null
+          tags?: string[] | null
           title?: string
           updated_at?: string
+          warranty?: string | null
+          year?: string | null
         }
         Relationships: []
       }
@@ -249,6 +312,38 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      shipping_options: {
+        Row: {
+          created_at: string
+          id: string
+          method: string
+          price: number
+          product_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          method: string
+          price: number
+          product_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          method?: string
+          price?: number
+          product_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipping_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {

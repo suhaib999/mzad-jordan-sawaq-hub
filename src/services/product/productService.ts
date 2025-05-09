@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProductWithImages, ProductFilterParams } from './types';
 import { processProductData } from './mappers';
@@ -233,7 +232,8 @@ export const createOrUpdateProduct = async (
     const { data: insertedProduct, error: productError } = await supabase
       .from('products')
       .upsert(productToInsert)
-      .select('id');
+      .select('id')
+      .maybeSingle();
       
     if (productError) {
       console.error("Error inserting product:", productError);
@@ -243,14 +243,14 @@ export const createOrUpdateProduct = async (
       };
     }
     
-    if (!insertedProduct || insertedProduct.length === 0) {
+    if (!insertedProduct) {
       return {
         success: false,
         error: "No product was created/updated"
       };
     }
     
-    const productId = insertedProduct[0]?.id;
+    const productId = insertedProduct.id;
     console.log("Product created/updated successfully with ID:", productId);
     
     // Insert/update images if any
@@ -259,18 +259,44 @@ export const createOrUpdateProduct = async (
         id: img.id || undefined,
         product_id: productId,
         image_url: img.url,
-        display_order: index
+        display_order: img.order || index
       }));
       
       console.log("Inserting images:", imageInserts);
       
       const { error: imagesError } = await supabase
         .from('product_images')
-        .upsert(imageInserts, { onConflict: 'id,product_id' });
+        .upsert(imageInserts);
         
       if (imagesError) {
         console.error("Error inserting images:", imagesError);
         // We don't fail the whole operation for image errors
+        // but we should log them
+        console.error("Failed to insert images:", imagesError.message);
+      }
+    }
+    
+    // Also store shipping options in the separate table if we have them
+    if (productData.shipping_options && productData.shipping_options.length > 0) {
+      const shippingOptions = productData.shipping_options.map((option: any) => ({
+        product_id: productId,
+        method: option.method,
+        price: option.price
+      }));
+      
+      // Delete existing shipping options first
+      await supabase
+        .from('shipping_options')
+        .delete()
+        .eq('product_id', productId);
+        
+      // Then insert new ones
+      const { error: shippingError } = await supabase
+        .from('shipping_options')
+        .insert(shippingOptions);
+        
+      if (shippingError) {
+        console.error("Error inserting shipping options:", shippingError);
       }
     }
     
