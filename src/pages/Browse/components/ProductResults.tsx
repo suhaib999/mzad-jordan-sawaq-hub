@@ -1,6 +1,6 @@
 
-import { ProductCardProps } from '@/components/product/ProductCard';
 import ProductGrid from '@/components/product/ProductGrid';
+import { ProductCardProps } from '@/services/product/types';
 
 type ProductResultsProps = {
   products: ProductCardProps[];

@@ -8,7 +8,10 @@ import { fetchProductById } from '@/services/product';
 import { fetchHighestBid, formatTimeRemaining } from '@/services/biddingService';
 import { Badge } from '@/components/ui/badge';
 import { WishlistButton } from './WishlistButton';
-import { ProductCardProps } from '@/services/product/types';
+import { ProductCardProps as ProductCardPropsType } from '@/services/product/types';
+
+// Export this type for backward compatibility
+export type ProductCardProps = ProductCardPropsType;
 
 export interface ProductCardPropsFull {
   id: string;
