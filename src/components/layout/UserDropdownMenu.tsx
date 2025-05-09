@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { 
   User, LogOut, Settings, Heart, ShoppingCart, 
-  PackageOpen, Gavel, Bookmark, MessageSquare, Clock, Home, History, PlusSquare
+  PackageOpen, Gavel, Bookmark, MessageSquare, Clock, Home, History, PlusSquare, Tag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,9 +20,10 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface UserDropdownMenuProps {
   className?: string;
+  children?: React.ReactNode;
 }
 
-const UserDropdownMenu: React.FC<UserDropdownMenuProps> = ({ className }) => {
+const UserDropdownMenu: React.FC<UserDropdownMenuProps> = ({ className, children }) => {
   const { user, signOut } = useAuth();
   
   if (!user) return null;
@@ -114,14 +115,14 @@ const UserDropdownMenu: React.FC<UserDropdownMenuProps> = ({ className }) => {
         <DropdownMenuLabel className="text-sm text-gray-500">Selling</DropdownMenuLabel>
         
         <DropdownMenuItem asChild>
-          <Link to="/my-listings" className="flex items-center cursor-pointer">
+          <Link to="/profile/listings" className="flex items-center cursor-pointer">
             <PackageOpen className="mr-2 h-4 w-4" />
-            <span>Selling</span>
+            <span>My Listings</span>
           </Link>
         </DropdownMenuItem>
         
         <DropdownMenuItem asChild>
-          <Link to="/saved-sellers" className="flex items-center cursor-pointer">
+          <Link to="/seller/saved" className="flex items-center cursor-pointer">
             <Bookmark className="mr-2 h-4 w-4" />
             <span>Saved Sellers</span>
           </Link>
@@ -135,6 +136,8 @@ const UserDropdownMenu: React.FC<UserDropdownMenuProps> = ({ className }) => {
         </DropdownMenuItem>
         
         <DropdownMenuSeparator />
+        
+        {children}
         
         <DropdownMenuItem asChild>
           <Link to="/messages" className="flex items-center cursor-pointer">

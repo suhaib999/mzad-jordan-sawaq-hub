@@ -237,7 +237,7 @@ const CreateListing = () => {
           images: currentValues.images?.map(img => ({
             id: img.id,
             url: img.url,
-            order: img.order,
+            order: img.order
             // Don't include file objects as they can't be serialized
           }))
         };

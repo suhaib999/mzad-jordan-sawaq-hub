@@ -1,8 +1,9 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   ShoppingCart, Heart, Menu, LogIn, LogOut, User, 
-  PlusSquare, Settings, Bell, ChevronDown
+  PlusSquare, Settings, Bell, ChevronDown, Tag, Bookmark
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,7 +13,6 @@ import { Badge } from '@/components/ui/badge';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 import UserDropdownMenu from './UserDropdownMenu';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 const Navbar = ({ toggleMobileMenu }: { toggleMobileMenu: () => void }) => {
   const { t } = useTranslation();
@@ -88,20 +88,7 @@ const Navbar = ({ toggleMobileMenu }: { toggleMobileMenu: () => void }) => {
               </div>
               
               {/* User dropdown menu */}
-              <UserDropdownMenu>
-                <DropdownMenuItem asChild>
-                  <Link to="/profile/listings" className="flex items-center">
-                    <Tag className="mr-2 h-4 w-4" />
-                    My Listings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/seller/saved" className="flex items-center">
-                    <Bookmark className="mr-2 h-4 w-4" />
-                    Saved Sellers
-                  </Link>
-                </DropdownMenuItem>
-              </UserDropdownMenu>
+              <UserDropdownMenu />
             </>
           ) : (
             <>
