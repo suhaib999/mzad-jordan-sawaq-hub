@@ -7,9 +7,15 @@ interface ProductGridProps {
   products: ProductCardProps[];
   title?: string;
   viewAllLink?: string;
+  showBranding?: boolean;
 }
 
-const ProductGrid: React.FC<ProductGridProps> = ({ products, title, viewAllLink }) => {
+const ProductGrid: React.FC<ProductGridProps> = ({ 
+  products, 
+  title, 
+  viewAllLink, 
+  showBranding = false 
+}) => {
   return (
     <div className="mb-10">
       {title && (
@@ -25,7 +31,11 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, title, viewAllLink 
       
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {products.map((product) => (
-          <ProductCard key={product.id} {...product} />
+          <ProductCard 
+            key={product.id} 
+            {...product} 
+            showBranding={showBranding} 
+          />
         ))}
       </div>
     </div>

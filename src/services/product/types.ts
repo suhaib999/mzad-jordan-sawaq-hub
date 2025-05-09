@@ -36,15 +36,21 @@ export interface Product {
   size?: string;
   delivery_available?: boolean;
   screen_size?: string;
-  custom_attributes?: any; // Changed from string to any to match Json type
-  attributes?: any; // Also updated for consistency
+  custom_attributes?: any;
+  attributes?: any;
   
-  // New shipping fields
+  // Shipping fields
   provides_shipping?: boolean;
   mzadkumsooq_delivery?: boolean;
   local_pickup?: boolean;
   free_shipping?: boolean;
   handling_time?: string;
+  shipping_data?: ShippingOption[];
+}
+
+export interface ShippingOption {
+  method: string;
+  price: number;
 }
 
 export interface ProductImage {
@@ -74,6 +80,9 @@ export interface ProductCardProps {
   endTime?: string;
   quantity?: number;
   brand?: string;
+  model?: string;
+  shipping?: string;
+  currency?: string;
 }
 
 export interface ProductFilterParams {

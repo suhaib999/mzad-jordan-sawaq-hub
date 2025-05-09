@@ -1,80 +1,47 @@
 
+import { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { categories } from '@/data/categories';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { fetchCategories, CategoryWithChildren } from '@/services/category/categoryService';
 
-type CategoryFilterProps = {
+interface CategoryFilterProps {
   value: string;
   onChange: (value: string) => void;
-  categories: string[];
-};
+  categories?: string[];
+}
 
 const CategoryFilter = ({ value, onChange }: CategoryFilterProps) => {
-  const [isExpanded, setIsExpanded] = useState(true);
-  
-  // Get top-level categories
-  const topCategories = categories.map(cat => ({
-    id: cat.id,
-    name: cat.name,
-    slug: cat.slug,
-    hasChildren: Boolean(cat.children && cat.children.length > 0)
-  }));
+  const [dbCategories, setDbCategories] = useState<CategoryWithChildren[]>([]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      const fetchedCategories = await fetchCategories();
+      setDbCategories(fetchedCategories);
+    };
+    
+    loadCategories();
+  }, []);
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
-        <Label className="font-medium">Category</Label>
-        <Button variant="ghost" size="sm" className="p-0 h-auto">
-          {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-        </Button>
-      </div>
-      
-      {isExpanded && (
-        <ScrollArea className="h-[240px] pr-3">
-          <div className="space-y-1 py-1">
-            <div 
-              className={`rounded-md px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100 ${value === "all" ? "bg-mzad-primary/10 font-medium" : ""}`}
-              onClick={() => onChange("all")}
-            >
-              All Categories
-            </div>
-            
-            {topCategories.map((category) => (
-              <div 
-                key={category.id}
-                className={`rounded-md px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100 ${value === category.slug ? "bg-mzad-primary/10 font-medium" : ""}`}
-                onClick={() => onChange(category.slug)}
-              >
-                {category.name}
-                {category.hasChildren && (
-                  <span className="text-xs text-gray-500 ml-1">›</span>
-                )}
-              </div>
-            ))}
+    <div className="py-2">
+      <Label className="text-base mb-3 block">Categories</Label>
+      <RadioGroup 
+        value={value} 
+        onValueChange={onChange}
+        className="space-y-1"
+      >
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="all" id="all" />
+          <Label htmlFor="all" className="cursor-pointer">All Categories</Label>
+        </div>
+
+        {dbCategories.map((category) => (
+          <div key={category.id} className="flex items-center space-x-2">
+            <RadioGroupItem value={category.id} id={category.id} />
+            <Label htmlFor={category.id} className="cursor-pointer">{category.name}</Label>
           </div>
-        </ScrollArea>
-      )}
-      
-      {/* Mobile-friendly dropdown for smaller screens */}
-      <div className="block md:hidden mt-2">
-        <Select value={value} onValueChange={onChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="All Categories" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {topCategories.map((cat) => (
-              <SelectItem key={cat.id} value={cat.slug}>
-                {cat.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+        ))}
+      </RadioGroup>
     </div>
   );
 };

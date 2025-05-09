@@ -10,7 +10,9 @@ export const placeholderFeaturedProducts = [
     condition: 'Pre-owned',
     shipping: 'Free shipping',
     location: 'Amman',
-    isAuction: false
+    isAuction: false,
+    brand: 'Apple',
+    model: 'MacBook Pro M1'
   },
   {
     id: '2',
@@ -21,7 +23,9 @@ export const placeholderFeaturedProducts = [
     condition: 'New',
     shipping: '+10.00 shipping',
     location: 'Irbid',
-    isAuction: false
+    isAuction: false,
+    brand: 'Samsung',
+    model: 'Galaxy S23 Ultra'
   },
   {
     id: '3',
@@ -32,7 +36,9 @@ export const placeholderFeaturedProducts = [
     condition: 'New',
     shipping: 'Free shipping',
     location: 'Zarqa',
-    isAuction: false
+    isAuction: false,
+    brand: 'OnePlus',
+    model: 'Pad Go'
   },
   {
     id: '4',
@@ -43,7 +49,9 @@ export const placeholderFeaturedProducts = [
     condition: 'Pre-owned',
     shipping: 'Free local pickup',
     location: 'Aqaba',
-    isAuction: false
+    isAuction: false,
+    brand: 'Canon',
+    model: 'EOS Rebel T2i'
   },
   {
     id: '5',
@@ -54,7 +62,9 @@ export const placeholderFeaturedProducts = [
     condition: 'New',
     shipping: 'Free shipping',
     location: 'Amman',
-    isAuction: false
+    isAuction: false,
+    brand: 'Microsoft',
+    model: 'Xbox Series X'
   }
 ];
 
@@ -69,7 +79,9 @@ export const placeholderAuctionProducts = [
     condition: 'Pre-owned',
     isAuction: true,
     endTime: '2d 5h left',
-    location: 'Amman'
+    location: 'Amman',
+    brand: 'Handmade',
+    model: 'Persian'
   },
   {
     id: '7',
@@ -81,7 +93,9 @@ export const placeholderAuctionProducts = [
     condition: 'New',
     isAuction: true,
     endTime: '1d 12h left',
-    location: 'Amman'
+    location: 'Amman',
+    brand: 'Nike',
+    model: 'Jordan 4 Retro'
   },
   {
     id: '8',
@@ -93,7 +107,9 @@ export const placeholderAuctionProducts = [
     condition: 'Pre-owned',
     isAuction: true,
     endTime: '4h 30m left',
-    location: 'Madaba'
+    location: 'Madaba',
+    brand: 'Various',
+    model: '1960s Collection'
   },
   {
     id: '9',
@@ -105,7 +121,9 @@ export const placeholderAuctionProducts = [
     condition: 'Pre-owned',
     isAuction: true,
     endTime: '3d left',
-    location: 'Amman'
+    location: 'Amman',
+    brand: 'Toyota',
+    model: 'Land Cruiser Prado 2019'
   },
   {
     id: '10',
@@ -117,6 +135,8 @@ export const placeholderAuctionProducts = [
     condition: 'New',
     isAuction: true,
     endTime: '2d 8h left',
-    location: 'Irbid'
+    location: 'Irbid',
+    brand: 'Handcrafted',
+    model: 'Traditional 18k'
   }
 ];

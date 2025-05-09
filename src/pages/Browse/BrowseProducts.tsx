@@ -1,29 +1,30 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import { fetchProducts, ProductSearchParams, ProductWithImages, mapProductToCardProps } from '@/services/productService';
+import { fetchProducts, ProductSearchParams, ProductWithImages, mapProductToCardProps } from '@/services/product/productService';
+import { fetchCategories, DatabaseCategory } from '@/services/category/categoryService';
 import SearchBar from './components/SearchBar';
 import FilterSidebar, { FilterValues } from './components/FilterSidebar';
 import ProductResults from './components/ProductResults';
 import ActiveFiltersBar from './components/ActiveFiltersBar';
 
-const categories = [
-  "Electronics",
-  "Fashion",
-  "Home & Garden",
-  "Vehicles",
-  "Collectibles",
-  "Toys & Games",
-  "Sports",
-  "Real Estate",
-  "Services",
-  "Other"
-];
-
 const BrowseProducts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [categories, setCategories] = useState<string[]>([]);
+  
+  // Fetch categories
+  useEffect(() => {
+    const loadCategories = async () => {
+      const fetchedCategories = await fetchCategories();
+      // Extract category names for the filter sidebar
+      const categoryNames = fetchedCategories.map(cat => cat.name);
+      setCategories(categoryNames);
+    };
+    
+    loadCategories();
+  }, []);
   
   // Parse initial filters from URL params
   const initialFilters: FilterValues = {

@@ -41,6 +41,44 @@ export type Database = {
           },
         ]
       }
+      categories: {
+        Row: {
+          created_at: string
+          id: string
+          level: number
+          name: string
+          parent_id: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level?: number
+          name: string
+          parent_id?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level?: number
+          name?: string
+          parent_id?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback: {
         Row: {
           buyer_id: string
@@ -121,6 +159,41 @@ export type Database = {
           },
         ]
       }
+      product_shipping: {
+        Row: {
+          created_at: string | null
+          handling_time: string | null
+          id: string
+          price: number
+          product_id: string | null
+          shipping_option: string
+        }
+        Insert: {
+          created_at?: string | null
+          handling_time?: string | null
+          id?: string
+          price?: number
+          product_id?: string | null
+          shipping_option: string
+        }
+        Update: {
+          created_at?: string | null
+          handling_time?: string | null
+          id?: string
+          price?: number
+          product_id?: string | null
+          shipping_option?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_shipping_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           allow_offers: boolean | null
@@ -154,7 +227,6 @@ export type Database = {
           seller_id: string
           shipping: string | null
           shipping_exclusions: string[] | null
-          shipping_worldwide: boolean | null
           size: string | null
           start_price: number | null
           status: string
@@ -197,7 +269,6 @@ export type Database = {
           seller_id: string
           shipping?: string | null
           shipping_exclusions?: string[] | null
-          shipping_worldwide?: boolean | null
           size?: string | null
           start_price?: number | null
           status?: string
@@ -240,7 +311,6 @@ export type Database = {
           seller_id?: string
           shipping?: string | null
           shipping_exclusions?: string[] | null
-          shipping_worldwide?: boolean | null
           size?: string | null
           start_price?: number | null
           status?: string

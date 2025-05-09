@@ -61,6 +61,18 @@ export const fetchProducts = async (
     // Process the data
     const productsWithMainImage = processProductData(data);
 
+    // Fetch shipping options for each product
+    for (const product of productsWithMainImage) {
+      const { data: shippingData, error: shippingError } = await supabase
+        .from('shipping_options')
+        .select('method, price')
+        .eq('product_id', product.id);
+        
+      if (!shippingError && shippingData && shippingData.length > 0) {
+        product.shipping_data = shippingData;
+      }
+    }
+
     return { 
       products: productsWithMainImage, 
       count: totalCount
@@ -310,5 +322,46 @@ export const createOrUpdateProduct = async (
       success: false, 
       error: error?.message || "Unknown error occurred" 
     };
+  }
+};
+
+// Add a new function to fetch categories from the database
+export const fetchCategoriesFromDb = async (): Promise<any[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('level', { ascending: true })
+      .order('name', { ascending: true });
+      
+    if (error) {
+      console.error('Error fetching categories:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error in fetchCategoriesFromDb:', error);
+    return [];
+  }
+};
+
+// Add function to fetch shipping options for a specific product
+export const fetchProductShippingOptions = async (productId: string): Promise<ShippingOption[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('shipping_options')
+      .select('method, price')
+      .eq('product_id', productId);
+      
+    if (error) {
+      console.error('Error fetching shipping options:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error in fetchProductShippingOptions:', error);
+    return [];
   }
 };

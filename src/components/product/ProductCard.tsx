@@ -1,181 +1,105 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingCart, Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useCart } from '@/contexts/CartContext';
-import { fetchProductById } from '@/services/product';
-import { fetchHighestBid, formatTimeRemaining } from '@/services/biddingService';
-import { Badge } from '@/components/ui/badge';
-import { WishlistButton } from './WishlistButton';
-import { ProductCardProps as ProductCardPropsType } from '@/services/product/types';
-
-// Export this type for backward compatibility
-export type ProductCardProps = ProductCardPropsType;
+import { Clock, MapPin } from 'lucide-react';
 
 export interface ProductCardPropsFull {
   id: string;
   title: string;
   price: number;
-  currency?: string;
   imageUrl: string;
   condition: string;
-  isAuction?: boolean;
+  isAuction: boolean;
   endTime?: string;
-  currentBid?: number;
+  location?: string;
+  currency?: string;
   shipping?: string;
-  location?: string | {
-    city: string;
-    neighborhood: string;
-    street?: string;
-  };
+  brand?: string;
+  model?: string;
+  showBranding?: boolean;
 }
+
+// Re-export the type from services for backward compatibility
+export type { ProductCardProps } from '@/services/product/types';
 
 const ProductCard: React.FC<ProductCardPropsFull> = ({
   id,
   title,
   price,
-  currency = "JOD",
   imageUrl,
   condition,
-  isAuction = false,
+  isAuction,
   endTime,
-  currentBid,
+  location,
+  currency = 'JOD',
   shipping,
-  location
+  brand,
+  model,
+  showBranding = false
 }) => {
-  const { addToCart } = useCart();
-  const [highestBid, setHighestBid] = useState<number | null>(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  
-  // Fetch highest bid if this is an auction
-  useEffect(() => {
-    if (isAuction) {
-      const getHighestBid = async () => {
-        const bidAmount = await fetchHighestBid(id);
-        if (bidAmount !== null) {
-          setHighestBid(bidAmount);
-        }
-      };
-      
-      getHighestBid();
-    }
-  }, [id, isAuction]);
-  
-  const handleAddToCart = async (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigating to product detail
-    e.stopPropagation();
-    
-    try {
-      // Fetch full product data for cart
-      const product = await fetchProductById(id);
-      if (product) {
-        addToCart(product);
-      }
-    } catch (error) {
-      console.error('Error adding product to cart:', error);
-    }
-  };
-
-  const formattedTimeRemaining = endTime ? formatTimeRemaining(endTime) : '';
-  const isEnded = formattedTimeRemaining === 'Auction ended';
-  
-  // For auctions, display the highest bid, current bid or starting price
-  const displayPrice = isAuction ? (highestBid || currentBid || price) : price;
-
-  // Format location string from object if needed
-  const displayLocation = location ? 
-    (typeof location === 'string' ? 
-      location : 
-      `${location.city}, ${location.neighborhood}${location.street ? `, ${location.street}` : ''}`) 
-    : '';
+  // Format price to 2 decimal places
+  const formattedPrice = price.toFixed(2);
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
-      <div className="relative">
-        <Link to={`/product/${id}`}>
-          <div className="w-full h-48 bg-gray-100">
-            {!imageLoaded && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-200 animate-pulse">
-                <span className="text-gray-400 text-sm">Loading...</span>
-              </div>
-            )}
-            <img 
-              src={imageUrl} 
-              alt={title} 
-              className={`w-full h-48 object-cover ${!imageLoaded ? 'opacity-0' : 'opacity-100'}`}
-              onLoad={() => setImageLoaded(true)}
-              loading="lazy"
-            />
-          </div>
-        </Link>
-        <WishlistButton productId={id} variant="card" />
-        
-        {isAuction && (
-          <div className="absolute bottom-2 left-2">
-            <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
-              {isEnded ? 'Ended' : 'Auction'}
-            </Badge>
-          </div>
-        )}
-      </div>
-      
-      <div className="p-4">
-        <Link to={`/product/${id}`}>
-          <h3 className="font-medium text-gray-900 truncate-2 h-12 mb-2">{title}</h3>
-        </Link>
-        
-        {isAuction ? (
-          <>
-            <div className="mb-1">
-              <span className="text-sm text-gray-500">Current Bid:</span>
-              <span className="text-lg font-bold text-mzad-primary ml-1">
-                {displayPrice.toFixed(2)} {currency}
-              </span>
-            </div>
-            {endTime && (
-              <div className="text-sm flex items-center text-amber-600 mb-2">
-                <Clock className="h-3 w-3 mr-1" />
-                <span className={isEnded ? 'text-red-500' : ''}>
-                  {formattedTimeRemaining}
-                </span>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="mb-2">
-            <span className="text-lg font-bold text-mzad-dark">
-              {price.toFixed(2)} {currency}
+    <Link to={`/product/${id}`} className="group">
+      <div className="flex flex-col h-full bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+        {/* Image container with fixed aspect ratio */}
+        <div className="relative pt-[100%] bg-gray-100">
+          <img
+            src={imageUrl || 'https://via.placeholder.com/300'}
+            alt={title}
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+              e.currentTarget.src = 'https://via.placeholder.com/300?text=No+Image';
+            }}
+          />
+          {condition && (
+            <span className="absolute top-2 left-2 bg-white px-2 py-1 text-xs rounded-full">
+              {condition}
             </span>
-          </div>
-        )}
-        
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>{condition}</span>
-          {shipping && <span>{shipping}</span>}
+          )}
+          {isAuction && endTime && (
+            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-1 flex items-center justify-center">
+              <Clock className="w-3 h-3 mr-1" />
+              <span>{endTime}</span>
+            </div>
+          )}
         </div>
-        
-        {displayLocation && (
-          <div className="mt-2 text-xs text-gray-500">
-            {displayLocation}
+
+        {/* Product details */}
+        <div className="p-3 flex-grow flex flex-col">
+          <h3 className="font-medium text-sm line-clamp-2 group-hover:text-mzad-primary mb-1">
+            {title}
+          </h3>
+          
+          {showBranding && brand && (
+            <div className="text-xs text-gray-600 mb-1">
+              {brand} {model && `• ${model}`}
+            </div>
+          )}
+          
+          <div className="mt-auto">
+            <div className="font-bold text-mzad-primary">
+              {isAuction ? 'Current Bid: ' : ''}
+              {formattedPrice} {currency}
+            </div>
+            
+            {shipping && (
+              <div className="text-xs text-gray-600 mt-1">
+                {shipping}
+              </div>
+            )}
+            
+            {location && (
+              <div className="flex items-center text-xs text-gray-500 mt-1">
+                <MapPin className="w-3 h-3 mr-1" />
+                <span className="truncate">{typeof location === 'string' ? location : location.city}</span>
+              </div>
+            )}
           </div>
-        )}
-        
-        {!isAuction && (
-          <div className="mt-3">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full border-mzad-secondary text-mzad-secondary hover:bg-mzad-secondary hover:text-white"
-              onClick={handleAddToCart}
-            >
-              <ShoppingCart className="mr-1 h-4 w-4" />
-              Add to Cart
-            </Button>
-          </div>
-        )}
+        </div>
       </div>
-    </div>
+    </Link>
   );
 };
 

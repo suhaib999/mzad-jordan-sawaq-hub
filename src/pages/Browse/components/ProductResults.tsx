@@ -28,7 +28,7 @@ const ProductResults = ({ products, isLoading }: ProductResultsProps) => {
     );
   }
 
-  return <ProductGrid products={products} />;
+  return <ProductGrid products={products} showBranding={true} />;
 };
 
 export default ProductResults;
