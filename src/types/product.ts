@@ -22,7 +22,14 @@ export const productSchema = z.object({
   end_time: z.string().optional().nullable(),
   quantity: z.number().int().min(1, "Quantity must be at least 1").default(1),
   allow_offers: z.boolean().optional(),
-  location: z.string().min(1, "Location is required"),
+  location: z.object({
+    city: z.string().min(1, "City is required"),
+    neighborhood: z.string().min(1, "Neighborhood is required"),
+    street: z.string().optional(),
+  }),
+  provides_shipping: z.boolean().optional().default(false),
+  mzadkumsooq_delivery: z.boolean().optional().default(false),
+  local_pickup: z.boolean().optional().default(true),
   shipping_options: z.array(
     z.object({
       method: z.string().min(1, "Shipping method is required"),
@@ -30,9 +37,6 @@ export const productSchema = z.object({
     })
   ).optional(),
   free_shipping: z.boolean().optional(),
-  local_pickup: z.boolean().optional(),
-  shipping_worldwide: z.boolean().optional(),
-  shipping_exclusions: z.array(z.string()).optional(),
   handling_time: z.string().optional().nullable(),
   return_policy: z.string().optional().nullable(),
   warranty: z.string().optional().nullable(),

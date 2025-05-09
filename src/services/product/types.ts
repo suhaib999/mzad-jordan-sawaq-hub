@@ -11,7 +11,11 @@ export interface Product {
   category?: string;
   category_id?: string;
   seller_id: string;
-  location?: string;
+  location?: string | {
+    city: string;
+    neighborhood: string;
+    street?: string;
+  };
   shipping?: string;
   shipping_fee?: number;
   is_auction: boolean;
@@ -34,6 +38,13 @@ export interface Product {
   screen_size?: string;
   custom_attributes?: any; // Changed from string to any to match Json type
   attributes?: any; // Also updated for consistency
+  
+  // New shipping fields
+  provides_shipping?: boolean;
+  mzadkumsooq_delivery?: boolean;
+  local_pickup?: boolean;
+  free_shipping?: boolean;
+  handling_time?: string;
 }
 
 export interface ProductImage {
