@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProductWithImages, ProductFilterParams, ShippingOption, ProductImage } from './types';
 import { processProductData } from './mappers';
@@ -352,7 +351,7 @@ export const fetchProductShippingOptions = async (productId: string): Promise<Sh
   try {
     const { data, error } = await supabase
       .from('shipping_options')
-      .select('method, price')
+      .select('id, method, price, handling_time')
       .eq('product_id', productId);
       
     if (error) {

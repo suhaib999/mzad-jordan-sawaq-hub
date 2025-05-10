@@ -386,6 +386,7 @@ export type Database = {
       shipping_options: {
         Row: {
           created_at: string
+          handling_time: string | null
           id: string
           method: string
           price: number
@@ -393,6 +394,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          handling_time?: string | null
           id?: string
           method: string
           price: number
@@ -400,6 +402,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          handling_time?: string | null
           id?: string
           method?: string
           price?: number

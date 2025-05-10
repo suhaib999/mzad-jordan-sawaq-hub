@@ -81,7 +81,7 @@ export const applyPagination = (query: any, limit?: number, offset?: number) => 
     result = result.limit(limit);
   }
   
-  if (offset !== undefined && offset > 0) {
+  if (offset !== undefined && offset >= 0) {
     result = result.range(offset, offset + (limit || 10) - 1);
   }
   

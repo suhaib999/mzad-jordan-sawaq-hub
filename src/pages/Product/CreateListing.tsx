@@ -405,8 +405,10 @@ const CreateListing = () => {
           const filePath = `products/${productId}/${image.id}.${fileExt}`;
           
           try {
-            // Create storage bucket if it doesn't exist
+            // Check if images bucket exists
             const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('images');
+            
+            // Create bucket if it doesn't exist
             if (bucketError && bucketError.message.includes('does not exist')) {
               await supabase.storage.createBucket('images', {
                 public: true
@@ -416,7 +418,10 @@ const CreateListing = () => {
             // Upload the file
             const { data: uploadData, error: uploadError } = await supabase.storage
               .from('images')
-              .upload(filePath, image.file);
+              .upload(filePath, image.file, {
+                upsert: true,
+                cacheControl: '3600'
+              });
               
             if (uploadError) {
               console.error("Upload error:", uploadError);
