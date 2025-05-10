@@ -1,5 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { ProductWithImages, ProductFilterParams, ShippingOption } from './types';
+import { ProductWithImages, ProductFilterParams, ShippingOption, ProductImage } from './types';
 import { processProductData } from './mappers';
 import { applyFilters, applyPagination, applySorting } from './queryBuilders';
 
