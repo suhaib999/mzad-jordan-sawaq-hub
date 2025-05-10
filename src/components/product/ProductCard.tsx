@@ -11,7 +11,11 @@ export interface ProductCardPropsFull {
   condition: string;
   isAuction: boolean;
   endTime?: string;
-  location?: string;
+  location?: string | {
+    city: string;
+    neighborhood: string;
+    street?: string;
+  };
   currency?: string;
   shipping?: string;
   brand?: string;
@@ -39,6 +43,16 @@ const ProductCard: React.FC<ProductCardPropsFull> = ({
 }) => {
   // Format price to 2 decimal places
   const formattedPrice = price.toFixed(2);
+
+  // Format location display based on type
+  const getLocationDisplay = () => {
+    if (typeof location === 'string') {
+      return location;
+    } else if (location && typeof location === 'object' && 'city' in location) {
+      return location.city;
+    }
+    return '';
+  };
 
   return (
     <Link to={`/product/${id}`} className="group">
@@ -93,7 +107,7 @@ const ProductCard: React.FC<ProductCardPropsFull> = ({
             {location && (
               <div className="flex items-center text-xs text-gray-500 mt-1">
                 <MapPin className="w-3 h-3 mr-1" />
-                <span className="truncate">{typeof location === 'string' ? location : location.city}</span>
+                <span className="truncate">{getLocationDisplay()}</span>
               </div>
             )}
           </div>

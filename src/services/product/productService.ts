@@ -1,13 +1,7 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { ProductWithImages, ProductFilterParams } from './types';
+import { ProductWithImages, ProductFilterParams, ShippingOption } from './types';
 import { processProductData } from './mappers';
 import { applyFilters, applyPagination, applySorting } from './queryBuilders';
-
-export interface ShippingOption {
-  method: string;
-  price: number;
-}
 
 export const fetchProducts = async (
   limit: number | undefined,
@@ -146,7 +140,7 @@ export const fetchProductById = async (id: string): Promise<ProductWithImages | 
     // Process the product
     const product = data;
     const images = product.images || [];
-    const sortedImages = [...images].sort((a, b) => a.display_order - b.display_order);
+    const sortedImages = [...images].sort((a: ProductImage, b: ProductImage) => a.display_order - b.display_order);
     const mainImageUrl = sortedImages.length > 0 ? sortedImages[0].image_url : '';
     
     return {
