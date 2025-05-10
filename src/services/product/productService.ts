@@ -1,7 +1,13 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProductWithImages, ProductFilterParams } from './types';
 import { processProductData } from './mappers';
 import { applyFilters, applyPagination, applySorting } from './queryBuilders';
+
+export interface ShippingOption {
+  method: string;
+  price: number;
+}
 
 export const fetchProducts = async (
   limit: number | undefined,

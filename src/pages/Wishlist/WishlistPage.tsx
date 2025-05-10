@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Heart, Trash2 } from 'lucide-react';
@@ -8,7 +9,7 @@ import Layout from '@/components/layout/Layout';
 import ProductGrid from '@/components/product/ProductGrid';
 import { Button } from '@/components/ui/button';
 import { ProductCardProps } from '@/services/product/types';
-import { mapProductToCardProps } from '@/services/product';
+import { mapProductToCardProps } from '@/services/product/mappers';
 import { Card } from '@/components/ui/card';
 
 const WishlistPage = () => {

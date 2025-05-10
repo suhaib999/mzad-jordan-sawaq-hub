@@ -5,6 +5,6 @@ export * from './mappers';
 export * from './productService';
 export * from './queryBuilders';
 
-// Re-export types to ensure compatibility
+// Re-export specific types to ensure compatibility
 import { ProductWithImages, Product, ProductCardProps } from './types';
 export type { ProductWithImages, Product, ProductCardProps };

@@ -3,7 +3,8 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { TrendingUp } from 'lucide-react';
 import ProductGrid from '@/components/product/ProductGrid';
-import { fetchProducts, mapProductToCardProps } from '@/services/product';
+import { fetchProducts } from '@/services/product/productService';
+import { mapProductToCardProps } from '@/services/product/mappers';
 import { placeholderFeaturedProducts } from '@/data/placeholderProducts';
 
 const TrendingSection = () => {
