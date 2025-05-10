@@ -127,6 +127,38 @@ export type Database = {
         }
         Relationships: []
       }
+      product_attributes: {
+        Row: {
+          attribute_name: string
+          attribute_value: string
+          created_at: string
+          id: string
+          product_id: string | null
+        }
+        Insert: {
+          attribute_name: string
+          attribute_value: string
+          created_at?: string
+          id?: string
+          product_id?: string | null
+        }
+        Update: {
+          attribute_name?: string
+          attribute_value?: string
+          created_at?: string
+          id?: string
+          product_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_attributes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_images: {
         Row: {
           created_at: string
@@ -220,13 +252,16 @@ export type Database = {
           location: string | null
           main_image_url: string | null
           model: string | null
+          mzadkumsooq_delivery: boolean | null
           price: number
+          provides_shipping: boolean | null
           quantity: number | null
           reserve_price: number | null
           return_policy: string | null
           seller_id: string
           shipping: string | null
           shipping_exclusions: string[] | null
+          shipping_fee: number | null
           size: string | null
           start_price: number | null
           status: string
@@ -262,13 +297,16 @@ export type Database = {
           location?: string | null
           main_image_url?: string | null
           model?: string | null
+          mzadkumsooq_delivery?: boolean | null
           price: number
+          provides_shipping?: boolean | null
           quantity?: number | null
           reserve_price?: number | null
           return_policy?: string | null
           seller_id: string
           shipping?: string | null
           shipping_exclusions?: string[] | null
+          shipping_fee?: number | null
           size?: string | null
           start_price?: number | null
           status?: string
@@ -304,13 +342,16 @@ export type Database = {
           location?: string | null
           main_image_url?: string | null
           model?: string | null
+          mzadkumsooq_delivery?: boolean | null
           price?: number
+          provides_shipping?: boolean | null
           quantity?: number | null
           reserve_price?: number | null
           return_policy?: string | null
           seller_id?: string
           shipping?: string | null
           shipping_exclusions?: string[] | null
+          shipping_fee?: number | null
           size?: string | null
           start_price?: number | null
           status?: string

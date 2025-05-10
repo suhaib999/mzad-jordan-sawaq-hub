@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,7 +34,7 @@ import { Button } from '@/components/ui/button';
 
 // Types and Services
 import { ProductFormValues, productSchema } from '@/types/product';
-import { createOrUpdateProduct } from '@/services/product'; // Updated import path
+import { createOrUpdateProduct } from '@/services/product'; // Fixed import path
 
 // Update the ProductFormValues type to include the id property
 // We'll extend it locally since we don't want to modify the original type file
