@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +24,9 @@ import DraftManager from '@/components/product/listing/DraftManager';
 import { useProductForm } from '@/hooks/useProductForm';
 import { uploadProductImages } from '@/services/product/imageService';
 import { createOrUpdateProduct } from '@/services/product';
+
+// Import the missing ProductFormValues type
+import { ProductFormValues } from '@/types/product';
 
 const CreateListing = () => {
   const { user, session } = useAuth();
