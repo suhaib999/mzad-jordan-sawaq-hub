@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 import { fontFamily } from "tailwindcss/defaultTheme";
 
@@ -69,6 +68,16 @@ const config = {
         "soft-purple": "#E5DEFF",
         "soft-peach": "#FEC6A1",
         "soft-gray": "#F1F0FB",
+      },
+      backgroundColor: {
+        'soft-blue': 'rgba(59, 130, 246, 0.1)',
+        'soft-green': 'rgba(16, 185, 129, 0.1)',
+        'soft-yellow': 'rgba(251, 191, 36, 0.1)',
+        'soft-orange': 'rgba(249, 115, 22, 0.1)',
+        'soft-pink': 'rgba(236, 72, 153, 0.1)',
+        'soft-purple': 'rgba(139, 92, 246, 0.1)',
+        'soft-peach': 'rgba(255, 145, 124, 0.1)',
+        'soft-gray': 'rgba(156, 163, 175, 0.1)',
       },
       borderRadius: {
         lg: "var(--radius)",

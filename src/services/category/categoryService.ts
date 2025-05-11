@@ -9,6 +9,8 @@ export interface DatabaseCategory {
   level: number;
   created_at: string;
   updated_at: string;
+  path?: string;
+  is_leaf?: boolean;
 }
 
 export interface CategoryWithChildren extends DatabaseCategory {
@@ -61,7 +63,7 @@ export async function fetchCategoryBySlug(slug: string): Promise<DatabaseCategor
   }
 }
 
-export async function fetchChildCategories(parentId: string): Promise<DatabaseCategory[]> {
+export async function fetchSubcategories(parentId: string): Promise<DatabaseCategory[]> {
   try {
     const { data, error } = await supabase
       .from('categories')

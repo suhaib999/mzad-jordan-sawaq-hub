@@ -15,18 +15,8 @@ import ActiveFiltersBar from './components/ActiveFiltersBar';
 const BrowseProducts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState<string[]>([]);
-  
-  // Fetch categories
-  useEffect(() => {
-    const loadCategories = async () => {
-      const fetchedCategories = await fetchCategories();
-      // Extract category names for the filter sidebar
-      const categoryNames = fetchedCategories.map(cat => cat.name);
-      setCategories(categoryNames);
-    };
-    
-    loadCategories();
-  }, []);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Parse initial filters from URL params
   const initialFilters: FilterValues = {
@@ -44,15 +34,29 @@ const BrowseProducts = () => {
 
   // State for filters
   const [filters, setFilters] = useState<FilterValues>(initialFilters);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(initialFilters.searchQuery || '');
+
+  useEffect(() => {
+    setSearchQuery(initialFilters.searchQuery || '');
+  }, [initialFilters.searchQuery]);
+  
+  // Fetch categories
+  useEffect(() => {
+    const loadCategories = async () => {
+      const fetchedCategories = await fetchCategories();
+      // Extract category names for the filter sidebar
+      const categoryNames = fetchedCategories.map(cat => cat.name);
+      setCategories(categoryNames);
+    };
+    
+    loadCategories();
+  }, []);
 
   // Query for products
   const { data: productsData = { products: [], count: 0 }, isLoading } = useQuery({
     queryKey: ['products', filters],
     queryFn: async () => {
       // Convert filters to API parameters
-      const apiParams: any = {
+      const apiParams: ProductFilterParams = {
         category_id: filters.category === 'all' ? undefined : filters.category,
         is_auction: filters.listingType === 'all' ? undefined : filters.listingType === 'auction',
         query: filters.searchQuery || undefined,
@@ -73,7 +77,7 @@ const BrowseProducts = () => {
 
   // Handle search form submission
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent navigating to product detail
+    e.preventDefault();
     setFilters(prev => ({ ...prev, searchQuery }));
     updateSearchParams({ ...filters, searchQuery });
   };

@@ -35,6 +35,9 @@ const ListingCard = ({ product, activeTab, onStatusChange }: ListingCardProps) =
               <div>
                 <h3 className="font-medium text-lg mb-1">{product.title}</h3>
                 <p className="text-sm text-gray-500 mb-2">{product.category} • {product.condition}</p>
+                {product.brand && product.model && (
+                  <p className="text-sm text-gray-600">{product.brand} {product.model}</p>
+                )}
               </div>
               <div className="flex items-center">
                 <Badge variant={product.is_auction ? "secondary" : "outline"} className="mr-2">

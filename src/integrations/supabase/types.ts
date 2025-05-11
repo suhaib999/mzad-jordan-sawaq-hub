@@ -45,27 +45,33 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_leaf: boolean | null
           level: number
           name: string
           parent_id: string | null
+          path: string | null
           slug: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
+          is_leaf?: boolean | null
           level?: number
           name: string
           parent_id?: string | null
+          path?: string | null
           slug: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
+          is_leaf?: boolean | null
           level?: number
           name?: string
           parent_id?: string | null
+          path?: string | null
           slug?: string
           updated_at?: string
         }
@@ -523,7 +529,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_category_hierarchy: {
+        Args: { category_id: string }
+        Returns: {
+          id: string
+          name: string
+          slug: string
+          level: number
+          parent_id: string
+          path: string
+        }[]
+      }
+      get_subcategories: {
+        Args: { parent_slug: string }
+        Returns: {
+          id: string
+          name: string
+          slug: string
+          level: number
+          parent_id: string
+          path: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
