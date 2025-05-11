@@ -102,7 +102,12 @@ export async function fetchCategoryAndDescendants(categoryId: string): Promise<D
       return [];
     }
 
-    return data;
+    // Add default values for the required fields in the DatabaseCategory type
+    return data.map(item => ({
+      ...item,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }));
   } catch (error) {
     console.error("Error in fetchCategoryAndDescendants:", error);
     return [];
@@ -124,7 +129,12 @@ export async function fetchSubcategoriesBySlug(parentSlug: string): Promise<Data
       return [];
     }
 
-    return data;
+    // Add default values for the required fields in the DatabaseCategory type
+    return data.map(item => ({
+      ...item,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }));
   } catch (error) {
     console.error("Error in fetchSubcategoriesBySlug:", error);
     return [];

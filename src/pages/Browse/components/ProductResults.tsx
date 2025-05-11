@@ -23,6 +23,15 @@ const ProductResults = ({
 }: ProductResultsProps) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
+  // Helper function to format location
+  const formatLocation = (location: string | { city: string; neighborhood: string; street?: string; }) => {
+    if (typeof location === 'string') {
+      return location;
+    } else {
+      return `${location.city}${location.neighborhood ? `, ${location.neighborhood}` : ''}`;
+    }
+  };
+
   const renderHeader = () => {
     const hasSearchTerm = searchTerm && searchTerm.trim() !== '';
     const hasCategoryFilter = selectedCategory && selectedCategory !== 'all';
@@ -111,7 +120,7 @@ const ProductResults = ({
               imageUrl={product.imageUrl}
               condition={product.condition}
               isAuction={product.isAuction}
-              location={product.location as string}
+              location={product.location}
               endTime={product.endTime}
               shipping={product.shipping}
               brand={product.brand}
@@ -148,7 +157,7 @@ const ProductResults = ({
                   </div>
                   <div className="flex flex-col text-sm text-muted-foreground mt-2 sm:mt-0 sm:text-right">
                     <span>{product.condition}</span>
-                    {product.location && <span>{product.location}</span>}
+                    {product.location && <span>{formatLocation(product.location)}</span>}
                     {product.shipping && <span className="text-mzad-secondary">{product.shipping}</span>}
                   </div>
                 </div>
