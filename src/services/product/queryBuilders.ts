@@ -26,7 +26,7 @@ export const applyFilters = (query: any, filterParams: ProductFilterParams) => {
   if (category) {
     // This will match any product whose category path starts with this category's path
     // This effectively returns products in this category AND all its subcategories
-    result = result.ilike('category', `${category}%`);
+    result = result.ilike('category', `%${category}%`);
   }
 
   if (condition && condition.length > 0) {

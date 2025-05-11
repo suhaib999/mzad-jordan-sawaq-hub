@@ -2,9 +2,15 @@
 import { useState } from 'react';
 import { ProductCardProps } from '@/services/product/types';
 import ProductCard from '@/components/product/ProductCard';
-import ProductGrid from '@/components/product/ProductGrid';
 import { Button } from '@/components/ui/button';
-import { Grid2x2, List } from 'lucide-react';
+import { 
+  Grid2x2, 
+  List, 
+  ChevronDown, 
+  ArrowDownAZ, 
+  ArrowUpZA 
+} from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ProductResultsProps {
   products: ProductCardProps[];
@@ -12,6 +18,7 @@ interface ProductResultsProps {
   totalCount?: number;
   searchTerm?: string;
   selectedCategory?: string;
+  onSortChange?: (sortOrder: string) => void;
 }
 
 const ProductResults = ({ 
@@ -19,7 +26,8 @@ const ProductResults = ({
   isLoading, 
   totalCount = 0,
   searchTerm,
-  selectedCategory 
+  selectedCategory,
+  onSortChange
 }: ProductResultsProps) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -47,28 +55,49 @@ const ProductResults = ({
     }
     
     return (
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-lg font-medium">{title}</h2>
-          <p className="text-sm text-muted-foreground">
-            {isLoading ? 'Loading products...' : `${totalCount} product${totalCount !== 1 ? 's' : ''} found`}
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button 
-            variant={viewMode === 'grid' ? "secondary" : "outline"}
-            size="sm"
-            onClick={() => setViewMode('grid')}
-          >
-            <Grid2x2 size={16} />
-          </Button>
-          <Button 
-            variant={viewMode === 'list' ? "secondary" : "outline"}
-            size="sm"
-            onClick={() => setViewMode('list')}
-          >
-            <List size={16} />
-          </Button>
+      <div className="bg-white border-b pb-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl md:text-2xl font-semibold">{title}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {isLoading ? 'Loading products...' : `${totalCount.toLocaleString()} product${totalCount !== 1 ? 's' : ''} found`}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex-1 md:flex-none">
+              <Select onValueChange={onSortChange}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newly Listed</SelectItem>
+                  <SelectItem value="price_asc">Price: Low to High</SelectItem>
+                  <SelectItem value="price_desc">Price: High to Low</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex border rounded-md overflow-hidden">
+              <Button 
+                variant={viewMode === 'grid' ? "default" : "outline"}
+                size="icon"
+                onClick={() => setViewMode('grid')}
+                className="rounded-none border-0"
+              >
+                <Grid2x2 size={18} />
+              </Button>
+              <Button 
+                variant={viewMode === 'list' ? "default" : "outline"}
+                size="icon"
+                onClick={() => setViewMode('list')}
+                className="rounded-none border-0"
+              >
+                <List size={18} />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -114,7 +143,7 @@ const ProductResults = ({
           {products.map((product) => (
             <ProductCard 
               key={product.id} 
-              id={product.id}
+              id={product.id} 
               title={product.title}
               price={product.price}
               imageUrl={product.imageUrl}
@@ -132,22 +161,33 @@ const ProductResults = ({
       ) : (
         <div className="space-y-4">
           {products.map((product) => (
-            <div key={product.id} className="flex border rounded-lg overflow-hidden">
-              <div className="w-40 h-40">
+            <div key={product.id} className="flex border rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow">
+              <div className="w-40 h-40 flex-shrink-0">
                 <img 
                   src={product.imageUrl || '/placeholder.svg'} 
                   alt={product.title} 
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/placeholder.svg';
+                  }}
                 />
               </div>
               <div className="p-4 flex-1">
-                <h3 className="font-medium line-clamp-2 mb-2">
+                <h3 className="font-medium line-clamp-2 mb-1 hover:text-mzad-primary">
                   {product.title}
                 </h3>
-                <div className="flex flex-col sm:flex-row sm:justify-between">
+                
+                {product.brand && (
+                  <div className="text-sm text-gray-500">
+                    {product.brand} {product.model && `• ${product.model}`}
+                  </div>
+                )}
+                
+                <div className="flex flex-col sm:flex-row sm:justify-between mt-2">
                   <div>
                     <div className="text-lg font-semibold text-mzad-primary">
-                      {product.price} {product.currency}
+                      {product.price.toFixed(2)} {product.currency}
                     </div>
                     {product.isAuction && product.endTime && (
                       <div className="text-sm text-muted-foreground">

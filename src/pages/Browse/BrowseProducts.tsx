@@ -4,13 +4,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { fetchProducts } from '@/services/product/productService';
-import { ProductFilterParams, ProductWithImages } from '@/services/product/types';
+import { ProductFilterParams } from '@/services/product/types';
 import { mapProductToCardProps } from '@/services/product/mappers';
-import { fetchCategories, fetchCategoryBySlug } from '@/services/category/categoryService';
 import SearchBar from './components/SearchBar';
 import FilterSidebar, { FilterValues } from './components/FilterSidebar';
 import ProductResults from './components/ProductResults';
 import ActiveFiltersBar from './components/ActiveFiltersBar';
+import { Button } from '@/components/ui/button';
+import { Filter, X } from 'lucide-react';
 
 const BrowseProducts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -19,7 +20,7 @@ const BrowseProducts = () => {
   
   // Parse initial filters from URL params
   const initialFilters: FilterValues = {
-    category: searchParams.get('category') || 'all',
+    category: searchParams.get('category') || undefined,
     listingType: (searchParams.get('type') as 'all' | 'auction' | 'fixed') || 'all',
     searchQuery: searchParams.get('q') || '',
     priceMin: searchParams.get('priceMin') ? Number(searchParams.get('priceMin')) : undefined,
@@ -33,31 +34,18 @@ const BrowseProducts = () => {
 
   // State for filters
   const [filters, setFilters] = useState<FilterValues>(initialFilters);
-  const [categoryTree, setCategoryTree] = useState<any[]>([]);
 
   useEffect(() => {
     setSearchQuery(initialFilters.searchQuery || '');
   }, [initialFilters.searchQuery]);
   
-  // Fetch categories
-  useEffect(() => {
-    const loadCategories = async () => {
-      const fetchedCategories = await fetchCategories();
-      setCategoryTree(fetchedCategories);
-    };
-    
-    loadCategories();
-  }, []);
-
   // Query for products
   const { data: productsData = { products: [], count: 0 }, isLoading } = useQuery({
     queryKey: ['products', filters],
     queryFn: async () => {
-      console.log("Fetching products with filters:", filters);
-      
       // Convert filters to API parameters
       const apiParams: ProductFilterParams = {
-        category: filters.category === 'all' ? undefined : filters.category,
+        category: filters.category,
         is_auction: filters.listingType === 'all' ? undefined : filters.listingType === 'auction',
         query: filters.searchQuery || undefined,
         price_min: filters.priceMin,
@@ -83,19 +71,15 @@ const BrowseProducts = () => {
   };
 
   // Handle filter changes
-  const handleFilterChange = async (name: string, value: any) => {
-    console.log(`Filter changed: ${name} = ${value}`);
+  const handleFilterChange = (name: string, value: any) => {
     setFilters(prev => ({ ...prev, [name]: value }));
-    
-    // If this is a category change and value is a category slug, fetch the category info
-    if (name === 'category' && value !== 'all') {
-      try {
-        const categoryInfo = await fetchCategoryBySlug(value);
-        console.log("Selected category info:", categoryInfo);
-      } catch (error) {
-        console.error("Error fetching category info:", error);
-      }
-    }
+  };
+
+  // Handle sort change
+  const handleSortChange = (sortOrder: string) => {
+    const newFilters = { ...filters, sortOrder };
+    setFilters(newFilters);
+    updateSearchParams(newFilters);
   };
 
   // Apply filters
@@ -112,7 +96,7 @@ const BrowseProducts = () => {
       params.set('q', currentFilters.searchQuery);
     }
     
-    if (currentFilters.category && currentFilters.category !== 'all') {
+    if (currentFilters.category) {
       params.set('category', currentFilters.category);
     }
     
@@ -154,7 +138,7 @@ const BrowseProducts = () => {
   // Clear all filters
   const clearFilters = () => {
     const emptyFilters: FilterValues = {
-      category: 'all',
+      category: undefined,
       listingType: 'all',
       searchQuery: '',
       priceMin: undefined,
@@ -163,7 +147,7 @@ const BrowseProducts = () => {
       location: undefined,
       freeShippingOnly: false,
       localPickupOnly: false,
-      sortOrder: 'bestMatch'
+      sortOrder: 'newest'
     };
     
     setFilters(emptyFilters);
@@ -181,7 +165,7 @@ const BrowseProducts = () => {
       const updated = { ...prev };
       
       if (name === 'category') {
-        updated.category = 'all';
+        updated.category = undefined;
       } else if (name === 'listingType') {
         updated.listingType = 'all';
       } else if (name === 'priceMin' || name === 'priceMax') {
@@ -199,27 +183,38 @@ const BrowseProducts = () => {
     });
   };
 
-  console.log("Current filters:", filters);
-  console.log("Products found:", productsData.count);
-
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold mb-4 md:mb-0">Browse Products</h1>
-          
-          <SearchBar
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            onSearch={handleSearch}
-            onToggleFilters={() => setIsFilterOpen(!isFilterOpen)}
+      <div className="container mx-auto px-4 py-6 md:py-8 max-w-7xl">
+        <div className="sticky top-0 z-10 bg-white pb-4 border-b mb-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <h1 className="text-2xl font-bold hidden md:block">Browse Products</h1>
+            
+            <SearchBar
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onSearch={handleSearch}
+              onToggleFilters={() => setIsFilterOpen(!isFilterOpen)}
+            />
+
+            <Button 
+              variant="outline"
+              className="w-full md:w-auto flex items-center gap-2"
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+            >
+              <Filter size={16} />
+              <span>Filters</span>
+              {isFilterOpen && (
+                <X size={16} className="ml-1" />
+              )}
+            </Button>
+          </div>
+
+          <ActiveFiltersBar 
+            filters={{ ...filters, searchQuery }}
+            onRemoveFilter={removeFilter}
           />
         </div>
-
-        <ActiveFiltersBar 
-          filters={{ ...filters, searchQuery }}
-          onRemoveFilter={removeFilter}
-        />
 
         <div className="flex flex-col md:flex-row gap-6">
           <FilterSidebar
@@ -227,8 +222,8 @@ const BrowseProducts = () => {
             onFilterChange={handleFilterChange}
             onApplyFilters={applyFilters}
             onClearFilters={clearFilters}
-            categories={categoryTree.map(cat => cat.name)} // Pass full category tree
             isFilterOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
           />
 
           <div className="flex-grow">
@@ -238,6 +233,7 @@ const BrowseProducts = () => {
               totalCount={productsData.count}
               searchTerm={filters.searchQuery}
               selectedCategory={filters.category}
+              onSortChange={handleSortChange}
             />
           </div>
         </div>

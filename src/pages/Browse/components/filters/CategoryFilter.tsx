@@ -1,258 +1,151 @@
 
 import { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { 
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger 
+} from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 import { 
   fetchCategories, 
-  fetchSubcategories, 
-  fetchCategoryBySlug,
   DatabaseCategory,
   CategoryWithChildren 
 } from '@/services/category/categoryService';
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface CategoryFilterProps {
-  value: string;
+  value: string | undefined;
   onChange: (value: string) => void;
-  categories?: string[];
 }
 
 const CategoryFilter = ({ value, onChange }: CategoryFilterProps) => {
-  const [dbCategories, setDbCategories] = useState<CategoryWithChildren[]>([]);
-  const [currentCategories, setCurrentCategories] = useState<DatabaseCategory[]>([]);
-  const [categoryPath, setCategoryPath] = useState<{ id: string; name: string }[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [categories, setCategories] = useState<CategoryWithChildren[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedIds, setExpandedIds] = useState<string[]>([]);
 
   useEffect(() => {
     const loadCategories = async () => {
-      setIsLoading(true);
+      setLoading(true);
       const fetchedCategories = await fetchCategories();
-      setDbCategories(fetchedCategories);
-      
-      // Convert hierarchical structure to flat list for initial view
-      const topLevelCategories: DatabaseCategory[] = fetchedCategories.map(cat => ({
-        id: cat.id,
-        name: cat.name,
-        slug: cat.slug,
-        parent_id: cat.parent_id,
-        level: cat.level,
-        created_at: cat.created_at,
-        updated_at: cat.updated_at,
-        path: cat.path,
-        is_leaf: cat.children && cat.children.length === 0
-      }));
-
-      setCurrentCategories(topLevelCategories);
-      setIsLoading(false);
+      setCategories(fetchedCategories);
+      setLoading(false);
     };
     
     loadCategories();
   }, []);
 
-  useEffect(() => {
-    // Initialize from URL value if present
-    const initializeFromValue = async () => {
-      if (value && value !== 'all' && dbCategories.length > 0) {
-        try {
-          // Fetch the selected category by ID
-          const category = await fetchCategoryBySlug(value);
-          
-          if (category) {
-            setSelectedCategory(category.id);
+  const toggleExpand = (categoryId: string) => {
+    setExpandedIds(prevIds => 
+      prevIds.includes(categoryId) 
+        ? prevIds.filter(id => id !== categoryId)
+        : [...prevIds, categoryId]
+    );
+  };
+
+  const handleSelect = (category: DatabaseCategory) => {
+    onChange(category.slug);
+  };
+
+  const isSelected = (slug: string) => value === slug;
+  
+  const renderCategories = (cats: CategoryWithChildren[], depth = 0) => {
+    return cats.map(category => {
+      const hasChildren = category.children && category.children.length > 0;
+      const isExpanded = expandedIds.includes(category.id);
+      const isActive = isSelected(category.slug);
+      
+      return (
+        <div key={category.id} className={`pl-${depth * 4}`}>
+          <div className="flex items-center justify-between py-1">
+            <div className="flex items-center">
+              <Checkbox 
+                id={category.id}
+                checked={isActive}
+                onCheckedChange={() => handleSelect(category)}
+                className="mr-2"
+              />
+              <Label 
+                htmlFor={category.id}
+                className={`text-sm cursor-pointer ${isActive ? 'font-medium text-primary' : ''}`}
+              >
+                {category.name}
+              </Label>
+            </div>
             
-            // If it has a parent, build the path
-            if (category.parent_id) {
-              const parentPath: { id: string; name: string }[] = [];
-              let currentParentId = category.parent_id;
-              
-              // Loop through parents to build path
-              while (currentParentId) {
-                const parent = dbCategories.find(cat => cat.id === currentParentId);
-                if (parent) {
-                  parentPath.unshift({ id: parent.id, name: parent.name });
-                  currentParentId = parent.parent_id;
-                } else {
-                  break;
-                }
-              }
-              
-              setCategoryPath(parentPath);
-              
-              // Set current categories to siblings
-              if (parentPath.length > 0) {
-                const lastParent = parentPath[parentPath.length - 1];
-                const siblings = await fetchSubcategories(lastParent.id);
-                setCurrentCategories(siblings);
-              }
-            }
-          }
-        } catch (error) {
-          console.error("Error initializing from value:", error);
-        }
-      }
-    };
-    
-    if (dbCategories.length > 0) {
-      initializeFromValue();
-    }
-  }, [value, dbCategories]);
-
-  useEffect(() => {
-    // When value changes from outside (like filters being cleared)
-    if (value === 'all' && selectedCategory) {
-      setSelectedCategory(null);
-      setCategoryPath([]);
-      
-      // Reset to top-level categories
-      const topLevelCategories: DatabaseCategory[] = dbCategories.map(cat => ({
-        id: cat.id,
-        name: cat.name,
-        slug: cat.slug,
-        parent_id: cat.parent_id,
-        level: cat.level,
-        created_at: cat.created_at,
-        updated_at: cat.updated_at,
-        path: cat.path,
-        is_leaf: cat.children && cat.children.length === 0
-      }));
-      
-      setCurrentCategories(topLevelCategories);
-    }
-  }, [value, dbCategories, selectedCategory]);
-
-  const handleCategorySelect = async (categoryId: string, categoryName: string, categorySlug: string) => {
-    setSelectedCategory(categoryId);
-    onChange(categorySlug); // Use slug for filtering
-
-    // Find subcategories
-    const loadSubcategories = async () => {
-      const subcategories = await fetchSubcategories(categoryId);
-      if (subcategories && subcategories.length > 0) {
-        setCurrentCategories(subcategories);
-        setCategoryPath([...categoryPath, { id: categoryId, name: categoryName }]);
-      }
-    };
-
-    loadSubcategories();
+            {hasChildren && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-0 h-6 w-6"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleExpand(category.id);
+                }}
+              >
+                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </Button>
+            )}
+          </div>
+          
+          {hasChildren && isExpanded && (
+            <div className="ml-4 border-l pl-2 border-gray-200">
+              {renderCategories(category.children, depth + 1)}
+            </div>
+          )}
+        </div>
+      );
+    });
   };
 
-  const handleNavigateBack = async () => {
-    if (categoryPath.length === 0) return;
-
-    const newPath = [...categoryPath];
-    newPath.pop();
-    setCategoryPath(newPath);
-
-    if (newPath.length === 0) {
-      // Reset to top-level categories
-      const topLevelCategories: DatabaseCategory[] = dbCategories.map(cat => ({
-        id: cat.id,
-        name: cat.name,
-        slug: cat.slug,
-        parent_id: cat.parent_id,
-        level: cat.level,
-        created_at: cat.created_at,
-        updated_at: cat.updated_at,
-        path: cat.path,
-        is_leaf: cat.children && cat.children.length === 0
-      }));
-      
-      setCurrentCategories(topLevelCategories);
-      setSelectedCategory(null);
-      onChange('all');
-    } else {
-      const parentId = newPath[newPath.length - 1].id;
-      setSelectedCategory(parentId);
-      
-      // Get the parent category to get its slug
-      const parentCategory = await fetchCategoryBySlug(parentId);
-      if (parentCategory) {
-        onChange(parentCategory.slug);
-      }
-      
-      const loadSubcategories = async () => {
-        const subcategories = await fetchSubcategories(parentId);
-        if (subcategories) {
-          setCurrentCategories(subcategories);
-        }
-      };
-      
-      loadSubcategories();
-    }
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="py-2">
-        <Label className="text-base mb-3 block">Categories</Label>
-        <div className="h-40 flex items-center justify-center">
-          <div className="animate-spin h-6 w-6 border-2 border-mzad-primary rounded-full border-t-transparent"></div>
+      <div className="space-y-2">
+        <Label className="text-base font-medium">Categories</Label>
+        <div className="animate-pulse space-y-2">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="h-6 bg-gray-200 rounded"></div>
+          ))}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="py-2">
-      <Label className="text-base mb-3 block">Categories</Label>
-
-      {/* Breadcrumb navigation */}
-      {categoryPath.length > 0 && (
-        <div className="mb-3 flex items-center text-sm">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="px-2 h-8" 
-            onClick={handleNavigateBack}
-          >
-            <ChevronLeft size={16} />
-            <span>Back</span>
-          </Button>
-          <span className="mx-1 text-muted-foreground">/</span>
-          {categoryPath.map((item, index) => (
-            <span key={item.id} className="mx-1 text-muted-foreground">
-              {item.name} {index < categoryPath.length - 1 && <span>/</span>}
-            </span>
+    <div className="space-y-2">
+      <Label className="text-base font-medium">Categories</Label>
+      <div className="max-h-[400px] overflow-y-auto pr-2">
+        <Accordion type="multiple" className="w-full">
+          {categories.map(category => (
+            <AccordionItem key={category.id} value={category.id} className="border-b-0">
+              <div className="flex items-center">
+                <Checkbox 
+                  id={`top-${category.id}`}
+                  checked={isSelected(category.slug)}
+                  onCheckedChange={() => handleSelect(category)}
+                  className="mr-2"
+                />
+                <AccordionTrigger className="py-2 hover:no-underline font-normal flex-1">
+                  {category.name}
+                </AccordionTrigger>
+              </div>
+              <AccordionContent>
+                <div className="pl-6 border-l border-gray-200 space-y-1">
+                  {category.children && renderCategories(category.children, 1)}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
-      )}
-
-      <RadioGroup 
-        value={value} 
-        onValueChange={onChange}
-        className="space-y-1"
-      >
-        {categoryPath.length === 0 && (
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="all" id="all" />
-            <Label htmlFor="all" className="cursor-pointer">All Categories</Label>
-          </div>
-        )}
-
-        {currentCategories.map((category) => (
-          <div key={category.id} className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value={category.slug} id={category.id} />
-              <Label htmlFor={category.id} className="cursor-pointer">{category.name}</Label>
-            </div>
-            {!category.is_leaf && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="px-2 h-6"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleCategorySelect(category.id, category.name, category.slug);
-                }}
-              >
-                <ChevronRight size={16} />
-              </Button>
-            )}
-          </div>
-        ))}
-      </RadioGroup>
+        </Accordion>
+      </div>
     </div>
   );
 };

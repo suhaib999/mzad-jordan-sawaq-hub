@@ -10,7 +10,7 @@ type ActiveFiltersBarProps = {
 
 const ActiveFiltersBar = ({ filters, onRemoveFilter }: ActiveFiltersBarProps) => {
   const hasActiveFilters = 
-    filters.category !== 'all' || 
+    filters.category !== undefined || 
     filters.listingType !== 'all' ||
     filters.searchQuery || 
     filters.priceMin !== undefined ||
@@ -23,9 +23,9 @@ const ActiveFiltersBar = ({ filters, onRemoveFilter }: ActiveFiltersBarProps) =>
   if (!hasActiveFilters) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 mb-4">
-      {filters.category !== 'all' && (
-        <Badge variant="outline" className="flex items-center gap-1">
+    <div className="flex flex-wrap gap-2 mt-4">
+      {filters.category && (
+        <Badge variant="outline" className="flex items-center gap-1 bg-gray-50">
           <Tag className="h-3 w-3" />
           Category: {filters.category}
           <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => onRemoveFilter('category')} />
@@ -33,7 +33,7 @@ const ActiveFiltersBar = ({ filters, onRemoveFilter }: ActiveFiltersBarProps) =>
       )}
       
       {filters.searchQuery && (
-        <Badge variant="outline" className="flex items-center gap-1">
+        <Badge variant="outline" className="flex items-center gap-1 bg-gray-50">
           <Search className="h-3 w-3" />
           Search: {filters.searchQuery}
           <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => onRemoveFilter('searchQuery')} />
@@ -41,16 +41,16 @@ const ActiveFiltersBar = ({ filters, onRemoveFilter }: ActiveFiltersBarProps) =>
       )}
       
       {filters.listingType !== 'all' && (
-        <Badge variant="outline" className="flex items-center gap-1">
+        <Badge variant="outline" className="flex items-center gap-1 bg-gray-50">
           Type: {filters.listingType === 'auction' ? 'Auction' : 'Fixed Price'}
           <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => onRemoveFilter('listingType')} />
         </Badge>
       )}
       
       {(filters.priceMin !== undefined || filters.priceMax !== undefined) && (
-        <Badge variant="outline" className="flex items-center gap-1">
+        <Badge variant="outline" className="flex items-center gap-1 bg-gray-50">
           <DollarSign className="h-3 w-3" />
-          Price: {filters.priceMin || '0'} - {filters.priceMax || '∞'}
+          Price: {filters.priceMin ?? '0'} - {filters.priceMax ?? '∞'}
           <X 
             className="h-3 w-3 ml-1 cursor-pointer" 
             onClick={() => {
@@ -62,21 +62,21 @@ const ActiveFiltersBar = ({ filters, onRemoveFilter }: ActiveFiltersBarProps) =>
       )}
       
       {filters.condition && filters.condition.length > 0 && (
-        <Badge variant="outline" className="flex items-center gap-1">
+        <Badge variant="outline" className="flex items-center gap-1 bg-gray-50">
           Condition: {filters.condition.join(', ')}
           <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => onRemoveFilter('condition')} />
         </Badge>
       )}
       
       {filters.location && (
-        <Badge variant="outline" className="flex items-center gap-1">
+        <Badge variant="outline" className="flex items-center gap-1 bg-gray-50">
           Location: {filters.location}
           <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => onRemoveFilter('location')} />
         </Badge>
       )}
       
       {filters.freeShippingOnly && (
-        <Badge variant="outline" className="flex items-center gap-1">
+        <Badge variant="outline" className="flex items-center gap-1 bg-gray-50">
           <Package className="h-3 w-3" />
           Free Shipping
           <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => onRemoveFilter('freeShippingOnly')} />
@@ -84,7 +84,7 @@ const ActiveFiltersBar = ({ filters, onRemoveFilter }: ActiveFiltersBarProps) =>
       )}
       
       {filters.localPickupOnly && (
-        <Badge variant="outline" className="flex items-center gap-1">
+        <Badge variant="outline" className="flex items-center gap-1 bg-gray-50">
           Local Pickup
           <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => onRemoveFilter('localPickupOnly')} />
         </Badge>

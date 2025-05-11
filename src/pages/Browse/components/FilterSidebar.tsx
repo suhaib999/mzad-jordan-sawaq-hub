@@ -12,7 +12,7 @@ import ShippingFilter from './filters/ShippingFilter';
 import SortOrderFilter from './filters/SortOrderFilter';
 
 export type FilterValues = {
-  category: string;
+  category?: string;
   listingType: 'all' | 'auction' | 'fixed';
   searchQuery?: string;
   priceMin?: number;
@@ -29,8 +29,8 @@ type FilterSidebarProps = {
   onFilterChange: (name: string, value: any) => void;
   onApplyFilters: () => void;
   onClearFilters: () => void;
-  categories: string[];
   isFilterOpen: boolean;
+  onClose?: () => void;
 };
 
 const FilterSidebar = ({
@@ -38,12 +38,12 @@ const FilterSidebar = ({
   onFilterChange,
   onApplyFilters,
   onClearFilters,
-  categories,
-  isFilterOpen
+  isFilterOpen,
+  onClose
 }: FilterSidebarProps) => {
   // Calculate if any filters are active
   const hasActiveFilters = 
-    filters.category !== 'all' || 
+    filters.category !== undefined || 
     filters.listingType !== 'all' ||
     filters.priceMin !== undefined ||
     filters.priceMax !== undefined ||
@@ -53,69 +53,86 @@ const FilterSidebar = ({
     filters.localPickupOnly;
 
   return (
-    <Card className={`w-full md:w-64 md:block ${isFilterOpen ? 'block' : 'hidden'}`}>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg">Filters</CardTitle>
-        {hasActiveFilters && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onClearFilters}
-            className="text-xs flex items-center"
-          >
-            <X size={14} className="mr-1" /> Clear all
-          </Button>
-        )}
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <CategoryFilter 
-          value={filters.category}
-          onChange={(value) => onFilterChange('category', value)}
-          categories={categories}
-        />
-        
-        <ListingTypeFilter 
-          value={filters.listingType}
-          onChange={(value) => onFilterChange('listingType', value)}
-        />
-        
-        <PriceRangeFilter
-          minPrice={filters.priceMin}
-          maxPrice={filters.priceMax}
-          onMinChange={(value) => onFilterChange('priceMin', value)}
-          onMaxChange={(value) => onFilterChange('priceMax', value)}
-        />
-        
-        <ConditionFilter 
-          selectedConditions={filters.condition || []}
-          onChange={(value) => onFilterChange('condition', value)}
-        />
-        
-        <LocationFilter
-          value={filters.location}
-          onChange={(value) => onFilterChange('location', value)}
-        />
-        
-        <ShippingFilter
-          freeShippingOnly={filters.freeShippingOnly || false}
-          localPickupOnly={filters.localPickupOnly || false}
-          onFreeShippingChange={(value) => onFilterChange('freeShippingOnly', value)}
-          onLocalPickupChange={(value) => onFilterChange('localPickupOnly', value)}
-        />
-        
-        <SortOrderFilter
-          value={filters.sortOrder || 'bestMatch'}
-          onChange={(value) => onFilterChange('sortOrder', value)}
-        />
+    <div className={`${isFilterOpen ? 'fixed inset-0 z-50 bg-black/50 md:relative md:inset-auto md:bg-transparent' : 'hidden md:block'}`}>
+      <div className="bg-white h-full w-[300px] md:w-64 overflow-y-auto md:h-auto">
+        <Card className="h-full md:h-auto border-0 md:border rounded-none md:rounded-lg shadow-none md:shadow">
+          <CardHeader className="flex flex-row items-center justify-between sticky top-0 bg-white z-10 border-b">
+            <CardTitle className="text-lg">Filters</CardTitle>
+            <div className="flex space-x-2">
+              {hasActiveFilters && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onClearFilters}
+                  className="text-xs flex items-center"
+                >
+                  <X size={14} className="mr-1" /> Clear all
+                </Button>
+              )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="md:hidden"
+                onClick={onClose}
+              >
+                <X size={18} />
+              </Button>
+            </div>
+          </CardHeader>
+          
+          <CardContent className="space-y-6 p-4">
+            <CategoryFilter 
+              value={filters.category}
+              onChange={(value) => onFilterChange('category', value)}
+            />
+            
+            <ListingTypeFilter 
+              value={filters.listingType}
+              onChange={(value) => onFilterChange('listingType', value)}
+            />
+            
+            <PriceRangeFilter
+              minPrice={filters.priceMin}
+              maxPrice={filters.priceMax}
+              onMinChange={(value) => onFilterChange('priceMin', value)}
+              onMaxChange={(value) => onFilterChange('priceMax', value)}
+            />
+            
+            <ConditionFilter 
+              selectedConditions={filters.condition || []}
+              onChange={(value) => onFilterChange('condition', value)}
+            />
+            
+            <LocationFilter
+              value={filters.location}
+              onChange={(value) => onFilterChange('location', value)}
+            />
+            
+            <ShippingFilter
+              freeShippingOnly={filters.freeShippingOnly || false}
+              localPickupOnly={filters.localPickupOnly || false}
+              onFreeShippingChange={(value) => onFilterChange('freeShippingOnly', value)}
+              onLocalPickupChange={(value) => onFilterChange('localPickupOnly', value)}
+            />
+            
+            <SortOrderFilter
+              value={filters.sortOrder || 'bestMatch'}
+              onChange={(value) => onFilterChange('sortOrder', value)}
+            />
 
-        <Button 
-          onClick={onApplyFilters}
-          className="w-full md:hidden"
-        >
-          Apply Filters
-        </Button>
-      </CardContent>
-    </Card>
+            <Button 
+              onClick={() => {
+                onApplyFilters();
+                onClose?.();
+              }}
+              className="w-full md:hidden"
+            >
+              Apply Filters
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };
 
