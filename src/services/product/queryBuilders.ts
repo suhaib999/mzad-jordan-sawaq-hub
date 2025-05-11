@@ -24,7 +24,9 @@ export const applyFilters = (query: any, filterParams: ProductFilterParams) => {
   }
 
   if (category) {
-    result = result.eq('category', category);
+    // Modified to work with path-based hierarchical categories
+    // This will match any category that starts with this path
+    result = result.or(`category.ilike.${category}%,category_id.eq.${category}`);
   }
 
   if (condition && condition.length > 0) {

@@ -6,7 +6,7 @@ import Layout from '@/components/layout/Layout';
 import { fetchProducts } from '@/services/product/productService';
 import { ProductFilterParams, ProductWithImages } from '@/services/product/types';
 import { mapProductToCardProps } from '@/services/product/mappers';
-import { fetchCategories } from '@/services/category/categoryService';
+import { fetchCategories, fetchCategoryBySlug } from '@/services/category/categoryService';
 import SearchBar from './components/SearchBar';
 import FilterSidebar, { FilterValues } from './components/FilterSidebar';
 import ProductResults from './components/ProductResults';
@@ -14,7 +14,6 @@ import ActiveFiltersBar from './components/ActiveFiltersBar';
 
 const BrowseProducts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [categories, setCategories] = useState<string[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -34,6 +33,7 @@ const BrowseProducts = () => {
 
   // State for filters
   const [filters, setFilters] = useState<FilterValues>(initialFilters);
+  const [categoryTree, setCategoryTree] = useState<any[]>([]);
 
   useEffect(() => {
     setSearchQuery(initialFilters.searchQuery || '');
@@ -43,9 +43,7 @@ const BrowseProducts = () => {
   useEffect(() => {
     const loadCategories = async () => {
       const fetchedCategories = await fetchCategories();
-      // Extract category names for the filter sidebar
-      const categoryNames = fetchedCategories.map(cat => cat.name);
-      setCategories(categoryNames);
+      setCategoryTree(fetchedCategories);
     };
     
     loadCategories();
@@ -55,9 +53,11 @@ const BrowseProducts = () => {
   const { data: productsData = { products: [], count: 0 }, isLoading } = useQuery({
     queryKey: ['products', filters],
     queryFn: async () => {
+      console.log("Fetching products with filters:", filters);
+      
       // Convert filters to API parameters
       const apiParams: ProductFilterParams = {
-        category_id: filters.category === 'all' ? undefined : filters.category,
+        category: filters.category === 'all' ? undefined : filters.category,
         is_auction: filters.listingType === 'all' ? undefined : filters.listingType === 'auction',
         query: filters.searchQuery || undefined,
         price_min: filters.priceMin,
@@ -83,8 +83,19 @@ const BrowseProducts = () => {
   };
 
   // Handle filter changes
-  const handleFilterChange = (name: string, value: any) => {
+  const handleFilterChange = async (name: string, value: any) => {
+    console.log(`Filter changed: ${name} = ${value}`);
     setFilters(prev => ({ ...prev, [name]: value }));
+    
+    // If this is a category change and value is a category slug, fetch the category info
+    if (name === 'category' && value !== 'all') {
+      try {
+        const categoryInfo = await fetchCategoryBySlug(value);
+        console.log("Selected category info:", categoryInfo);
+      } catch (error) {
+        console.error("Error fetching category info:", error);
+      }
+    }
   };
 
   // Apply filters
@@ -188,6 +199,9 @@ const BrowseProducts = () => {
     });
   };
 
+  console.log("Current filters:", filters);
+  console.log("Products found:", productsData.count);
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
@@ -213,12 +227,18 @@ const BrowseProducts = () => {
             onFilterChange={handleFilterChange}
             onApplyFilters={applyFilters}
             onClearFilters={clearFilters}
-            categories={categories}
+            categories={categoryTree.map(cat => cat.name)} // Pass full category tree
             isFilterOpen={isFilterOpen}
           />
 
           <div className="flex-grow">
-            <ProductResults products={products} isLoading={isLoading} />
+            <ProductResults 
+              products={products} 
+              isLoading={isLoading} 
+              totalCount={productsData.count}
+              searchTerm={filters.searchQuery}
+              selectedCategory={filters.category}
+            />
           </div>
         </div>
       </div>

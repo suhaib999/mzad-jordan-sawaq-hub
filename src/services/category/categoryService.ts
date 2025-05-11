@@ -87,6 +87,50 @@ export async function fetchSubcategories(parentId: string): Promise<DatabaseCate
   }
 }
 
+// New function to fetch all descendant categories including the parent
+export async function fetchCategoryAndDescendants(categoryId: string): Promise<DatabaseCategory[]> {
+  try {
+    const { data, error } = await supabase
+      .rpc('get_category_hierarchy', { category_id: categoryId });
+
+    if (error) {
+      console.error("Error fetching category hierarchy:", error);
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error in fetchCategoryAndDescendants:", error);
+    return [];
+  }
+}
+
+// New function to fetch all subcategories by parent slug
+export async function fetchSubcategoriesBySlug(parentSlug: string): Promise<DatabaseCategory[]> {
+  try {
+    const { data, error } = await supabase
+      .rpc('get_subcategories', { parent_slug: parentSlug });
+
+    if (error) {
+      console.error("Error fetching subcategories by slug:", error);
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error in fetchSubcategoriesBySlug:", error);
+    return [];
+  }
+}
+
 // Helper function to build a category tree from flat data
 function buildCategoryTree(categories: DatabaseCategory[]): CategoryWithChildren[] {
   // Create a map of id to category with empty children array
