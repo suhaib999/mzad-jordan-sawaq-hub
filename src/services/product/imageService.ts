@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 
+// Updated type definition to make id optional in input but required in output
 export interface ProductImage {
   id: string;
   file?: File | null;
@@ -9,9 +10,17 @@ export interface ProductImage {
   order: number;
 }
 
+// This interface represents the image data as it exists in the form before uploading
+export interface ProductImageInput {
+  id?: string;
+  file?: File | null;
+  url: string;
+  order?: number;
+}
+
 export const uploadProductImage = async (
   productId: string,
-  image: ProductImage
+  image: ProductImageInput
 ): Promise<string> => {
   // If the image is already a URL and not a blob, just return it
   if (image.url && !image.file && !image.url.startsWith('blob:')) {
@@ -21,7 +30,7 @@ export const uploadProductImage = async (
   // Upload new image
   if (image.file) {
     const fileExt = image.file.name.split('.').pop();
-    const filePath = `products/${productId}/${image.id}.${fileExt}`;
+    const filePath = `products/${productId}/${image.id || uuidv4()}.${fileExt}`;
     
     try {
       // Check if images bucket exists
@@ -64,7 +73,7 @@ export const uploadProductImage = async (
 
 export const uploadProductImages = async (
   productId: string,
-  images: ProductImage[]
+  images: ProductImageInput[]
 ): Promise<ProductImage[]> => {
   const uploadedImages: ProductImage[] = [];
   
@@ -74,9 +83,9 @@ export const uploadProductImages = async (
       
       // Add to uploaded images array
       uploadedImages.push({
-        id: image.id,
+        id: image.id || uuidv4(), // Ensure id is always set
         url: imageUrl,
-        order: image.order
+        order: image.order || 0
       });
     } catch (error) {
       console.error('Failed to upload image:', error);

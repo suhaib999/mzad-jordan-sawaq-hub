@@ -22,10 +22,10 @@ import DraftManager from '@/components/product/listing/DraftManager';
 
 // Hooks and Services
 import { useProductForm } from '@/hooks/useProductForm';
-import { uploadProductImages } from '@/services/product/imageService';
+import { uploadProductImages, ProductImageInput } from '@/services/product/imageService';
 import { createOrUpdateProduct } from '@/services/product';
 
-// Import the missing ProductFormValues type
+// Import ProductFormValues type
 import { ProductFormValues } from '@/types/product';
 
 const CreateListing = () => {
@@ -188,8 +188,16 @@ const CreateListing = () => {
         mzadkumsooq_delivery: formData.mzadkumsooq_delivery,
       };
       
+      // Make sure images have required properties and handle the type correctly
+      const imagesToUpload: ProductImageInput[] = (formData.images || []).map(img => ({
+        id: img.id,
+        file: img.file,
+        url: img.url,
+        order: img.order
+      }));
+      
       // Upload images
-      const uploadedImages = await uploadProductImages(productId, formData.images || []);
+      const uploadedImages = await uploadProductImages(productId, imagesToUpload);
       
       console.log("Processed images:", uploadedImages);
       

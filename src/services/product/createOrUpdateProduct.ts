@@ -1,9 +1,10 @@
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
+import { ProductImage } from './imageService';
 
 export const createOrUpdateProduct = async (
   productData: any,
-  images: any[],
+  images: ProductImage[],
   userId: string
 ): Promise<{ success: boolean; productId?: string; error?: string }> => {
   try {
@@ -78,7 +79,7 @@ export const createOrUpdateProduct = async (
       }
       
       const imageInserts = images.map((img, index) => ({
-        id: img.id || uuidv4(),
+        id: img.id,
         product_id: productId,
         image_url: img.url,
         display_order: img.order || index

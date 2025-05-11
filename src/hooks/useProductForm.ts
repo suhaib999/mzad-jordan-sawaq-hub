@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { v4 as uuidv4 } from 'uuid';
 import { ProductFormValues, productSchema } from '@/types/product';
+import { ProductImageInput } from '@/services/product/imageService';
 
 // Extended product form values with ID
 export interface ExtendedProductFormValues extends ProductFormValues {
