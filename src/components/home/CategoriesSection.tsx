@@ -7,7 +7,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
-// Updated categories with correct slugs that match with listing page categories
+// Updated categories with correct slugs that match the standardized categories
 const categories = [
   { name: 'Electronics', icon: Smartphone, slug: 'electronics', count: 1245 },
   { name: 'Mobile Phones & Tablets', icon: Smartphone, slug: 'electronics/mobile-phones-tablets', count: 876 },

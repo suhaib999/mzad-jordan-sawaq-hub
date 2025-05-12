@@ -1,4 +1,3 @@
-
 export interface Category {
   id: string;
   name: string;
@@ -47,7 +46,7 @@ export const categories: Category[] = [
       },
       {
         id: "computers-laptops",
-        name: "Laptops & Computers",
+        name: "Computers & Laptops",
         slug: "electronics/computers-laptops",
         children: [
           { id: "laptops", name: "Laptops", slug: "electronics/computers-laptops/laptops" },
@@ -85,7 +84,7 @@ export const categories: Category[] = [
   },
   {
     id: "vehicles",
-    name: "Cars & Vehicles",
+    name: "Vehicles",
     slug: "vehicles",
     children: [
       { id: "cars", name: "Cars", slug: "vehicles/cars" },
@@ -106,7 +105,7 @@ export const categories: Category[] = [
   },
   {
     id: "real-estate-sale",
-    name: "Real Estate for Sale",
+    name: "Real Estate",
     slug: "real-estate-sale",
     children: [
       { id: "apartments-sale", name: "Apartments for Sale", slug: "real-estate-sale/apartments" },
@@ -240,7 +239,7 @@ export const categories: Category[] = [
   },
   {
     id: "business-equipment",
-    name: "Companies & Professional Equipment",
+    name: "Business Equipment",
     slug: "business-equipment",
     children: [
       { id: "office-furniture", name: "Office Furniture", slug: "business-equipment/furniture" },

@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Updated categories with correct slugs that match with the listing page
+// Updated categories with correct slugs that match with the standardized categories
 const shoppingCategories = [
   { 
     name: 'Mobile Phones & Tablets', 

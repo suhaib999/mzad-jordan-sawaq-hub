@@ -56,6 +56,7 @@ const BrowseProducts = () => {
         sort_by: filters.sortOrder === 'bestMatch' ? 'newest' : filters.sortOrder as 'price_asc' | 'price_desc' | 'newest' | 'oldest'
       };
       
+      console.log("Applying filters:", apiParams);
       return fetchProducts(50, 0, apiParams);
     }
   });
@@ -133,6 +134,9 @@ const BrowseProducts = () => {
     }
     
     setSearchParams(params);
+    
+    // Debug: log the current filter parameters
+    console.log("Updated search params:", Object.fromEntries(params.entries()));
   };
 
   // Clear all filters

@@ -7,8 +7,8 @@ export interface DatabaseCategory {
   slug: string;
   parent_id: string | null;
   level: number;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
   path?: string;
   is_leaf?: boolean;
 }
@@ -102,7 +102,7 @@ export async function fetchCategoryAndDescendants(categoryId: string): Promise<D
       return [];
     }
 
-    // Convert the RPC result to match the DatabaseCategory type
+    // Add additional properties to match DatabaseCategory type
     return data.map(item => ({
       ...item,
       created_at: new Date().toISOString(),
@@ -130,7 +130,7 @@ export async function fetchSubcategoriesBySlug(parentSlug: string): Promise<Data
       return [];
     }
 
-    // Convert the RPC result to match the DatabaseCategory type
+    // Add additional properties to match DatabaseCategory type
     return data.map(item => ({
       ...item,
       created_at: new Date().toISOString(),
