@@ -11,19 +11,19 @@ const shoppingCategories = [
   { 
     name: 'Mobile Phones', 
     icon: Smartphone, 
-    slug: 'electronics/mobile-phones-tablets/phones', 
+    slug: 'electronics/mobile-phones-tablets', 
     bgColor: 'bg-soft-blue'
   },
   { 
     name: 'Laptops', 
     icon: Laptop, 
-    slug: 'electronics/computers-laptops/laptops', 
+    slug: 'electronics/computers-laptops', 
     bgColor: 'bg-soft-green' 
   },
   { 
     name: 'Cars', 
     icon: Car, 
-    slug: 'vehicles/cars', 
+    slug: 'vehicles', 
     bgColor: 'bg-soft-yellow' 
   },
   { 

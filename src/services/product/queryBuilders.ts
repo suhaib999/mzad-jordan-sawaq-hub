@@ -24,9 +24,13 @@ export const applyFilters = (query: any, filterParams: ProductFilterParams) => {
   }
 
   if (category) {
-    // This will match any product whose category path starts with this category's path
-    // This effectively returns products in this category AND all its subcategories
-    result = result.ilike('category', `%${category}%`);
+    // This handles category filtering for both exact matches and subcategories
+    // For example, if category is "electronics", it will match "electronics", 
+    // "electronics/phones", "electronics/computers", etc.
+    
+    // First check for exact category match
+    // Then check if it's a parent category (path starts with this category)
+    result = result.or(`category.eq.${category},category.like.${category}/%`);
   }
 
   if (condition && condition.length > 0) {

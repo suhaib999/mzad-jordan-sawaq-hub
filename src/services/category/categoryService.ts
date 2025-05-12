@@ -87,7 +87,7 @@ export async function fetchSubcategories(parentId: string): Promise<DatabaseCate
   }
 }
 
-// New function to fetch all descendant categories including the parent
+// Function to fetch all descendant categories including the parent
 export async function fetchCategoryAndDescendants(categoryId: string): Promise<DatabaseCategory[]> {
   try {
     const { data, error } = await supabase
@@ -105,8 +105,8 @@ export async function fetchCategoryAndDescendants(categoryId: string): Promise<D
     // Add default values for the required fields in the DatabaseCategory type
     return data.map(item => ({
       ...item,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      created_at: item.created_at || new Date().toISOString(),
+      updated_at: item.updated_at || new Date().toISOString(),
     }));
   } catch (error) {
     console.error("Error in fetchCategoryAndDescendants:", error);
@@ -114,7 +114,7 @@ export async function fetchCategoryAndDescendants(categoryId: string): Promise<D
   }
 }
 
-// New function to fetch all subcategories by parent slug
+// Function to fetch all subcategories by parent slug
 export async function fetchSubcategoriesBySlug(parentSlug: string): Promise<DatabaseCategory[]> {
   try {
     const { data, error } = await supabase
@@ -132,8 +132,8 @@ export async function fetchSubcategoriesBySlug(parentSlug: string): Promise<Data
     // Add default values for the required fields in the DatabaseCategory type
     return data.map(item => ({
       ...item,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      created_at: item.created_at || new Date().toISOString(),
+      updated_at: item.updated_at || new Date().toISOString(),
     }));
   } catch (error) {
     console.error("Error in fetchSubcategoriesBySlug:", error);

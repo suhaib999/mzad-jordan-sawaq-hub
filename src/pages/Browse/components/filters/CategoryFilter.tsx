@@ -20,6 +20,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CategoryFilterProps {
   value: string | undefined;
@@ -34,13 +35,66 @@ const CategoryFilter = ({ value, onChange }: CategoryFilterProps) => {
   useEffect(() => {
     const loadCategories = async () => {
       setLoading(true);
-      const fetchedCategories = await fetchCategories();
-      setCategories(fetchedCategories);
-      setLoading(false);
+      try {
+        const fetchedCategories = await fetchCategories();
+        setCategories(fetchedCategories);
+      } catch (error) {
+        console.error("Error loading categories:", error);
+      } finally {
+        setLoading(false);
+      }
     };
     
     loadCategories();
   }, []);
+
+  // Auto-expand parent categories when a child is selected
+  useEffect(() => {
+    if (value) {
+      const parts = value.split('/');
+      let currentPath = '';
+      const pathsToExpand = [];
+      
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (i === 0) {
+          currentPath = parts[i];
+        } else {
+          currentPath += '/' + parts[i];
+        }
+        
+        // Find the category with this path
+        const findCategory = (cats: CategoryWithChildren[]): CategoryWithChildren | null => {
+          for (const cat of cats) {
+            if (cat.slug === currentPath) {
+              return cat;
+            }
+            if (cat.children) {
+              const found = findCategory(cat.children);
+              if (found) return found;
+            }
+          }
+          return null;
+        };
+        
+        const category = findCategory(categories);
+        if (category) {
+          pathsToExpand.push(category.id);
+        }
+      }
+      
+      if (pathsToExpand.length > 0) {
+        setExpandedIds(prev => {
+          const newExpanded = [...prev];
+          pathsToExpand.forEach(id => {
+            if (!newExpanded.includes(id)) {
+              newExpanded.push(id);
+            }
+          });
+          return newExpanded;
+        });
+      }
+    }
+  }, [value, categories]);
 
   const toggleExpand = (categoryId: string) => {
     setExpandedIds(prevIds => 
@@ -63,7 +117,7 @@ const CategoryFilter = ({ value, onChange }: CategoryFilterProps) => {
       const isActive = isSelected(category.slug);
       
       return (
-        <div key={category.id} className={`pl-${depth * 4}`}>
+        <div key={category.id} className="pl-2">
           <div className="flex items-center justify-between py-1">
             <div className="flex items-center">
               <Checkbox 
@@ -112,7 +166,7 @@ const CategoryFilter = ({ value, onChange }: CategoryFilterProps) => {
         <Label className="text-base font-medium">Categories</Label>
         <div className="animate-pulse space-y-2">
           {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="h-6 bg-gray-200 rounded"></div>
+            <Skeleton key={i} className="h-6 w-full rounded" />
           ))}
         </div>
       </div>
@@ -122,7 +176,7 @@ const CategoryFilter = ({ value, onChange }: CategoryFilterProps) => {
   return (
     <div className="space-y-2">
       <Label className="text-base font-medium">Categories</Label>
-      <div className="max-h-[400px] overflow-y-auto pr-2">
+      <div className="max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
         <Accordion type="multiple" className="w-full">
           {categories.map(category => (
             <AccordionItem key={category.id} value={category.id} className="border-b-0">
