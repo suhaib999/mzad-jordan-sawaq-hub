@@ -102,11 +102,12 @@ export async function fetchCategoryAndDescendants(categoryId: string): Promise<D
       return [];
     }
 
-    // Add default values for the required fields in the DatabaseCategory type
+    // Convert the RPC result to match the DatabaseCategory type
     return data.map(item => ({
       ...item,
-      created_at: item.created_at || new Date().toISOString(),
-      updated_at: item.updated_at || new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      is_leaf: item.path?.split('/').length > 1 || false
     }));
   } catch (error) {
     console.error("Error in fetchCategoryAndDescendants:", error);
@@ -129,11 +130,12 @@ export async function fetchSubcategoriesBySlug(parentSlug: string): Promise<Data
       return [];
     }
 
-    // Add default values for the required fields in the DatabaseCategory type
+    // Convert the RPC result to match the DatabaseCategory type
     return data.map(item => ({
       ...item,
-      created_at: item.created_at || new Date().toISOString(),
-      updated_at: item.updated_at || new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      is_leaf: item.path?.split('/').length > 1 || false
     }));
   } catch (error) {
     console.error("Error in fetchSubcategoriesBySlug:", error);
