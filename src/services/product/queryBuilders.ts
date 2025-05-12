@@ -26,7 +26,7 @@ export const applyFilters = (query: any, filterParams: ProductFilterParams) => {
   if (category) {
     // This handles category filtering for both exact matches and subcategories
     // For example, if category is "electronics", it will match "electronics", 
-    // "electronics/phones", "electronics/computers", etc.
+    // "electronics/mobile-phones-tablets", "electronics/computers-laptops", etc.
     
     // First check for exact category match
     // Then check if it's a parent category (path starts with this category)

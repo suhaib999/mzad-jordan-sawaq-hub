@@ -7,21 +7,22 @@ import {
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+// Updated categories with correct slugs that match with the listing page
 const shoppingCategories = [
   { 
-    name: 'Mobile Phones', 
+    name: 'Mobile Phones & Tablets', 
     icon: Smartphone, 
     slug: 'electronics/mobile-phones-tablets', 
     bgColor: 'bg-soft-blue'
   },
   { 
-    name: 'Laptops', 
+    name: 'Computers & Laptops', 
     icon: Laptop, 
     slug: 'electronics/computers-laptops', 
     bgColor: 'bg-soft-green' 
   },
   { 
-    name: 'Cars', 
+    name: 'Vehicles', 
     icon: Car, 
     slug: 'vehicles', 
     bgColor: 'bg-soft-yellow' 
@@ -45,7 +46,7 @@ const shoppingCategories = [
     bgColor: 'bg-soft-purple' 
   },
   { 
-    name: 'Home Electronics', 
+    name: 'TV & Audio', 
     icon: Tv, 
     slug: 'electronics/tv-audio', 
     bgColor: 'bg-soft-peach' 

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { 
@@ -110,6 +109,7 @@ const CategoryFilter = ({ value, onChange }: CategoryFilterProps) => {
 
   const isSelected = (slug: string) => value === slug;
   
+  // Improved rendering of categories to ensure proper hierarchy display
   const renderCategories = (cats: CategoryWithChildren[], depth = 0) => {
     return cats.map(category => {
       const hasChildren = category.children && category.children.length > 0;

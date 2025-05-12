@@ -7,19 +7,19 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
-// Updated categories with correct slugs that match with database categories
+// Updated categories with correct slugs that match with listing page categories
 const categories = [
   { name: 'Electronics', icon: Smartphone, slug: 'electronics', count: 1245 },
-  { name: 'Mobile Phones', icon: Smartphone, slug: 'electronics/mobile-phones-tablets', count: 876 },
-  { name: 'Computers', icon: Laptop, slug: 'electronics/computers-laptops', count: 543 },
+  { name: 'Mobile Phones & Tablets', icon: Smartphone, slug: 'electronics/mobile-phones-tablets', count: 876 },
+  { name: 'Computers & Laptops', icon: Laptop, slug: 'electronics/computers-laptops', count: 543 },
   { name: 'Vehicles', icon: Car, slug: 'vehicles', count: 328 },
   { name: 'Home & Garden', icon: Home, slug: 'home-garden', count: 1087 },
-  { name: 'Fashion', icon: Shirt, slug: 'womens-fashion', count: 2156 },
-  { name: 'Collectibles', icon: ShoppingBag, slug: 'books-hobbies', count: 654 },
+  { name: 'Women\'s Fashion', icon: Shirt, slug: 'womens-fashion', count: 2156 },
+  { name: 'Books & Hobbies', icon: ShoppingBag, slug: 'books-hobbies', count: 654 },
   { name: 'Jewelry & Watches', icon: Watch, slug: 'womens-fashion/jewelry', count: 432 },
-  { name: 'TVs & Audio', icon: Tv, slug: 'electronics/tv-audio', count: 765 },
-  { name: 'Business & Industrial', icon: Briefcase, slug: 'business-equipment', count: 321 },
-  { name: 'Sporting Goods', icon: Dumbbell, slug: 'sports-fitness', count: 546 },
+  { name: 'TV & Audio', icon: Tv, slug: 'electronics/tv-audio', count: 765 },
+  { name: 'Business Equipment', icon: Briefcase, slug: 'business-equipment', count: 321 },
+  { name: 'Sports & Fitness', icon: Dumbbell, slug: 'sports-fitness', count: 546 },
   { name: 'Real Estate', icon: Home, slug: 'real-estate-sale', count: 218 }
 ];
 
