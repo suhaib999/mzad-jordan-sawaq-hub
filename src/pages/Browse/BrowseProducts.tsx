@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
@@ -44,7 +45,7 @@ const BrowseProducts = () => {
     queryFn: async () => {
       // Convert filters to API parameters
       const apiParams: ProductFilterParams = {
-        category: filters.category,
+        category: filters.category, // Using the full category path for better hierarchical filtering
         is_auction: filters.listingType === 'all' ? undefined : filters.listingType === 'auction',
         query: filters.searchQuery || undefined,
         price_min: filters.priceMin,
