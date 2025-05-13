@@ -240,6 +240,7 @@ export type Database = {
           brand: string | null
           category: string
           category_id: string | null
+          category_path: string[] | null
           color: string | null
           condition: string
           created_at: string
@@ -285,6 +286,7 @@ export type Database = {
           brand?: string | null
           category: string
           category_id?: string | null
+          category_path?: string[] | null
           color?: string | null
           condition: string
           created_at?: string
@@ -330,6 +332,7 @@ export type Database = {
           brand?: string | null
           category?: string
           category_id?: string | null
+          category_path?: string[] | null
           color?: string | null
           condition?: string
           created_at?: string

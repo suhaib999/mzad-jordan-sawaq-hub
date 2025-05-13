@@ -45,7 +45,7 @@ const BrowseProducts = () => {
     queryFn: async () => {
       // Convert filters to API parameters
       const apiParams: ProductFilterParams = {
-        category: filters.category, // Using the full category path for better hierarchical filtering
+        category: filters.category, // Now this will use the category_path for filtering
         is_auction: filters.listingType === 'all' ? undefined : filters.listingType === 'auction',
         query: filters.searchQuery || undefined,
         price_min: filters.priceMin,

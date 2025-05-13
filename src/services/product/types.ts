@@ -10,6 +10,7 @@ export interface Product {
   condition: string;
   category?: string;
   category_id?: string;
+  category_path?: string[]; // Add the new category_path field
   seller_id: string;
   location?: string | {
     city: string;

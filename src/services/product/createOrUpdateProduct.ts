@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import { ProductImage } from './imageService';
@@ -26,6 +27,7 @@ export const createOrUpdateProduct = async (
     console.log("Final product data to insert:", productToInsert);
     
     // Insert/update the product
+    // The category_path field will be automatically populated by our new database trigger
     const { data: insertedProduct, error: productError } = await supabase
       .from('products')
       .upsert(productToInsert)
