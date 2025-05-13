@@ -3,23 +3,17 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Smartphone, Laptop, Car, Home, ShoppingBag, 
-  Shirt, Dumbbell, Tv
+  Shirt, Dumbbell, Tv, Book, Briefcase, GraduationCap, Baby
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Updated categories with correct slugs that match with the standardized categories
+// Updated categories with correct slugs that match the standardized categories from listing page
 const shoppingCategories = [
   { 
-    name: 'Mobile Phones & Tablets', 
+    name: 'Electronics', 
     icon: Smartphone, 
-    slug: 'electronics/mobile-phones-tablets', 
+    slug: 'electronics', 
     bgColor: 'bg-soft-blue'
-  },
-  { 
-    name: 'Computers & Laptops', 
-    icon: Laptop, 
-    slug: 'electronics/computers-laptops', 
-    bgColor: 'bg-soft-green' 
   },
   { 
     name: 'Vehicles', 
@@ -28,10 +22,22 @@ const shoppingCategories = [
     bgColor: 'bg-soft-yellow' 
   },
   { 
+    name: 'Video Games & Kids', 
+    icon: Tv, 
+    slug: 'games-toys', 
+    bgColor: 'bg-soft-purple' 
+  },
+  { 
     name: 'Real Estate', 
     icon: Home, 
     slug: 'real-estate-sale', 
     bgColor: 'bg-soft-orange' 
+  },
+  { 
+    name: 'Home & Garden', 
+    icon: Home, 
+    slug: 'home-garden', 
+    bgColor: 'bg-soft-green' 
   },
   { 
     name: 'Women\'s Fashion', 
@@ -40,15 +46,9 @@ const shoppingCategories = [
     bgColor: 'bg-soft-pink' 
   },
   { 
-    name: 'Sports & Fitness', 
-    icon: Dumbbell, 
-    slug: 'sports-fitness', 
-    bgColor: 'bg-soft-purple' 
-  },
-  { 
-    name: 'TV & Audio', 
-    icon: Tv, 
-    slug: 'electronics/tv-audio', 
+    name: 'Books & Hobbies', 
+    icon: Book, 
+    slug: 'books-hobbies', 
     bgColor: 'bg-soft-peach' 
   },
   { 

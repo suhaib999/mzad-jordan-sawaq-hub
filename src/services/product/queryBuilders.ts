@@ -1,4 +1,3 @@
-
 // Helper functions for building Supabase queries
 
 import { ProductFilterParams } from './types';
@@ -24,9 +23,8 @@ export const applyFilters = (query: any, filterParams: ProductFilterParams) => {
   }
 
   if (category) {
-    // This handles category filtering for both exact matches and subcategories
-    // For example, if category is "electronics", it will match "electronics", 
-    // "electronics/mobile-phones-tablets", "electronics/computers-laptops", etc.
+    // More precise category filtering to match standardized categories
+    // This will match both exact categories and their subcategories
     
     // First check for exact category match
     // Then check if it's a parent category (path starts with this category)
