@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
@@ -64,7 +63,6 @@ const BrowseProducts = () => {
   // Map products to card props
   const products = productsData.products.map(mapProductToCardProps);
 
-  // Handle search form submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setFilters(prev => ({ ...prev, searchQuery }));

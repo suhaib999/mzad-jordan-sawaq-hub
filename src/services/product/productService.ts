@@ -12,13 +12,13 @@ export const fetchProducts = async (
     console.log("Fetching products with params:", filterParams);
     
     // First execute a count query separately to avoid type issues
-    const countQuery = supabase
+    let countQuery = supabase
       .from('products')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'active');
     
     // Apply filters to the count query
-    const filteredCountQuery = applyFilters(countQuery, filterParams);
+    const filteredCountQuery = await applyFilters(countQuery, filterParams);
     const { count: countValue, error: countError } = await filteredCountQuery;
     
     if (countError) {
@@ -30,12 +30,12 @@ export const fetchProducts = async (
     console.log("Total count:", totalCount);
 
     // Build and execute the data query
-    const query = supabase
+    let query = supabase
       .from('products')
       .select('*, images:product_images(*)');
     
     // Add filters one by one
-    const filteredQuery = applyFilters(query, filterParams);
+    const filteredQuery = await applyFilters(query, filterParams);
     
     // Apply sorting
     const sortedQuery = applySorting(filteredQuery, filterParams.sort_by);
@@ -167,12 +167,12 @@ export const fetchFeaturedProductsByCategory = async (
       .eq('status', 'active');
     
     // Apply category filter if provided
-    if (categorySlug && categorySlug !== 'all') {
-      query.ilike('category', `%${categorySlug}%`);
-    }
+    const filteredQuery = await applyFilters(query, {
+      category: categorySlug !== 'all' ? categorySlug : undefined
+    });
     
     // Get latest products
-    const { data, error } = await query
+    const { data, error } = await filteredQuery
       .order('created_at', { ascending: false })
       .limit(limit);
 
