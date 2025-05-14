@@ -38,6 +38,12 @@ const CategoryFilter = ({ value, onChange }: CategoryFilterProps) => {
       try {
         const fetchedCategories = await fetchCategories();
         setCategories(fetchedCategories);
+        
+        // Auto-expand the Vehicles category to show subcategories
+        const vehiclesCategory = fetchedCategories.find(cat => cat.slug === 'vehicles');
+        if (vehiclesCategory) {
+          setExpandedIds(prev => [...prev, vehiclesCategory.id]);
+        }
       } catch (error) {
         console.error("Error loading categories:", error);
       } finally {

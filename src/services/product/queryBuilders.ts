@@ -18,8 +18,14 @@ export const applyFilters = (query: any, filterParams: ProductFilterParams = {})
   } = filterParams;
 
   if (category) {
+    // First check if this is a top-level category with subcategories we need to include
+    if (category === 'vehicles') {
+      // For top-level categories, we need to match either the exact category
+      // or any category that starts with this category/ (to include subcategories)
+      filteredQuery = filteredQuery.or(`category.eq.${category},category_path.cs.{"${category}"}`);
+    } 
     // Check if we have a full path or just a slug
-    if (Array.isArray(category)) {
+    else if (Array.isArray(category)) {
       // If it's an array, use contains for full path match
       filteredQuery = filteredQuery.contains('category_path', category);
     } else {
