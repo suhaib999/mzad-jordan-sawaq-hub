@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/toast";
 
 const TOAST_LIMIT = 10;
-const TOAST_REMOVE_DELAY = 1000000;
+const TOAST_REMOVE_DELAY = 5000;
 
 type ToasterToast = ToastProps & {
   id: string;
@@ -129,16 +129,18 @@ function dispatch(action: Action) {
   });
 }
 
-type Toast = Omit<ToasterToast, "id">;
+// Define what's expected in the toast function
+type ToastProps = Omit<ToasterToast, "id">;
 
-function toast({ ...props }: Toast) {
-  const id = props.id || String(Date.now());
+function toast(props: ToastProps) {
+  const id = Math.random().toString(36).substring(2, 9);
 
-  const update = (props: ToasterToast) =>
+  const update = (props: Partial<ToasterToast>) =>
     dispatch({
       type: actionTypes.UPDATE_TOAST,
       toast: { ...props, id },
     });
+  
   const dismiss = () => dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id });
 
   dispatch({
