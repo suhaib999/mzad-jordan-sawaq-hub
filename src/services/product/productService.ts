@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ProductWithImages, ProductFilterParams, ShippingOption, ProductImage } from './types';
 import { processProductData, mapProductToCardProps } from './mappers';
 import { applyFilters, applyPagination, applySorting } from './queryBuilders';
+import { toast } from '@/hooks/use-toast';
 
 export const fetchProducts = async (
   limit: number | undefined,
@@ -18,7 +19,7 @@ export const fetchProducts = async (
       .eq('status', 'active');
     
     // Apply filters to the count query
-    const filteredCountQuery = await applyFilters(countQuery, filterParams);
+    const filteredCountQuery = applyFilters(countQuery, filterParams);
     const { count: countValue, error: countError } = await filteredCountQuery;
     
     if (countError) {
@@ -35,12 +36,12 @@ export const fetchProducts = async (
       .select('*, images:product_images(*)');
     
     // Add filters one by one
-    const filteredQuery = await applyFilters(query, filterParams);
+    const filteredQuery = applyFilters(query, filterParams);
     
-    // Apply sorting
+    // Apply sorting (we need to pass the result from filters, not the original query)
     const sortedQuery = applySorting(filteredQuery, filterParams.sort_by);
     
-    // Apply pagination
+    // Apply pagination (we need to pass the result from sorting, not the original query)
     const paginatedQuery = applyPagination(sortedQuery, limit, offset);
     
     // Execute the query
@@ -79,6 +80,11 @@ export const fetchProducts = async (
     };
   } catch (error) {
     console.error('Error in fetchProducts:', error);
+    toast({
+      title: "Error loading products",
+      description: "Failed to load products. Please try again.",
+      variant: "destructive",
+    });
     return { products: [], count: 0 };
   }
 };

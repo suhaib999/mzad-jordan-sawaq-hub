@@ -1,16 +1,12 @@
-// Helper functions for building Supabase queries
-
 import { ProductFilterParams } from './types';
-import { supabase } from '@/integrations/supabase/client';
-import { categories, findCategoryBySlug } from '@/data/categories';
+import { SupabaseClient } from '@supabase/supabase-js';
 
-// Apply filters to a Supabase query
-export const applyFilters = async (query: any, filterParams: ProductFilterParams) => {
-  let result = query.eq('status', 'active');
+// Apply filters to a query
+export const applyFilters = (query: any, filterParams: ProductFilterParams = {}) => {
+  let filteredQuery = query.eq('status', 'active');
   
   const { 
-    category_id, 
-    category,
+    category, 
     condition, 
     price_min, 
     price_max, 
@@ -20,82 +16,78 @@ export const applyFilters = async (query: any, filterParams: ProductFilterParams
     query: searchQuery
   } = filterParams;
 
-  if (category_id) {
-    result = result.eq('category_id', category_id);
-  }
-
   if (category) {
-    // Use the new category_path array to find products in this category or any of its subcategories
-    // This works because the category_path contains the complete hierarchy from root to leaf
-    result = result.contains('category_path', [category]);
+    // Check if we have a full path or just a slug
+    if (Array.isArray(category)) {
+      // If it's an array, use contains for full path match
+      filteredQuery = filteredQuery.contains('category_path', category);
+    } else {
+      // Otherwise match on category
+      filteredQuery = filteredQuery.eq('category', category);
+    }
   }
 
   if (condition && condition.length > 0) {
-    result = result.in('condition', condition);
+    filteredQuery = filteredQuery.in('condition', condition);
   }
 
   if (price_min !== undefined) {
-    result = result.gte('price', price_min);
+    filteredQuery = filteredQuery.gte('price', price_min);
   }
 
   if (price_max !== undefined) {
-    result = result.lte('price', price_max);
+    filteredQuery = filteredQuery.lte('price', price_max);
   }
 
-  if (location && location.length > 0) {
-    result = result.in('location', location);
+  if (location && Array.isArray(location) && location.length > 0) {
+    filteredQuery = filteredQuery.in('location', location);
   }
 
   if (is_auction !== undefined) {
-    result = result.eq('is_auction', is_auction);
+    filteredQuery = filteredQuery.eq('is_auction', is_auction);
   }
 
   if (with_shipping) {
-    result = result.not('shipping', 'is', null);
+    filteredQuery = filteredQuery.not('shipping', 'is', null);
   }
 
   if (searchQuery) {
-    result = result.ilike('title', `%${searchQuery}%`);
+    filteredQuery = filteredQuery.ilike('title', `%${searchQuery}%`);
   }
 
-  return result;
+  return filteredQuery;
 };
 
-// The getCategoryAndSubcategories function is no longer needed
-// since we're using the category_path array directly
-// Keeping this function for compatibility with existing code
-export async function getCategoryAndSubcategories(categorySlug: string): Promise<string[]> {
-  // This function is now simplified as we can use the new category_path array
-  // For backwards compatibility, we'll return a simple array containing the category slug
-  return [categorySlug];
-}
-
-// Apply sorting to a Supabase query
+// Apply sorting to a query
 export const applySorting = (query: any, sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'oldest') => {
-  switch (sortBy) {
-    case 'price_asc':
-      return query.order('price', { ascending: true });
-    case 'price_desc':
-      return query.order('price', { ascending: false });
-    case 'oldest':
-      return query.order('created_at', { ascending: true });
-    case 'newest':
-    default:
-      return query.order('created_at', { ascending: false });
+  if (!query) return query;
+  
+  try {
+    switch (sortBy) {
+      case 'price_asc':
+        return query.order('price', { ascending: true });
+      case 'price_desc':
+        return query.order('price', { ascending: false });
+      case 'oldest':
+        return query.order('created_at', { ascending: true });
+      case 'newest':
+      default:
+        return query.order('created_at', { ascending: false });
+    }
+  } catch (error) {
+    console.error('Error applying sorting:', error);
+    return query; // Return the original query if sorting fails
   }
 };
 
-// Apply pagination to a Supabase query
+// Apply pagination to a query
 export const applyPagination = (query: any, limit?: number, offset?: number) => {
-  let result = query;
-  
-  if (limit !== undefined && limit > 0) {
-    result = result.limit(limit);
+  if (limit !== undefined) {
+    if (offset !== undefined) {
+      return query.range(offset, offset + limit - 1);
+    } else {
+      return query.limit(limit);
+    }
   }
-  
-  if (offset !== undefined && offset >= 0) {
-    result = result.range(offset, offset + (limit || 10) - 1);
-  }
-  
-  return result;
+  return query;
 };
