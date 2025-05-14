@@ -107,7 +107,16 @@ const CreateListing = () => {
   const handleCategorySelect = (category: any) => {
     console.log("Category selected in parent:", category);
     setSelectedCategory(category.id);
-    form.setValue('category', category.id);
+    
+    // Store both category ID and slug
+    form.setValue('category', category.slug);
+    form.setValue('category_id', category.id);
+    
+    // If this is a subcategory, also set subcategory data
+    if (category.parent_id) {
+      form.setValue('subcategory', category.slug);
+      form.setValue('subcategory_id', category.id);
+    }
   };
   
   // Handle form submission

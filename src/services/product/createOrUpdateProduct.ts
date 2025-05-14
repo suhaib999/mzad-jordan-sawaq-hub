@@ -27,7 +27,7 @@ export const createOrUpdateProduct = async (
     console.log("Final product data to insert:", productToInsert);
     
     // Insert/update the product
-    // The category_path field will be automatically populated by our new database trigger
+    // The category_path field will be automatically populated by our database trigger
     const { data: insertedProduct, error: productError } = await supabase
       .from('products')
       .upsert(productToInsert)
@@ -81,10 +81,10 @@ export const createOrUpdateProduct = async (
       }
       
       const imageInserts = images.map((img, index) => ({
-        id: img.id,
+        id: img.id || uuidv4(),
         product_id: productId,
         image_url: img.url,
-        display_order: img.order || index
+        display_order: typeof img.order === 'number' ? img.order : index
       }));
       
       console.log("Inserting images:", imageInserts);

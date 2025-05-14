@@ -39,7 +39,17 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
   const onCategorySelect = (category: any) => {
     console.log("Category selected:", category);
     handleCategorySelect(category);
-    form.setValue('category', category.id);
+    
+    // Store both the category ID and full path
+    form.setValue('category', category.slug);
+    form.setValue('category_id', category.id);
+    
+    // If this is a subcategory, also set the parent category ID
+    if (category.parent_id) {
+      form.setValue('subcategory', category.slug);
+      form.setValue('subcategory_id', category.id);
+    }
+    
     setSelectedCategory(category.id);
   };
 
