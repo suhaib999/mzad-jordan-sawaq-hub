@@ -2,17 +2,21 @@
 import * as React from "react";
 import {
   type ToastActionElement,
-  type ToastProps as UIToastProps,
+  type ToastProps as PrimitiveToastProps,
 } from "@/components/ui/toast";
 
 const TOAST_LIMIT = 10;
 const TOAST_REMOVE_DELAY = 5000;
 
-type ToasterToast = UIToastProps & {
-  id: string;
+// Define UIToastProps to match what Toast component expects
+type UIToastProps = Omit<PrimitiveToastProps, "title" | "description" | "action"> & {
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: ToastActionElement;
+};
+
+type ToasterToast = UIToastProps & {
+  id: string;
 };
 
 const actionTypes = {
@@ -129,11 +133,16 @@ function dispatch(action: Action) {
   });
 }
 
-// Define the input props type for toast function
-interface ToastOptions extends Omit<UIToastProps, "id"> {
+// Define the input props type for toast function separately without extending
+interface ToastOptions {
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: ToastActionElement;
+  variant?: "default" | "destructive";
+  duration?: number;
+  className?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 function toast(props: ToastOptions) {
@@ -155,8 +164,9 @@ function toast(props: ToastOptions) {
       open: true,
       onOpenChange: (open) => {
         if (!open) dismiss();
+        props.onOpenChange?.(open);
       },
-    },
+    } as ToasterToast,
   });
 
   return {
