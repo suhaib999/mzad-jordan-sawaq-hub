@@ -39,10 +39,19 @@ const CategoryFilter = ({ value, onChange }: CategoryFilterProps) => {
         const fetchedCategories = await fetchCategories();
         setCategories(fetchedCategories);
         
-        // Auto-expand the Vehicles category to show subcategories
-        const vehiclesCategory = fetchedCategories.find(cat => cat.slug === 'vehicles');
-        if (vehiclesCategory) {
-          setExpandedIds(prev => [...prev, vehiclesCategory.id]);
+        // Auto-expand the top-level categories to show subcategories
+        const categoriesToExpand = ['vehicles', 'electronics'];
+        const idsToExpand: string[] = [];
+        
+        categoriesToExpand.forEach(slug => {
+          const category = fetchedCategories.find(cat => cat.slug === slug);
+          if (category) {
+            idsToExpand.push(category.id);
+          }
+        });
+        
+        if (idsToExpand.length > 0) {
+          setExpandedIds(prev => [...prev, ...idsToExpand]);
         }
       } catch (error) {
         console.error("Error loading categories:", error);

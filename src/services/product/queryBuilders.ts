@@ -18,8 +18,8 @@ export const applyFilters = (query: any, filterParams: ProductFilterParams = {})
   } = filterParams;
 
   if (category) {
-    // First check if this is a top-level category with subcategories we need to include
-    if (category === 'vehicles') {
+    // Check if this is a top-level category with subcategories we need to include
+    if (category === 'vehicles' || category === 'electronics') {
       // For top-level categories, we need to match either the exact category
       // or any category that starts with this category/ (to include subcategories)
       filteredQuery = filteredQuery.or(`category.eq.${category},category_path.cs.{"${category}"}`);
