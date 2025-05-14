@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import { ProductImage } from './imageService';
+import { toast } from '@/hooks/use-toast';
 
 export const createOrUpdateProduct = async (
   productData: any,
@@ -24,10 +25,18 @@ export const createOrUpdateProduct = async (
       productToInsert.created_at = new Date().toISOString();
     }
     
+    // Ensure category is set properly
+    if (!productToInsert.category && productToInsert.category_path && productToInsert.category_path.length > 0) {
+      // Use the last item in the path as the direct category
+      productToInsert.category = productToInsert.category_path[productToInsert.category_path.length - 1];
+    } else if (productToInsert.category && !productToInsert.category_path) {
+      // If we have a category but no path, initialize path with the category
+      productToInsert.category_path = [productToInsert.category];
+    }
+    
     console.log("Final product data to insert:", productToInsert);
     
     // Insert/update the product
-    // The category_path field will be automatically populated by our database trigger
     const { data: insertedProduct, error: productError } = await supabase
       .from('products')
       .upsert(productToInsert)
@@ -36,6 +45,11 @@ export const createOrUpdateProduct = async (
       
     if (productError) {
       console.error("Error inserting product:", productError);
+      toast({
+        variant: "destructive",
+        title: "Error creating product",
+        description: productError.message
+      });
       return { 
         success: false, 
         error: `Failed to create product: ${productError.message}` 

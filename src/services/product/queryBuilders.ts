@@ -1,3 +1,4 @@
+
 import { ProductFilterParams } from './types';
 import { SupabaseClient } from '@supabase/supabase-js';
 
@@ -22,8 +23,9 @@ export const applyFilters = (query: any, filterParams: ProductFilterParams = {})
       // If it's an array, use contains for full path match
       filteredQuery = filteredQuery.contains('category_path', category);
     } else {
-      // Otherwise match on category
-      filteredQuery = filteredQuery.eq('category', category);
+      // For single category slug, check if it's in the category_path array
+      // This ensures we find products in this category AND its subcategories
+      filteredQuery = filteredQuery.contains('category_path', [category]);
     }
   }
 

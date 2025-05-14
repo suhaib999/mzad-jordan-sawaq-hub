@@ -12,6 +12,7 @@ import ProductResults from './components/ProductResults';
 import ActiveFiltersBar from './components/ActiveFiltersBar';
 import { Button } from '@/components/ui/button';
 import { Filter, X } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const BrowseProducts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -40,24 +41,34 @@ const BrowseProducts = () => {
   }, [initialFilters.searchQuery]);
   
   // Query for products
-  const { data: productsData = { products: [], count: 0 }, isLoading } = useQuery({
+  const { data: productsData = { products: [], count: 0 }, isLoading, error } = useQuery({
     queryKey: ['products', filters],
     queryFn: async () => {
-      // Convert filters to API parameters
-      const apiParams: ProductFilterParams = {
-        category: filters.category, // Now this will use the category_path for filtering
-        is_auction: filters.listingType === 'all' ? undefined : filters.listingType === 'auction',
-        query: filters.searchQuery || undefined,
-        price_min: filters.priceMin,
-        price_max: filters.priceMax,
-        condition: filters.condition && filters.condition.length > 0 ? filters.condition : undefined,
-        location: filters.location ? [filters.location] : undefined,
-        with_shipping: filters.freeShippingOnly,
-        sort_by: filters.sortOrder === 'bestMatch' ? 'newest' : filters.sortOrder as 'price_asc' | 'price_desc' | 'newest' | 'oldest'
-      };
-      
-      console.log("Applying filters:", apiParams);
-      return fetchProducts(50, 0, apiParams);
+      try {
+        // Convert filters to API parameters
+        const apiParams: ProductFilterParams = {
+          category: filters.category, // This will be used for category_path filter
+          is_auction: filters.listingType === 'all' ? undefined : filters.listingType === 'auction',
+          query: filters.searchQuery || undefined,
+          price_min: filters.priceMin,
+          price_max: filters.priceMax,
+          condition: filters.condition && filters.condition.length > 0 ? filters.condition : undefined,
+          location: filters.location ? [filters.location] : undefined,
+          with_shipping: filters.freeShippingOnly,
+          sort_by: filters.sortOrder === 'bestMatch' ? 'newest' : filters.sortOrder as 'price_asc' | 'price_desc' | 'newest' | 'oldest'
+        };
+        
+        console.log("Applying filters:", apiParams);
+        return fetchProducts(50, 0, apiParams);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        toast({
+          variant: "destructive",
+          title: "Error loading products",
+          description: "Failed to load products. Please try again."
+        });
+        throw err;
+      }
     }
   });
 
