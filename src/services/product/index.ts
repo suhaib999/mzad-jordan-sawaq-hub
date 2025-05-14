@@ -1,11 +1,12 @@
 
 // Export all product service functions and types from this index file
 export * from './types';
-export * from './mappers';
 export * from './queryBuilders';
 
-// Export functions from productService but exclude the duplicated functions
-// that are also exported from mappers.ts
+// Re-export mappers explicitly to avoid ambiguity
+export { processProductData, mapProductToCardProps } from './mappers';
+
+// Export functions from productService
 export { 
   fetchProducts,
   fetchProductsBySellerId,
@@ -17,12 +18,9 @@ export {
 } from './productService';
 
 // Export createOrUpdateProduct directly from its file
-// This resolves the naming conflict with productService.ts
 export { createOrUpdateProduct } from './createOrUpdateProduct';
 
 // Re-export specific types to ensure compatibility
-import { ProductWithImages, Product, ShippingOption } from './types';
-export type { ProductWithImages, Product, ShippingOption };
+import { ProductWithImages, Product, ShippingOption, ProductCardProps } from './types';
+export type { ProductWithImages, Product, ShippingOption, ProductCardProps };
 
-// Re-export ProductCardProps from types directly to avoid ambiguity
-export type { ProductCardProps } from './types';
