@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
-import { ProductWithImages, ProductFilterParams, ShippingOption, ProductImage } from './types';
-import { processProductData } from './mappers';
+import { ProductWithImages, ProductFilterParams, ShippingOption, ProductImage, ProductCardProps } from './types';
+import { processProductData, mapProductToCardProps } from './mappers';
 import { applyFilters, applyPagination, applySorting } from './queryBuilders';
 
 export const fetchProducts = async (

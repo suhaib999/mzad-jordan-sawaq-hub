@@ -6,7 +6,9 @@ export const productSchema = z.object({
   title: z.string().min(10, "Title must be at least 10 characters").max(100, "Title cannot exceed 100 characters"),
   description: z.string().min(30, "Description must be at least 30 characters").max(5000, "Description cannot exceed 5000 characters"),
   category: z.string().min(1, "Please select a category"),
+  category_id: z.string().optional(), // Added field for category ID
   subcategory: z.string().optional(),
+  subcategory_id: z.string().optional(), // Added field for subcategory ID
   condition: z.string().min(1, "Please select a condition"),
   brand: z.string().optional().nullable(),
   model: z.string().optional().nullable(),
