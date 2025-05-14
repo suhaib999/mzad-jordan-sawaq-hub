@@ -2,13 +2,13 @@
 import * as React from "react";
 import {
   type ToastActionElement,
-  type ToastProps,
+  type ToastProps as UIToastProps,
 } from "@/components/ui/toast";
 
 const TOAST_LIMIT = 10;
 const TOAST_REMOVE_DELAY = 5000;
 
-type ToasterToast = ToastProps & {
+type ToasterToast = UIToastProps & {
   id: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
@@ -129,10 +129,14 @@ function dispatch(action: Action) {
   });
 }
 
-// Define what's expected in the toast function
-type ToastProps = Omit<ToasterToast, "id">;
+// Define the input props type for toast function
+interface ToastOptions extends Omit<UIToastProps, "id"> {
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  action?: ToastActionElement;
+}
 
-function toast(props: ToastProps) {
+function toast(props: ToastOptions) {
   const id = Math.random().toString(36).substring(2, 9);
 
   const update = (props: Partial<ToasterToast>) =>
