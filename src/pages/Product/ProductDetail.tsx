@@ -17,6 +17,7 @@ import { ProductActions } from '@/components/product/ProductActions';
 import { ProductSpecs } from '@/components/product/ProductSpecs';
 import { ProductDetailSkeleton } from '@/components/product/ProductDetailSkeleton';
 import { ProductError } from '@/components/product/ProductError';
+import ShippingSection from '@/components/product/detail/ShippingSection';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -155,12 +156,6 @@ const ProductDetail = () => {
               </div>
             )}
             
-            {product.shipping && (
-              <div className="text-sm text-gray-500 mb-4">
-                Shipping: {product.shipping}
-              </div>
-            )}
-            
             <p className="text-gray-700 mb-6">{product.description}</p>
             
             {/* Action buttons */}
@@ -169,6 +164,19 @@ const ProductDetail = () => {
               onAddToCart={handleAddToCart} 
               onBidPlaced={handleBidPlaced}
             />
+            
+            {/* Shipping information */}
+            <div className="mt-6">
+              <ShippingSection
+                location={displayLocation}
+                shipping_options={product.shipping_data}
+                free_shipping={product.free_shipping}
+                local_pickup={product.local_pickup}
+                mzadkumsooq_delivery={product.mzadkumsooq_delivery}
+                provides_shipping={product.provides_shipping}
+                handling_time={product.handling_time}
+              />
+            </div>
             
             {/* Additional product details */}
             <ProductSpecs 
