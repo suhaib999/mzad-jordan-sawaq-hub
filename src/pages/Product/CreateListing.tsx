@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
@@ -128,10 +127,9 @@ const CreateListing = () => {
     console.log("Form submitted with data:", formData);
     
     if (!session?.user) {
-      toast({
+      toast.destructive({
         title: "Authentication required",
-        description: "You need to be logged in to create a listing",
-        variant: "destructive"
+        description: "You need to be logged in to create a listing"
       });
       navigate("/auth/login");
       return;
@@ -227,12 +225,11 @@ const CreateListing = () => {
         // Clear draft from storage
         discardDraft();
         
-        toast({
+        toast.success({
           title: formData.status === 'draft' ? "Draft saved" : "Listing published",
           description: formData.status === 'draft' 
             ? "Your listing draft has been saved" 
-            : "Your listing is now live and visible to buyers",
-          variant: "success",
+            : "Your listing is now live and visible to buyers"
         });
         
         // Redirect based on status
@@ -244,10 +241,9 @@ const CreateListing = () => {
       }
     } catch (error: any) {
       console.error("Submission error:", error);
-      toast({
+      toast.destructive({
         title: "Error",
-        description: error.message || "Failed to create listing",
-        variant: "destructive"
+        description: error.message || "Failed to create listing"
       });
     } finally {
       setIsSubmitting(false);

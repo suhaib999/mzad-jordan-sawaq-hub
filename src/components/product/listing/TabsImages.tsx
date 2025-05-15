@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,10 +46,9 @@ const TabsImages: React.FC<TabsImagesProps> = ({
     
     // Make sure we have at least one image
     if (!formData.images || formData.images.length === 0) {
-      toast({
+      toast.destructive({
         title: "Image required",
-        description: "Please upload at least one product image",
-        variant: "destructive"
+        description: "Please upload at least one product image"
       });
       return;
     }
@@ -65,10 +63,9 @@ const TabsImages: React.FC<TabsImagesProps> = ({
       })();
     } catch (error) {
       console.error("Error submitting form:", error);
-      toast({
+      toast.destructive({
         title: "Error creating listing",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive"
+        description: "Something went wrong. Please try again."
       });
     }
   };
