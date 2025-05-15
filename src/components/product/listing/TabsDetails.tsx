@@ -35,19 +35,10 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
   const [categoryValue, setCategoryValue] = useState<string>(form.getValues('category') || '');
   const [subcategoryValue, setSubcategoryValue] = useState<string>(form.getValues('subcategory') || '');
   
-  const onCategorySelect = (category: any, subcategory?: any, leafCategory?: any) => {
+  const onCategorySelect = (category: any, subcategory?: any) => {
     console.log("Category selected:", category);
     
-    if (leafCategory) {
-      // Handle leaf category selection (if deepest level)
-      form.setValue('category', category.slug);
-      form.setValue('category_id', category.id);
-      form.setValue('subcategory', leafCategory.slug);
-      form.setValue('subcategory_id', leafCategory.id);
-      setSelectedCategory(leafCategory.id);
-      setCategoryValue(category.slug);
-      setSubcategoryValue(leafCategory.slug);
-    } else if (subcategory) {
+    if (subcategory) {
       // Handle subcategory selection
       form.setValue('category', category.slug);
       form.setValue('category_id', category.id);

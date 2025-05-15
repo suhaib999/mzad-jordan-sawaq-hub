@@ -321,6 +321,8 @@ const ItemSpecifics: React.FC<ItemSpecificsProps> = ({
                 type={spec.type === 'number' ? 'number' : 'text'}
                 placeholder={`Enter ${spec.name.toLowerCase()}`}
                 {...field}
+                // Convert boolean values to string to avoid type error
+                value={field.value != null ? String(field.value) : ''}
               />
             </FormControl>
             <FormMessage />

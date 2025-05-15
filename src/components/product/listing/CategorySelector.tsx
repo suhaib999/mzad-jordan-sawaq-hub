@@ -4,7 +4,6 @@ import { Check, ChevronRight, Tag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Separator } from '@/components/ui/separator';
 import { categories } from '@/data/categories';
 
@@ -93,7 +92,8 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   };
 
   const handleLeafCategorySelect = (leafCategory: Category) => {
-    onCategorySelect(currentCategory as Category, currentSubcategory as Category, leafCategory);
+    // Updated to only pass two parameters
+    onCategorySelect(currentSubcategory as Category, leafCategory);
   };
 
   const handleBackClick = () => {
