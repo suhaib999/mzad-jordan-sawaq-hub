@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
@@ -31,7 +32,6 @@ import { ProductFormValues } from '@/types/product';
 const CreateListing = () => {
   const { user, session } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('details');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDraft, setIsDraft] = useState(false);

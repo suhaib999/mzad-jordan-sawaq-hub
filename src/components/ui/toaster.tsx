@@ -4,21 +4,21 @@ import { useTheme } from "@/contexts/ThemeContext";
 
 export function Toaster() {
   // Add safe fallback if ThemeProvider is not available
-  let theme: string;
+  let theme: "light" | "dark" | "system" = "light";
   
   try {
     // Get theme from context
     const themeContext = useTheme();
-    theme = themeContext.theme;
+    theme = themeContext.theme as "light" | "dark" | "system";
   } catch (error) {
-    // Fallback to light theme if context is not available
-    console.error("ThemeContext not available:", error);
-    theme = "light";
+    // Fallback to system theme if context is not available
+    console.warn("ThemeContext not available - falling back to system theme");
+    theme = "system";
   }
 
   return (
     <SonnerToaster
-      theme={theme as "light" | "dark" | "system"}
+      theme={theme}
       className="toaster group"
       toastOptions={{
         classNames: {

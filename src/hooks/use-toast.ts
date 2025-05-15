@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { toast as sonnerToast } from "sonner";
+import { toast as sonnerToast, type Toast as SonnerToast } from "sonner";
 import type { ToastProps } from "@/components/ui/toast";
 
 // Custom toast types that match shadcn's toast system
@@ -97,78 +97,71 @@ function processToastOptions(options: string | ToastOptions) {
   return opts;
 }
 
-// Create direct toast function
-function showToast(options: string | ToastOptions) {
-  const opts = processToastOptions(options);
-  const variant = opts.variant || "default";
-  const type = variantToType[variant];
-  
-  return sonnerToast(opts.title || "", {
-    description: opts.description,
-    action: opts.action,
-    ...opts,
-    ...(type ? { type } : {}),
-  });
-}
-
-// Simple toast function that uses sonner under the hood
-export const toast = showToast as typeof showToast & {
-  default: typeof showToast;
-  destructive: typeof showToast;
-  success: typeof showToast;
-  warning: typeof showToast;
-  info: typeof showToast;
-  show: typeof showToast;
+// Create toast function that uses sonner under the hood
+export const toast = {
+  // Default toast
+  default: (options: string | ToastOptions) => {
+    const opts = processToastOptions(options);
+    return sonnerToast(opts.title || "", {
+      description: opts.description,
+      action: opts.action,
+      ...opts,
+    });
+  },
+  // Destructive toast (error)
+  destructive: (options: string | ToastOptions) => {
+    const opts = processToastOptions(options);
+    return sonnerToast.error(opts.title || "", {
+      description: opts.description,
+      action: opts.action,
+      ...opts,
+    });
+  },
+  // Success toast
+  success: (options: string | ToastOptions) => {
+    const opts = processToastOptions(options);
+    return sonnerToast.success(opts.title || "", {
+      description: opts.description,
+      action: opts.action,
+      ...opts,
+    });
+  },
+  // Warning toast
+  warning: (options: string | ToastOptions) => {
+    const opts = processToastOptions(options);
+    return sonnerToast.warning(opts.title || "", {
+      description: opts.description,
+      action: opts.action,
+      ...opts,
+    });
+  },
+  // Info toast
+  info: (options: string | ToastOptions) => {
+    const opts = processToastOptions(options);
+    return sonnerToast.info(opts.title || "", {
+      description: opts.description,
+      action: opts.action,
+      ...opts,
+    });
+  },
+  // Original toast function for compatibility
+  show: (options: string | ToastOptions) => {
+    const opts = processToastOptions(options);
+    const variant = opts.variant || "default";
+    const type = variantToType[variant];
+    
+    if (type) {
+      return sonnerToast[type](opts.title || "", {
+        description: opts.description,
+        action: opts.action,
+        ...opts,
+      });
+    } else {
+      return sonnerToast(opts.title || "", {
+        description: opts.description,
+        action: opts.action,
+        ...opts,
+      });
+    }
+  },
 };
-
-// Add all variants as methods
-toast.default = (options: string | ToastOptions) => {
-  const opts = processToastOptions(options);
-  return sonnerToast(opts.title || "", {
-    description: opts.description,
-    action: opts.action,
-    ...opts,
-  });
-};
-
-toast.destructive = (options: string | ToastOptions) => {
-  const opts = processToastOptions(options);
-  return sonnerToast(opts.title || "", {
-    description: opts.description,
-    action: opts.action,
-    ...opts,
-    type: "error",
-  });
-};
-
-toast.success = (options: string | ToastOptions) => {
-  const opts = processToastOptions(options);
-  return sonnerToast(opts.title || "", {
-    description: opts.description,
-    action: opts.action,
-    ...opts,
-    type: "success",
-  });
-};
-
-toast.warning = (options: string | ToastOptions) => {
-  const opts = processToastOptions(options);
-  return sonnerToast(opts.title || "", {
-    description: opts.description,
-    action: opts.action,
-    ...opts,
-    type: "warning",
-  });
-};
-
-toast.info = (options: string | ToastOptions) => {
-  const opts = processToastOptions(options);
-  return sonnerToast(opts.title || "", {
-    description: opts.description,
-    action: opts.action,
-    ...opts,
-    type: "info",
-  });
-};
-
-toast.show = showToast;
