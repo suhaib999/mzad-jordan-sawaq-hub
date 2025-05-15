@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -42,10 +41,9 @@ export function AvatarUpload({
     // Validate file type
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      toast({
+      toast.destructive({
         title: 'Invalid file type',
         description: 'Please upload a valid image file (JPEG, PNG, GIF, or WEBP).',
-        variant: 'destructive',
       });
       return;
     }
@@ -53,10 +51,9 @@ export function AvatarUpload({
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      toast({
+      toast.destructive({
         title: 'File too large',
         description: 'Please upload an image smaller than 5MB.',
-        variant: 'destructive',
       });
       return;
     }
@@ -66,7 +63,7 @@ export function AvatarUpload({
       const avatarUrl = await uploadAvatar(userId, file);
       if (avatarUrl) {
         onAvatarChange(avatarUrl);
-        toast({
+        toast.success({
           title: 'Avatar updated',
           description: 'Your avatar has been updated successfully.',
         });
@@ -75,10 +72,9 @@ export function AvatarUpload({
       }
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      toast({
+      toast.destructive({
         title: 'Upload failed',
         description: 'Could not upload your avatar. Please try again.',
-        variant: 'destructive',
       });
     } finally {
       setIsUploading(false);

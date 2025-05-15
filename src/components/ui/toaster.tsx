@@ -1,19 +1,20 @@
 
 import { Toaster as SonnerToaster } from "sonner";
-import { useTheme } from "@/contexts/ThemeContext";
 
 export function Toaster() {
-  // Add safe fallback if ThemeProvider is not available
-  let theme: "light" | "dark" | "system" = "light";
+  // Use a simpler implementation without ThemeContext dependency
+  // This avoids the "useTheme must be used within a ThemeProvider" error
   
-  try {
-    // Get theme from context
-    const themeContext = useTheme();
-    theme = themeContext.theme as "light" | "dark" | "system";
-  } catch (error) {
-    // Fallback to system theme if context is not available
-    console.warn("ThemeContext not available - falling back to system theme");
-    theme = "system";
+  // Default to system theme
+  let theme: "light" | "dark" | "system" = "system";
+  
+  // Try to get the user's preferred color scheme
+  if (typeof window !== 'undefined') {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      theme = "dark";
+    } else {
+      theme = "light";
+    }
   }
 
   return (

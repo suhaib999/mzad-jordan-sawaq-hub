@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,15 +24,14 @@ const ResetPassword = () => {
       if (error) throw error;
 
       setResetSent(true);
-      toast({
+      toast.success({
         title: "Reset link sent",
         description: "Check your email for the password reset link",
       });
     } catch (error: any) {
-      toast({
+      toast.destructive({
         title: "Error",
         description: error.message || "Failed to send reset email. Please try again.",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

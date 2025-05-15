@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -51,7 +50,7 @@ export function ProfileForm({ userId, initialValues, onSuccess }: ProfileFormPro
       const success = await updateProfile(userId, values as ProfileUpdateData);
       
       if (success) {
-        toast({
+        toast.success({
           title: 'Profile updated',
           description: 'Your profile has been updated successfully.',
         });
@@ -60,18 +59,16 @@ export function ProfileForm({ userId, initialValues, onSuccess }: ProfileFormPro
           onSuccess();
         }
       } else {
-        toast({
+        toast.destructive({
           title: 'Update failed',
           description: 'Could not update your profile. Please try again.',
-          variant: 'destructive',
         });
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast({
+      toast.destructive({
         title: 'Update failed',
         description: 'An unexpected error occurred. Please try again.',
-        variant: 'destructive',
       });
     }
   };
