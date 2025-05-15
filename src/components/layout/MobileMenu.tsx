@@ -183,7 +183,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ onClose, isLoggedIn, onSignOut 
             ) : (
               <>
                 <Link
-                  to="/login"
+                  to="/auth/login"
                   className="flex items-center px-4 py-3 font-semibold text-gray-800 hover:bg-gray-100 rounded-md"
                   onClick={onClose}
                 >
@@ -192,7 +192,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ onClose, isLoggedIn, onSignOut 
                 </Link>
                 
                 <Link
-                  to="/register"
+                  to="/auth/register"
                   className="flex items-center px-4 py-3 font-semibold text-gray-800 hover:bg-gray-100 rounded-md"
                   onClick={onClose}
                 >

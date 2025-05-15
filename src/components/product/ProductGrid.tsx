@@ -3,6 +3,7 @@ import React from 'react';
 import ProductCard from './ProductCard';
 import { ProductCardProps } from '@/services/product/types';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ProductGridProps {
   products: ProductCardProps[];
@@ -38,12 +39,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           {[...Array(10)].map((_, i) => (
             <div key={i} className="border rounded-lg overflow-hidden shadow-sm">
               <AspectRatio ratio={1}>
-                <div className="bg-gray-200 animate-pulse w-full h-full"></div>
+                <Skeleton className="w-full h-full" />
               </AspectRatio>
               <div className="p-3 space-y-2">
-                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-                <div className="h-6 bg-gray-200 rounded animate-pulse w-1/2 mt-2"></div>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-6 w-1/2 mt-2" />
               </div>
             </div>
           ))}

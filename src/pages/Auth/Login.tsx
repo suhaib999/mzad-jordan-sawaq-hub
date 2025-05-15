@@ -1,14 +1,16 @@
 
 import React, { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const Login = () => {
+  const navigate = useNavigate();
   const { user, signIn, isLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,8 +25,10 @@ const Login = () => {
     e.preventDefault();
     try {
       await signIn(email, password);
-    } catch (error) {
-      // Error is handled in the auth context
+      // On successful login, navigate is handled by AuthContext through session change
+    } catch (error: any) {
+      // Error toast is displayed in the AuthContext
+      console.error("Login error:", error.message);
     }
   };
 

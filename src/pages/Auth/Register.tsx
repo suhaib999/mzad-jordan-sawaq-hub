@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const Register = () => {
   const { user, signUp, isLoading } = useAuth();
@@ -42,8 +43,10 @@ const Register = () => {
 
     try {
       await signUp(email, password, username, fullName);
-    } catch (error) {
-      // Error is handled in the auth context
+      // On successful signup, navigate is handled by AuthContext through session change
+    } catch (error: any) {
+      console.error("Registration error:", error.message);
+      // Error toast is displayed in the AuthContext
     }
   };
 
@@ -139,7 +142,7 @@ const Register = () => {
         <CardFooter>
           <div className="text-center w-full text-sm">
             Already have an account?{" "}
-            <Link to="/login" className="text-mzad-secondary hover:underline">
+            <Link to="/auth/login" className="text-mzad-secondary hover:underline">
               Login
             </Link>
           </div>

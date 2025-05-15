@@ -5,7 +5,6 @@ import { TrendingUp } from 'lucide-react';
 import ProductGrid from '@/components/product/ProductGrid';
 import { fetchProducts } from '@/services/product/productService';
 import { mapProductToCardProps } from '@/services/product/mappers';
-import { placeholderFeaturedProducts } from '@/data/placeholderProducts';
 
 const TrendingSection = () => {
   // Fetch trending products - for now we'll just get the newest products
@@ -27,17 +26,11 @@ const TrendingSection = () => {
         <h2 className="text-xl font-bold">Trending Now</h2>
       </div>
       
-      {isLoading ? (
-        <ProductGrid 
-          products={placeholderFeaturedProducts} 
-          viewAllLink="/browse?sort_by=trending" 
-        />
-      ) : (
-        <ProductGrid 
-          products={trendingProducts} 
-          viewAllLink="/browse?sort_by=trending" 
-        />
-      )}
+      <ProductGrid 
+        products={trendingProducts}
+        viewAllLink="/browse?sort_by=trending"
+        isLoading={isLoading}
+      />
     </div>
   );
 };

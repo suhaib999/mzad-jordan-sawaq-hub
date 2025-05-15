@@ -6,7 +6,6 @@ import ProductGrid from '@/components/product/ProductGrid';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge as LucideTag } from 'lucide-react';
 import { fetchProducts, mapProductToCardProps } from '@/services/product';
-import { placeholderFeaturedProducts } from '@/data/placeholderProducts';
 
 const TodaysDealsSection = () => {
   // Fetch today's deals (featured products with a discount)
@@ -14,7 +13,6 @@ const TodaysDealsSection = () => {
     queryKey: ['todaysDeals'],
     queryFn: async () => {
       // In a real app, you might have a specific API for deals or filter for discounted products
-      // For now, we'll reuse the featured products as deals
       return fetchProducts(5, 0, { is_auction: false });
     }
   });
@@ -38,34 +36,7 @@ const TodaysDealsSection = () => {
         </Badge>
       </div>
       
-      {isLoading ? (
-        // Show placeholder cards while loading
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {placeholderFeaturedProducts.map((product) => (
-            <Card key={product.id} className="border border-gray-200 hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="relative">
-                  <img 
-                    src={product.imageUrl} 
-                    alt={product.title} 
-                    className="w-full h-48 object-cover rounded-md"
-                  />
-                  <div className="absolute top-0 right-0 bg-red-600 text-white px-2 py-1 text-xs font-bold rounded-bl-md">
-                    SALE
-                  </div>
-                </div>
-                <h3 className="mt-2 font-medium text-gray-900 truncate">{product.title}</h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-lg font-bold text-mzad-primary">{product.price.toFixed(2)} JOD</span>
-                  <span className="text-sm text-gray-500 line-through">
-                    {(product.price * 1.25).toFixed(2)} JOD
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : deals.length > 0 ? (
+      {!isLoading && deals.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {deals.map((deal) => (
             <Card key={deal.id} className="border border-gray-200 hover:shadow-md transition-shadow">
@@ -87,6 +58,20 @@ const TodaysDealsSection = () => {
                     {(deal.price / (1 - deal.discountPercentage/100)).toFixed(2)} JOD
                   </span>
                 </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : isLoading ? (
+        // Show skeleton loaders while loading
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {[...Array(5)].map((_, i) => (
+            <Card key={i} className="border border-gray-200">
+              <CardContent className="p-4">
+                <div className="w-full h-48 bg-gray-200 animate-pulse rounded-md"></div>
+                <div className="h-4 bg-gray-200 rounded animate-pulse mt-3"></div>
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4 mt-2"></div>
+                <div className="h-5 bg-gray-200 rounded animate-pulse w-1/2 mt-2"></div>
               </CardContent>
             </Card>
           ))}
