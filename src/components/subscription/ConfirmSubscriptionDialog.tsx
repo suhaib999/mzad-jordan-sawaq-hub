@@ -2,7 +2,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { startSubscription, SubscriptionPlan } from '@/services/subscriptionService';
 
 interface ConfirmSubscriptionDialogProps {
@@ -18,7 +18,6 @@ export function ConfirmSubscriptionDialog({
   onSuccess,
   plan,
 }: ConfirmSubscriptionDialogProps) {
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handleConfirm = async () => {
@@ -29,25 +28,23 @@ export function ConfirmSubscriptionDialog({
       const success = await startSubscription(plan.id);
       
       if (success) {
-        toast({
+        toast.success({
           title: "Subscription started",
-          description: `You have successfully subscribed to the ${plan.name} plan.`,
+          description: `You have successfully subscribed to the ${plan.name} plan.`
         });
         if (onSuccess) onSuccess();
         onClose();
       } else {
-        toast({
+        toast.destructive({
           title: "Subscription failed",
-          description: "There was an error processing your subscription. Please try again.",
-          variant: "destructive",
+          description: "There was an error processing your subscription. Please try again."
         });
       }
     } catch (error) {
       console.error("Error starting subscription:", error);
-      toast({
+      toast.destructive({
         title: "Subscription failed",
-        description: "There was an error processing your subscription. Please try again.",
-        variant: "destructive",
+        description: "There was an error processing your subscription. Please try again."
       });
     } finally {
       setIsLoading(false);

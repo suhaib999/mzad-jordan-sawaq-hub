@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { addToWishlist, removeFromWishlist, isInWishlist } from '@/services/wishlistService';
 
@@ -12,7 +11,6 @@ interface WishlistButtonProps {
 }
 
 export const WishlistButton = ({ productId, variant = 'default' }: WishlistButtonProps) => {
-  const { toast } = useToast();
   const { user } = useAuth();
   const [inWishlist, setInWishlist] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,10 +31,9 @@ export const WishlistButton = ({ productId, variant = 'default' }: WishlistButto
     e.stopPropagation();
     
     if (!user) {
-      toast({
+      toast.destructive({
         title: "Sign in required",
-        description: "Please sign in to save items to your wishlist",
-        variant: "destructive",
+        description: "Please sign in to save items to your wishlist"
       });
       return;
     }
@@ -48,27 +45,26 @@ export const WishlistButton = ({ productId, variant = 'default' }: WishlistButto
         const success = await removeFromWishlist(productId);
         if (success) {
           setInWishlist(false);
-          toast({
+          toast.default({
             title: "Item removed",
-            description: "Item removed from your wishlist",
+            description: "Item removed from your wishlist"
           });
         }
       } else {
         const success = await addToWishlist(productId);
         if (success) {
           setInWishlist(true);
-          toast({
+          toast.success({
             title: "Item saved",
-            description: "Item added to your wishlist",
+            description: "Item added to your wishlist"
           });
         }
       }
     } catch (error) {
       console.error("Error updating wishlist:", error);
-      toast({
+      toast.destructive({
         title: "Error",
-        description: "There was a problem updating your wishlist",
-        variant: "destructive",
+        description: "There was a problem updating your wishlist"
       });
     } finally {
       setIsLoading(false);

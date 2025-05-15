@@ -1,4 +1,5 @@
 
+import * as React from "react";
 import { toast as sonnerToast } from "sonner";
 import type { ToastProps } from "@/components/ui/toast";
 
@@ -90,21 +91,71 @@ const variantToType: Record<string, "success" | "error" | "warning" | "info" | u
 };
 
 // Simple toast function that uses sonner under the hood
-export const toast = (options: ToastOptions) => {
-  const {
-    title,
-    description,
-    variant = "default",
-    action,
-    ...props
-  } = options;
+export const toast = {
+  // Default toast
+  default: (options: string | ToastOptions) => {
+    const opts = typeof options === "string" ? { description: options } : options;
+    return sonnerToast(opts.title || "", {
+      description: opts.description,
+      action: opts.action,
+      ...opts,
+    });
+  },
+  // Destructive toast (error)
+  destructive: (options: string | ToastOptions) => {
+    const opts = typeof options === "string" ? { description: options } : options;
+    return sonnerToast(opts.title || "", {
+      description: opts.description,
+      action: opts.action,
+      ...opts,
+      type: "error",
+    });
+  },
+  // Success toast
+  success: (options: string | ToastOptions) => {
+    const opts = typeof options === "string" ? { description: options } : options;
+    return sonnerToast(opts.title || "", {
+      description: opts.description,
+      action: opts.action,
+      ...opts,
+      type: "success",
+    });
+  },
+  // Warning toast
+  warning: (options: string | ToastOptions) => {
+    const opts = typeof options === "string" ? { description: options } : options;
+    return sonnerToast(opts.title || "", {
+      description: opts.description,
+      action: opts.action,
+      ...opts,
+      type: "warning", 
+    });
+  },
+  // Info toast
+  info: (options: string | ToastOptions) => {
+    const opts = typeof options === "string" ? { description: options } : options;
+    return sonnerToast(opts.title || "", {
+      description: opts.description,
+      action: opts.action,
+      ...opts,
+      type: "info",
+    });
+  },
+  // Original toast function for compatibility
+  (options: ToastOptions) {
+    const {
+      title,
+      description,
+      variant = "default",
+      action,
+      ...props
+    } = options;
 
-  // Use sonner toast
-  return sonnerToast(title, {
-    description,
-    action,
-    // Use proper type handling for sonner
-    ...props,
-    ...(variant && variantToType[variant] ? { type: variantToType[variant] } : {}),
-  });
+    return sonnerToast(title || "", {
+      description,
+      action,
+      ...props,
+      ...(variant && variantToType[variant] ? { type: variantToType[variant] } : {}),
+    });
+  },
 };
