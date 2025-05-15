@@ -16,13 +16,23 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // If user is already logged in, redirect to home page
-  if (user) {
+  // Only redirect when user is authenticated and not in loading state
+  if (user && !isLoading) {
     return <Navigate to="/" />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      toast({
+        title: "Missing information",
+        description: "Please enter both email and password",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       await signIn(email, password);
       // On successful login, navigate is handled by AuthContext through session change

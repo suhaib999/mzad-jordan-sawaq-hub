@@ -19,8 +19,8 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
 
-  // If user is already logged in, redirect to home page
-  if (user) {
+  // Only redirect when user is authenticated and not in loading state
+  if (user && !isLoading) {
     return <Navigate to="/" />;
   }
 
