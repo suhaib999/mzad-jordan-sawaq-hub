@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { toast as sonnerToast, type Toast as SonnerToast } from "sonner";
+import { toast as sonnerToast, type ToastT } from "sonner";
 import type { ToastProps } from "@/components/ui/toast";
 
 // Custom toast types that match shadcn's toast system
@@ -118,7 +118,7 @@ function toastFunction(options: string | ToastOptions) {
 }
 
 // Add methods to the callable function
-const toast = Object.assign(
+export const toast = Object.assign(
   toastFunction,
   {
     // Default toast
@@ -172,5 +172,3 @@ const toast = Object.assign(
     },
   }
 );
-
-export { toast };
