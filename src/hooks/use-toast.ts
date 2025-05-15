@@ -142,7 +142,7 @@ export const toast = {
     });
   },
   // Original toast function for compatibility
-  (options: ToastOptions) {
+  show: (options: ToastOptions) => {
     const {
       title,
       description,
@@ -157,5 +157,5 @@ export const toast = {
       ...props,
       ...(variant && variantToType[variant] ? { type: variantToType[variant] } : {}),
     });
-  },
+  }
 };
