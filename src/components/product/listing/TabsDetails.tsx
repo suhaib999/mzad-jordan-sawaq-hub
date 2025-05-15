@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
@@ -9,10 +9,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, FileText, Tag } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProductFormValues } from '@/types/product';
-import CategorySelector from '@/components/category/CategorySelector';
-import CategorySelectDialog from '@/components/category/CategorySelectDialog';
-import PhoneSpecsSelector from '@/components/product/PhoneSpecsSelector';
-import DynamicAttributesForm from '@/components/product/DynamicAttributesForm';
+import CategorySelector from '@/components/product/listing/CategorySelector';
+import ItemSpecifics from '@/components/product/listing/ItemSpecifics';
 import { findCategoryById } from '@/data/categories';
 
 interface TabsDetailsProps {
@@ -34,30 +32,43 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
   handleCategorySelect,
   setActiveTab
 }) => {
-  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [categoryValue, setCategoryValue] = useState<string>(form.getValues('category') || '');
+  const [subcategoryValue, setSubcategoryValue] = useState<string>(form.getValues('subcategory') || '');
   
-  const onCategorySelect = (category: any) => {
+  const onCategorySelect = (category: any, subcategory?: any, leafCategory?: any) => {
     console.log("Category selected:", category);
-    handleCategorySelect(category);
     
-    // Store both the category ID and full path
-    form.setValue('category', category.slug);
-    form.setValue('category_id', category.id);
-    
-    // If this is a subcategory, also set the parent category ID
-    if (category.parent_id) {
-      form.setValue('subcategory', category.slug);
-      form.setValue('subcategory_id', category.id);
+    if (leafCategory) {
+      // Handle leaf category selection (if deepest level)
+      form.setValue('category', category.slug);
+      form.setValue('category_id', category.id);
+      form.setValue('subcategory', leafCategory.slug);
+      form.setValue('subcategory_id', leafCategory.id);
+      setSelectedCategory(leafCategory.id);
+      setCategoryValue(category.slug);
+      setSubcategoryValue(leafCategory.slug);
+    } else if (subcategory) {
+      // Handle subcategory selection
+      form.setValue('category', category.slug);
+      form.setValue('category_id', category.id);
+      form.setValue('subcategory', subcategory.slug);
+      form.setValue('subcategory_id', subcategory.id);
+      setSelectedCategory(subcategory.id);
+      setCategoryValue(category.slug);
+      setSubcategoryValue(subcategory.slug);
+    } else {
+      // Handle main category selection
+      form.setValue('category', category.slug);
+      form.setValue('category_id', category.id);
+      form.setValue('subcategory', '');
+      form.setValue('subcategory_id', '');
+      setSelectedCategory(category.id);
+      setCategoryValue(category.slug);
+      setSubcategoryValue('');
     }
     
-    setSelectedCategory(category.id);
-  };
-
-  // Get the category name from the ID for display
-  const getCategoryDisplayName = () => {
-    if (!selectedCategory) return "Select category";
-    const category = findCategoryById(selectedCategory);
-    return category ? category.name : "Select category";
+    // Reset attributes when category changes
+    form.setValue('attributes', {});
   };
 
   return (
@@ -111,33 +122,18 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
             )}
           />
           
-          {/* Category - Updated to use dialog */}
+          {/* Category Selection */}
           <FormField
             control={form.control}
             name="category"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
-                <FormControl>
-                  <div>
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      className="w-full justify-between"
-                      onClick={() => setCategoryDialogOpen(true)}
-                    >
-                      {getCategoryDisplayName()}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                    
-                    <CategorySelectDialog
-                      open={categoryDialogOpen}
-                      onOpenChange={setCategoryDialogOpen}
-                      onCategorySelect={onCategorySelect}
-                      initialCategoryId={field.value}
-                    />
-                  </div>
-                </FormControl>
+                <CategorySelector 
+                  onCategorySelect={onCategorySelect}
+                  selectedCategory={categoryValue}
+                  selectedSubcategory={subcategoryValue}
+                />
                 <FormMessage />
               </FormItem>
             )}
@@ -186,64 +182,11 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Brand */}
-            <FormField
-              control={form.control}
-              name="brand"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Brand</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Brand name" 
-                      {...field} 
-                      value={field.value?.toString() || ""} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <ItemSpecifics 
+              form={form}
+              category={categoryValue}
+              subcategory={subcategoryValue}
             />
-            
-            {/* Model */}
-            <FormField
-              control={form.control}
-              name="model"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Model</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Model number" 
-                      {...field} 
-                      value={field.value?.toString() || ""} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            {/* Render category-specific form fields */}
-            {selectedCategory === 'mobile-phones' && (
-              <PhoneSpecsSelector 
-                categoryPath={selectedCategory}
-              />
-            )}
-            
-            {/* For other categories */}
-            {selectedCategory && selectedCategory !== 'mobile-phones' && (
-              <DynamicAttributesForm
-                category={{ 
-                  id: selectedCategory, 
-                  name: selectedCategory, 
-                  slug: selectedCategory 
-                }}
-                form={form}
-                customAttributes={customAttributes}
-                setCustomAttributes={setCustomAttributes}
-              />
-            )}
           </CardContent>
         </Card>
         

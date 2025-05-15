@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -166,8 +167,8 @@ const CreateListing = () => {
         currency: 'USD', // Default to USD for now
         condition: formData.condition,
         category: formData.category,
-        category_id: formData.category,
-        subcategory_id: formData.subcategory,
+        category_id: formData.category_id,
+        subcategory_id: formData.subcategory_id,
         seller_id: session.user.id,
         location: locationString,
         shipping: JSON.stringify(formData.shipping_options || []),
@@ -188,11 +189,11 @@ const CreateListing = () => {
         tags: formData.tags,
         status: formData.status,
         attributes: formData.attributes,
-        brand: formData.brand?.toString() || null,
-        model: formData.model?.toString() || null,
-        year: formData.year?.toString() || null,
-        color: formData.color?.toString() || null,
-        size: formData.size?.toString() || null,
+        brand: formData.attributes?.brand?.toString() || formData.brand?.toString() || null,
+        model: formData.attributes?.model?.toString() || formData.model?.toString() || null,
+        year: formData.attributes?.year?.toString() || formData.year?.toString() || null,
+        color: formData.attributes?.color?.toString() || formData.color?.toString() || null,
+        size: formData.attributes?.size?.toString() || formData.size?.toString() || null,
         provides_shipping: formData.provides_shipping,
         mzadkumsooq_delivery: formData.mzadkumsooq_delivery,
       };
@@ -231,7 +232,7 @@ const CreateListing = () => {
           description: formData.status === 'draft' 
             ? "Your listing draft has been saved" 
             : "Your listing is now live and visible to buyers",
-          variant: "default",
+          variant: "success",
         });
         
         // Redirect based on status
