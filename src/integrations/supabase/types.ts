@@ -85,6 +85,47 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message: string
+          last_message_time: string
+          participant1_id: string
+          participant2_id: string
+          product_id: string | null
+          unread_count: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message: string
+          last_message_time?: string
+          participant1_id: string
+          participant2_id: string
+          product_id?: string | null
+          unread_count?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message?: string
+          last_message_time?: string
+          participant1_id?: string
+          participant2_id?: string
+          product_id?: string | null
+          unread_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback: {
         Row: {
           buyer_id: string
@@ -132,6 +173,47 @@ export type Database = {
           id?: number
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          attachment_url: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          attachment_url?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_attributes: {
         Row: {
@@ -553,6 +635,10 @@ export type Database = {
           parent_id: string
           path: string
         }[]
+      }
+      increment_unread: {
+        Args: { conv_id: string }
+        Returns: number
       }
     }
     Enums: {
