@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +36,20 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
   const [categoryValue, setCategoryValue] = useState<string>(form.getValues('category') || '');
   const [subcategoryValue, setSubcategoryValue] = useState<string>(form.getValues('subcategory') || '');
   
+  // Initialize from form values when component mounts
+  useEffect(() => {
+    const category = form.getValues('category');
+    const subcategory = form.getValues('subcategory');
+    
+    if (category) {
+      setCategoryValue(category);
+    }
+    
+    if (subcategory) {
+      setSubcategoryValue(subcategory);
+    }
+  }, [form]);
+  
   const onCategorySelect = useCallback((category: any, subcategory?: any) => {
     console.log("Category selected:", category);
     
@@ -70,9 +85,6 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
       });
     }
   }, [form, setSelectedCategory]);
-
-  // Keep track of user's form data even when categories change
-  const formValues = form.watch();
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

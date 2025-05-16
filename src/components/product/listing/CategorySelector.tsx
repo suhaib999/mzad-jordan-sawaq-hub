@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { categories } from '@/data/categories';
+import { toast } from '@/hooks/use-toast';
 
 interface Category {
   id: string;
@@ -30,7 +31,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   const [mainCategories] = useState<Category[]>(categories);
   const [subCategories, setSubCategories] = useState<Category[]>([]);
   const [leafCategories, setLeafCategories] = useState<Category[]>([]);
-  const [isInitializing, setIsInitializing] = useState<boolean>(true);
+  const [initialized, setInitialized] = useState<boolean>(false);
 
   // Helper function to find a category by slug
   const findCategoryBySlug = useCallback((slug: string, categoriesList: Category[]): Category | null => {
@@ -46,57 +47,90 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
     return null;
   }, []);
 
-  // Set initial state if category is already selected
+  // Set initial state if category is already selected - only run once on mount
   useEffect(() => {
-    if (selectedCategory && isInitializing) {
-      // Find the selected category
-      const found = findCategoryBySlug(selectedCategory, categories);
-      if (found) {
-        setCurrentCategory(found);
-        setSubCategories(found.children || []);
-        setLevel('sub');
-        
-        // If subcategory is also provided, set it
-        if (selectedSubcategory && found.children) {
-          const foundSub = findCategoryBySlug(selectedSubcategory, found.children);
-          if (foundSub) {
-            setCurrentSubcategory(foundSub);
-            setLeafCategories(foundSub.children || []);
-            setLevel('leaf');
+    if (!initialized && selectedCategory) {
+      try {
+        // Find the selected category
+        const found = findCategoryBySlug(selectedCategory, categories);
+        if (found) {
+          setCurrentCategory(found);
+          setSubCategories(found.children || []);
+          setLevel('sub');
+          
+          // If subcategory is also provided, set it
+          if (selectedSubcategory && found.children) {
+            const foundSub = findCategoryBySlug(selectedSubcategory, found.children);
+            if (foundSub) {
+              setCurrentSubcategory(foundSub);
+              setLeafCategories(foundSub.children || []);
+              setLevel('leaf');
+            }
           }
         }
+      } catch (error) {
+        console.error("Error initializing category selector:", error);
       }
-      setIsInitializing(false);
+      
+      // Mark as initialized to prevent re-running
+      setInitialized(true);
     }
-  }, [selectedCategory, selectedSubcategory, findCategoryBySlug, isInitializing]);
+  }, [selectedCategory, selectedSubcategory, findCategoryBySlug, initialized]);
 
   const handleCategorySelect = (category: Category) => {
-    // Set state first to preserve UI state
-    setCurrentCategory(category);
-    setSubCategories(category.children || []);
-    setLevel('sub');
+    try {
+      // Set state first to preserve UI state
+      setCurrentCategory(category);
+      setSubCategories(category.children || []);
+      setLevel('sub');
 
-    // If no children, this is a leaf category
-    if (!category.children || category.children.length === 0) {
-      onCategorySelect(category);
+      // If no children, this is a leaf category
+      if (!category.children || category.children.length === 0) {
+        onCategorySelect(category);
+      }
+    } catch (error) {
+      console.error("Error in handleCategorySelect:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem selecting the category.",
+        variant: "destructive"
+      });
     }
   };
 
   const handleSubcategorySelect = (subcategory: Category) => {
-    // Set state first
-    setCurrentSubcategory(subcategory);
-    setLeafCategories(subcategory.children || []);
-    setLevel('leaf');
+    try {
+      // Set state first
+      setCurrentSubcategory(subcategory);
+      setLeafCategories(subcategory.children || []);
+      setLevel('leaf');
 
-    // If no children, this is a leaf category
-    if (!subcategory.children || subcategory.children.length === 0) {
-      onCategorySelect(currentCategory as Category, subcategory);
+      // If no children, this is a leaf category
+      if (!subcategory.children || subcategory.children.length === 0) {
+        onCategorySelect(currentCategory as Category, subcategory);
+      }
+    } catch (error) {
+      console.error("Error in handleSubcategorySelect:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem selecting the subcategory.",
+        variant: "destructive"
+      });
     }
   };
 
   const handleLeafCategorySelect = (leafCategory: Category) => {
-    // Updated to only pass two parameters
-    onCategorySelect(currentSubcategory as Category, leafCategory);
+    try {
+      // Updated to only pass two parameters
+      onCategorySelect(currentSubcategory as Category, leafCategory);
+    } catch (error) {
+      console.error("Error in handleLeafCategorySelect:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem selecting the category.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleBackClick = () => {
