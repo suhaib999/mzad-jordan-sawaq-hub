@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,10 +16,12 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Only redirect when user is authenticated and not in loading state
-  if (user && !isLoading) {
-    return <Navigate to="/" />;
-  }
+  // Use useEffect to handle redirection after authentication
+  useEffect(() => {
+    if (user && !isLoading) {
+      navigate('/');
+    }
+  }, [user, isLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +37,7 @@ const Login = () => {
     
     try {
       await signIn(email, password);
-      // On successful login, navigate is handled by AuthContext through session change
+      // Redirection is now handled by the useEffect hook
     } catch (error: any) {
       // Error toast is displayed in the AuthContext
       console.error("Login error:", error.message);

@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const Register = () => {
+  const navigate = useNavigate();
   const { user, signUp, isLoading } = useAuth();
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
@@ -19,10 +20,12 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
 
-  // Only redirect when user is authenticated and not in loading state
-  if (user && !isLoading) {
-    return <Navigate to="/" />;
-  }
+  // Use useEffect to handle redirection after authentication
+  useEffect(() => {
+    if (user && !isLoading) {
+      navigate('/');
+    }
+  }, [user, isLoading, navigate]);
 
   const validatePassword = () => {
     if (password !== confirmPassword) {
@@ -43,7 +46,7 @@ const Register = () => {
 
     try {
       await signUp(email, password, username, fullName);
-      // On successful signup, navigate is handled by AuthContext through session change
+      // Redirection is now handled by the useEffect hook
     } catch (error: any) {
       console.error("Registration error:", error.message);
       // Error toast is displayed in the AuthContext
