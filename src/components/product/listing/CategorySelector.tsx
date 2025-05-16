@@ -1,10 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Check, ChevronRight, Tag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { categories } from '@/data/categories';
 
 interface Category {
@@ -28,13 +27,28 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   const [level, setLevel] = useState<'main' | 'sub' | 'leaf'>('main');
   const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
   const [currentSubcategory, setCurrentSubcategory] = useState<Category | null>(null);
-  const [mainCategories, setMainCategories] = useState<Category[]>(categories);
+  const [mainCategories] = useState<Category[]>(categories);
   const [subCategories, setSubCategories] = useState<Category[]>([]);
   const [leafCategories, setLeafCategories] = useState<Category[]>([]);
+  const [isInitializing, setIsInitializing] = useState<boolean>(true);
+
+  // Helper function to find a category by slug
+  const findCategoryBySlug = useCallback((slug: string, categoriesList: Category[]): Category | null => {
+    for (const cat of categoriesList) {
+      if (cat.slug === slug) {
+        return cat;
+      }
+      if (cat.children) {
+        const found = findCategoryBySlug(slug, cat.children);
+        if (found) return found;
+      }
+    }
+    return null;
+  }, []);
 
   // Set initial state if category is already selected
   useEffect(() => {
-    if (selectedCategory) {
+    if (selectedCategory && isInitializing) {
       // Find the selected category
       const found = findCategoryBySlug(selectedCategory, categories);
       if (found) {
@@ -52,24 +66,12 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
           }
         }
       }
+      setIsInitializing(false);
     }
-  }, [selectedCategory, selectedSubcategory]);
-
-  // Helper function to find a category by slug
-  const findCategoryBySlug = (slug: string, categoriesList: Category[]): Category | null => {
-    for (const cat of categoriesList) {
-      if (cat.slug === slug) {
-        return cat;
-      }
-      if (cat.children) {
-        const found = findCategoryBySlug(slug, cat.children);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
+  }, [selectedCategory, selectedSubcategory, findCategoryBySlug, isInitializing]);
 
   const handleCategorySelect = (category: Category) => {
+    // Set state first to preserve UI state
     setCurrentCategory(category);
     setSubCategories(category.children || []);
     setLevel('sub');
@@ -81,6 +83,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   };
 
   const handleSubcategorySelect = (subcategory: Category) => {
+    // Set state first
     setCurrentSubcategory(subcategory);
     setLeafCategories(subcategory.children || []);
     setLevel('leaf');
@@ -116,7 +119,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
       <CardContent className="p-0">
         <div className="p-4">
           {/* Breadcrumb navigation */}
-          <div className="flex items-center text-sm mb-4">
+          <div className="flex flex-wrap items-center text-sm mb-4">
             <Button 
               variant="ghost" 
               size="sm" 

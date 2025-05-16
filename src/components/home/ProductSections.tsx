@@ -36,10 +36,10 @@ const ProductSections = () => {
     }
   });
 
-  // Map products to card props
-  const featuredProducts = featuredProductsData.products.map(mapProductToCardProps);
-  const auctionProducts = auctionProductsData.products.map(mapProductToCardProps);
-  const recentProducts = recentProductsData.products.map(mapProductToCardProps);
+  // Map products to card props only if they're loaded
+  const featuredProducts = !isFeaturedLoading ? featuredProductsData.products.map(mapProductToCardProps) : [];
+  const auctionProducts = !isAuctionLoading ? auctionProductsData.products.map(mapProductToCardProps) : [];
+  const recentProducts = !isRecentLoading ? recentProductsData.products.map(mapProductToCardProps) : [];
 
   return (
     <div className="mt-12">

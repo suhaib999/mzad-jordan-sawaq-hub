@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
@@ -12,6 +11,7 @@ import { ProductFormValues } from '@/types/product';
 import CategorySelector from '@/components/product/listing/CategorySelector';
 import ItemSpecifics from '@/components/product/listing/ItemSpecifics';
 import { findCategoryById } from '@/data/categories';
+import { toast } from '@/hooks/use-toast';
 
 interface TabsDetailsProps {
   form: UseFormReturn<ProductFormValues>;
@@ -35,33 +35,45 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
   const [categoryValue, setCategoryValue] = useState<string>(form.getValues('category') || '');
   const [subcategoryValue, setSubcategoryValue] = useState<string>(form.getValues('subcategory') || '');
   
-  const onCategorySelect = (category: any, subcategory?: any) => {
+  const onCategorySelect = useCallback((category: any, subcategory?: any) => {
     console.log("Category selected:", category);
     
-    if (subcategory) {
-      // Handle subcategory selection
-      form.setValue('category', category.slug);
-      form.setValue('category_id', category.id);
-      form.setValue('subcategory', subcategory.slug);
-      form.setValue('subcategory_id', subcategory.id);
-      setSelectedCategory(subcategory.id);
-      setCategoryValue(category.slug);
-      setSubcategoryValue(subcategory.slug);
-    } else {
-      // Handle main category selection
-      form.setValue('category', category.slug);
-      form.setValue('category_id', category.id);
-      form.setValue('subcategory', '');
-      form.setValue('subcategory_id', '');
-      setSelectedCategory(category.id);
-      setCategoryValue(category.slug);
-      setSubcategoryValue('');
+    try {
+      if (subcategory) {
+        // Handle subcategory selection
+        form.setValue('category', category.slug, { shouldDirty: true, shouldValidate: true });
+        form.setValue('category_id', category.id, { shouldDirty: true });
+        form.setValue('subcategory', subcategory.slug, { shouldDirty: true, shouldValidate: true });
+        form.setValue('subcategory_id', subcategory.id, { shouldDirty: true });
+        setSelectedCategory(subcategory.id);
+        setCategoryValue(category.slug);
+        setSubcategoryValue(subcategory.slug);
+      } else {
+        // Handle main category selection
+        form.setValue('category', category.slug, { shouldDirty: true, shouldValidate: true });
+        form.setValue('category_id', category.id, { shouldDirty: true });
+        form.setValue('subcategory', '', { shouldDirty: true });
+        form.setValue('subcategory_id', '', { shouldDirty: true });
+        setSelectedCategory(category.id);
+        setCategoryValue(category.slug);
+        setSubcategoryValue('');
+      }
+      
+      // Reset attributes when category changes to prevent data from previous categories
+      form.setValue('attributes', {}, { shouldDirty: true });
+    } catch (error) {
+      console.error("Error in category selection:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem selecting the category. Please try again.",
+        variant: "destructive",
+      });
     }
-    
-    // Reset attributes when category changes
-    form.setValue('attributes', {});
-  };
+  }, [form, setSelectedCategory]);
 
+  // Keep track of user's form data even when categories change
+  const formValues = form.watch();
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Basic Information */}
