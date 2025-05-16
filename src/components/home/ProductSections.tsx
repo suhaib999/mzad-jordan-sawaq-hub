@@ -5,7 +5,6 @@ import ProductGrid from '@/components/product/ProductGrid';
 import { useQuery } from '@tanstack/react-query';
 import { fetchProducts } from '@/services/product/productService';
 import { mapProductToCardProps } from '@/services/product/mappers';
-import { placeholderFeaturedProducts, placeholderAuctionProducts } from '@/data/placeholderProducts';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -29,12 +28,18 @@ const ProductSections = () => {
     }
   });
 
+  // Fetch recent products
+  const { data: recentProductsData = {products: [], count: 0}, isLoading: isRecentLoading } = useQuery({
+    queryKey: ['recentProducts'],
+    queryFn: async () => {
+      return fetchProducts(8, 0, { sort_by: "newest" });
+    }
+  });
+
   // Map products to card props
   const featuredProducts = featuredProductsData.products.map(mapProductToCardProps);
   const auctionProducts = auctionProductsData.products.map(mapProductToCardProps);
-
-  // Show placeholder data while loading
-  const showPlaceholders = isFeaturedLoading || isAuctionLoading || (featuredProducts.length === 0 && auctionProducts.length === 0);
+  const recentProducts = recentProductsData.products.map(mapProductToCardProps);
 
   return (
     <div className="mt-12">
@@ -52,13 +57,14 @@ const ProductSections = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="featured">
-        {showPlaceholders ? (
-          <TabsContent value="featured">
-            <ProductGrid 
-              products={placeholderFeaturedProducts} 
-              viewAllLink="/browse?type=fixed" 
-            />
-            
+        <TabsContent value="featured">
+          <ProductGrid 
+            products={featuredProducts} 
+            viewAllLink="/browse?type=fixed" 
+            isLoading={isFeaturedLoading}
+          />
+          
+          {!isFeaturedLoading && featuredProducts.length > 0 && (
             <div className="flex justify-center mt-8">
               <Button variant="outline" className="gap-2" asChild>
                 <Link to="/browse?type=fixed">
@@ -66,67 +72,44 @@ const ProductSections = () => {
                 </Link>
               </Button>
             </div>
-          </TabsContent>
-        ) : (
-          <>
-            <TabsContent value="featured">
-              {featuredProducts.length > 0 && (
-                <>
-                  <ProductGrid 
-                    products={featuredProducts} 
-                    viewAllLink="/browse?type=fixed" 
-                  />
-                  
-                  <div className="flex justify-center mt-8">
-                    <Button variant="outline" className="gap-2" asChild>
-                      <Link to="/browse?type=fixed">
-                        View All Products <ArrowRight size={16} />
-                      </Link>
-                    </Button>
-                  </div>
-                </>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="auctions">
-              {auctionProducts.length > 0 && (
-                <>
-                  <ProductGrid 
-                    products={auctionProducts} 
-                    viewAllLink="/browse?type=auction" 
-                  />
-                  
-                  <div className="flex justify-center mt-8">
-                    <Button variant="outline" className="gap-2" asChild>
-                      <Link to="/browse?type=auction">
-                        View All Auctions <ArrowRight size={16} />
-                      </Link>
-                    </Button>
-                  </div>
-                </>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="recently">
-              {featuredProducts.length > 0 && (
-                <>
-                  <ProductGrid 
-                    products={[...featuredProducts].sort(() => Math.random() - 0.5).slice(0, 6)} 
-                    viewAllLink="/browse?sort=newest" 
-                  />
-                  
-                  <div className="flex justify-center mt-8">
-                    <Button variant="outline" className="gap-2" asChild>
-                      <Link to="/browse?sort=newest">
-                        View Recently Added <ArrowRight size={16} />
-                      </Link>
-                    </Button>
-                  </div>
-                </>
-              )}
-            </TabsContent>
-          </>
-        )}
+          )}
+        </TabsContent>
+        
+        <TabsContent value="auctions">
+          <ProductGrid 
+            products={auctionProducts} 
+            viewAllLink="/browse?type=auction" 
+            isLoading={isAuctionLoading}
+          />
+          
+          {!isAuctionLoading && auctionProducts.length > 0 && (
+            <div className="flex justify-center mt-8">
+              <Button variant="outline" className="gap-2" asChild>
+                <Link to="/browse?type=auction">
+                  View All Auctions <ArrowRight size={16} />
+                </Link>
+              </Button>
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="recently">
+          <ProductGrid 
+            products={recentProducts} 
+            viewAllLink="/browse?sort=newest" 
+            isLoading={isRecentLoading}
+          />
+          
+          {!isRecentLoading && recentProducts.length > 0 && (
+            <div className="flex justify-center mt-8">
+              <Button variant="outline" className="gap-2" asChild>
+                <Link to="/browse?sort=newest">
+                  View Recently Added <ArrowRight size={16} />
+                </Link>
+              </Button>
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
     </div>
   );

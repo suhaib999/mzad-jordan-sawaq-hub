@@ -19,13 +19,16 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Use useEffect to handle redirection after authentication
   useEffect(() => {
-    if (user && !isLoading) {
+    // Only redirect when user is authenticated, not in loading state, and not already redirecting
+    if (user && !isLoading && !isRedirecting) {
+      setIsRedirecting(true);
       navigate('/');
     }
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading, navigate, isRedirecting]);
 
   const validatePassword = () => {
     if (password !== confirmPassword) {
