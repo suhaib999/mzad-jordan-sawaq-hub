@@ -1,4 +1,3 @@
-
 export interface Category {
   id: string;
   name: string;
@@ -238,7 +237,6 @@ export const categoriesData: Category[] = [
   },
 ];
 
-// Make sure we export the categories variable for backward compatibility
 export const categories = categoriesData;
 
 export const buildCategoryPath = (categoryId: string): Category[] => {

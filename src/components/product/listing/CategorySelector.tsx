@@ -3,8 +3,15 @@ import { Check, ChevronRight, Tag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { categories, Category } from '@/data/categories';
+import { categories } from '@/data/categories';
 import { toast } from '@/hooks/use-toast';
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  children?: Category[];
+}
 
 interface CategorySelectorProps {
   onCategorySelect: (category: Category, subcategory?: Category) => void;
@@ -31,8 +38,8 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
       if (cat.slug === slug) {
         return cat;
       }
-      if (cat.subcategories) {
-        const found = findCategoryBySlug(slug, cat.subcategories);
+      if (cat.children) {
+        const found = findCategoryBySlug(slug, cat.children);
         if (found) return found;
       }
     }
@@ -47,15 +54,15 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
         const found = findCategoryBySlug(selectedCategory, categories);
         if (found) {
           setCurrentCategory(found);
-          setSubCategories(found.subcategories || []);
+          setSubCategories(found.children || []);
           setLevel('sub');
           
           // If subcategory is also provided, set it
-          if (selectedSubcategory && found.subcategories) {
-            const foundSub = findCategoryBySlug(selectedSubcategory, found.subcategories);
+          if (selectedSubcategory && found.children) {
+            const foundSub = findCategoryBySlug(selectedSubcategory, found.children);
             if (foundSub) {
               setCurrentSubcategory(foundSub);
-              setLeafCategories(foundSub.subcategories || []);
+              setLeafCategories(foundSub.children || []);
               setLevel('leaf');
             }
           }
@@ -73,11 +80,11 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
     try {
       // Set state first to preserve UI state
       setCurrentCategory(category);
-      setSubCategories(category.subcategories || []);
+      setSubCategories(category.children || []);
       setLevel('sub');
 
-      // If no subcategories, this is a leaf category
-      if (!category.subcategories || category.subcategories.length === 0) {
+      // If no children, this is a leaf category
+      if (!category.children || category.children.length === 0) {
         // We pass only the main category without a subcategory
         onCategorySelect(category);
       }
@@ -96,11 +103,11 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
     try {
       // Set state first
       setCurrentSubcategory(subcategory);
-      setLeafCategories(subcategory.subcategories || []);
+      setLeafCategories(subcategory.children || []);
       setLevel('leaf');
 
-      // If no subcategories, this is the final selection
-      if (!subcategory.subcategories || subcategory.subcategories.length === 0) {
+      // If no children, this is the final selection
+      if (!subcategory.children || subcategory.children.length === 0) {
         // Pass both the main category and subcategory
         if (currentCategory) {
           onCategorySelect(currentCategory, subcategory);
