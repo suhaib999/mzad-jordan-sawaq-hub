@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,22 +12,26 @@ import CategorySelector from '@/components/product/listing/CategorySelector';
 import ItemSpecifics from '@/components/product/listing/ItemSpecifics';
 import { findCategoryById } from '@/data/categories';
 import { toast } from '@/hooks/use-toast';
-
 interface TabsDetailsProps {
   form: UseFormReturn<ProductFormValues>;
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
-  customAttributes: { name: string; value: string }[];
-  setCustomAttributes: React.Dispatch<React.SetStateAction<{ name: string; value: string }[]>>;
+  customAttributes: {
+    name: string;
+    value: string;
+  }[];
+  setCustomAttributes: React.Dispatch<React.SetStateAction<{
+    name: string;
+    value: string;
+  }[]>>;
   handleCategorySelect: (category: any) => void;
   setActiveTab: (tab: string) => void;
 }
-
-const TabsDetails: React.FC<TabsDetailsProps> = ({ 
-  form, 
-  selectedCategory, 
-  setSelectedCategory, 
-  customAttributes, 
+const TabsDetails: React.FC<TabsDetailsProps> = ({
+  form,
+  selectedCategory,
+  setSelectedCategory,
+  customAttributes,
   setCustomAttributes,
   handleCategorySelect,
   setActiveTab
@@ -36,62 +39,77 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
   const [categoryValue, setCategoryValue] = useState<string>(form.getValues('category') || '');
   const [subcategoryValue, setSubcategoryValue] = useState<string>(form.getValues('subcategory') || '');
   const [brandValue, setBrandValue] = useState<string>(form.getValues('brand') || '');
-  
+
   // Initialize from form values when component mounts
   useEffect(() => {
     const category = form.getValues('category');
     const subcategory = form.getValues('subcategory');
     const brand = form.getValues('brand');
-    
     if (category) {
       setCategoryValue(category);
     }
-    
     if (subcategory) {
       setSubcategoryValue(subcategory);
     }
-
     if (brand) {
       setBrandValue(brand);
     }
   }, [form]);
-  
   const onCategorySelect = useCallback((category: any, subcategory?: any) => {
     try {
       // Always set category information
-      form.setValue('category', category.slug, { shouldDirty: true, shouldValidate: true });
-      form.setValue('category_id', category.id, { shouldDirty: true });
+      form.setValue('category', category.slug, {
+        shouldDirty: true,
+        shouldValidate: true
+      });
+      form.setValue('category_id', category.id, {
+        shouldDirty: true
+      });
       setCategoryValue(category.slug);
-
       if (subcategory) {
         // Handle subcategory selection
-        form.setValue('subcategory', subcategory.slug, { shouldDirty: true, shouldValidate: true });
-        form.setValue('subcategory_id', subcategory.id, { shouldDirty: true });
+        form.setValue('subcategory', subcategory.slug, {
+          shouldDirty: true,
+          shouldValidate: true
+        });
+        form.setValue('subcategory_id', subcategory.id, {
+          shouldDirty: true
+        });
         setSelectedCategory(subcategory.id);
         setSubcategoryValue(subcategory.slug);
-        
+
         // Build category path array if both category and subcategory are selected
         const categoryPath = [category.slug, subcategory.slug];
-        form.setValue('category_path', categoryPath, { shouldDirty: true });
+        form.setValue('category_path', categoryPath, {
+          shouldDirty: true
+        });
       } else {
         // Handle main category selection only (no subcategory selected)
-        form.setValue('subcategory', '', { shouldDirty: true });
-        form.setValue('subcategory_id', '', { shouldDirty: true });
+        form.setValue('subcategory', '', {
+          shouldDirty: true
+        });
+        form.setValue('subcategory_id', '', {
+          shouldDirty: true
+        });
         setSelectedCategory(category.id);
         setSubcategoryValue('');
-        
+
         // Set category path with just the main category
-        form.setValue('category_path', [category.slug], { shouldDirty: true });
+        form.setValue('category_path', [category.slug], {
+          shouldDirty: true
+        });
       }
-      
+
       // Reset attributes when category changes to prevent data from previous categories
-      form.setValue('attributes', {}, { shouldDirty: true });
+      form.setValue('attributes', {}, {
+        shouldDirty: true
+      });
     } catch (error) {
       console.error("Error in category selection:", error);
       toast({
         title: "Error",
         description: "There was a problem selecting the category. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   }, [form, setSelectedCategory]);
@@ -99,11 +117,11 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
   // Handle brand input changes
   const handleBrandChange = (value: string) => {
     setBrandValue(value);
-    form.setValue('brand', value, { shouldDirty: true });
+    form.setValue('brand', value, {
+      shouldDirty: true
+    });
   };
-  
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  return <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Basic Information */}
       <Card>
         <CardHeader>
@@ -114,11 +132,9 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Title */}
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="title" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>Title <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
                   <Input placeholder="Enter title" {...field} />
@@ -127,83 +143,42 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
                   Clear title describing your item (10-100 characters)
                 </FormDescription>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
           
           {/* Description */}
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="description" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>Description <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
-                  <Textarea 
-                    placeholder="Describe your item in detail" 
-                    className="min-h-[120px]" 
-                    {...field} 
-                  />
+                  <Textarea placeholder="Describe your item in detail" className="min-h-[120px]" {...field} />
                 </FormControl>
                 <FormDescription>
                   Detailed description (30-5000 characters)
                 </FormDescription>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
           
           {/* Category Selection */}
-          <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="category" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
-                <CategorySelector 
-                  onCategorySelect={onCategorySelect}
-                  selectedCategory={categoryValue}
-                  selectedSubcategory={subcategoryValue}
-                />
+                <CategorySelector onCategorySelect={onCategorySelect} selectedCategory={categoryValue} selectedSubcategory={subcategoryValue} />
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
           
           {/* Brand Field - Separate from Category */}
-          <FormField
-            control={form.control}
-            name="brand"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Brand</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="Enter brand name" 
-                    value={brandValue}
-                    onChange={(e) => handleBrandChange(e.target.value)}
-                  />
-                </FormControl>
-                <FormDescription>
-                  The manufacturer or brand of your item
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <FormField control={form.control} name="brand" render={({
+          field
+        }) => {}} />
           
           {/* Condition */}
-          <FormField
-            control={form.control}
-            name="condition"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="condition" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>Condition <span className="text-red-500">*</span></FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                  value={field.value}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select condition" />
@@ -219,34 +194,26 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
                   </SelectContent>
                 </Select>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
 
           {/* Tags Input */}
-          <FormField
-            control={form.control}
-            name="tags"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="tags" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>Tags</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="Enter tags, separated by commas" 
-                    value={(field.value || []).join(', ')}
-                    onChange={(e) => {
-                      const tagsArray = e.target.value.split(',').map(tag => tag.trim()).filter(Boolean);
-                      form.setValue('tags', tagsArray, { shouldDirty: true });
-                    }}
-                  />
+                  <Input placeholder="Enter tags, separated by commas" value={(field.value || []).join(', ')} onChange={e => {
+              const tagsArray = e.target.value.split(',').map(tag => tag.trim()).filter(Boolean);
+              form.setValue('tags', tagsArray, {
+                shouldDirty: true
+              });
+            }} />
                 </FormControl>
                 <FormDescription>
                   Add descriptive keywords to help buyers find your item
                 </FormDescription>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
         </CardContent>
       </Card>
       
@@ -260,26 +227,16 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ItemSpecifics 
-              form={form}
-              category={categoryValue}
-              subcategory={subcategoryValue}
-            />
+            <ItemSpecifics form={form} category={categoryValue} subcategory={subcategoryValue} />
           </CardContent>
         </Card>
         
         <div className="flex justify-end">
-          <Button
-            type="button"
-            onClick={() => setActiveTab('pricing')}
-            className="flex items-center"
-          >
+          <Button type="button" onClick={() => setActiveTab('pricing')} className="flex items-center">
             Next: Pricing <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default TabsDetails;
