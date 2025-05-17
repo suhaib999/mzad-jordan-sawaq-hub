@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { vehicleSchema, VehicleFormValues } from '@/types/product';
@@ -14,34 +15,41 @@ import CategorySelector from '@/components/category/CategorySelector';
 import { toast } from '@/hooks/use-toast';
 import { Category } from '@/data/categories';
 import { ChevronRight } from 'lucide-react';
-
-// Mock fuel types and body types data
-const fuelTypes = ['Gasoline', 'Diesel', 'Electric', 'Hybrid', 'Plug-in Hybrid', 'CNG'];
-const bodyTypes = ['Sedan', 'SUV', 'Hatchback', 'Coupe', 'Convertible', 'Truck', 'Van/Minivan', 'Wagon'];
-const gearTypes = ['Automatic', 'Manual', 'Semi-Automatic', 'CVT'];
-const colorOptions = ['Black', 'White', 'Silver', 'Gray', 'Blue', 'Red', 'Green', 'Brown', 'Yellow', 'Orange', 'Purple', 'Gold', 'Other'];
-
-// Feature options for checkboxes
-const featureOptions = [
-  { id: 'air_conditioning', label: 'Air Conditioning' },
-  { id: 'power_steering', label: 'Power Steering' },
-  { id: 'power_windows', label: 'Power Windows' },
-  { id: 'abs', label: 'Anti-lock Brakes (ABS)' },
-  { id: 'sunroof', label: 'Sunroof' },
-  { id: 'leather_seats', label: 'Leather Seats' },
-  { id: 'navigation', label: 'Navigation System' },
-  { id: 'bluetooth', label: 'Bluetooth' },
-  { id: 'backup_camera', label: 'Backup Camera' },
-  { id: 'parking_sensors', label: 'Parking Sensors' },
-  { id: 'cruise_control', label: 'Cruise Control' },
-  { id: 'heated_seats', label: 'Heated Seats' }
-];
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { 
+  getCarMakes, 
+  getCarModels, 
+  fuelTypes, 
+  transmissionTypes,
+  bodyTypes, 
+  colorOptions,
+  driveTypes,
+  wheelSides,
+  licenseStatuses,
+  featureOptions 
+} from '@/utils/vehicleData';
 
 const VehicleListingForm = () => {
   const [activeTab, setActiveTab] = useState('details');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [selectedMake, setSelectedMake] = useState<string | undefined>();
+  const [carMakes, setCarMakes] = useState<string[]>([]);
+  const [carModels, setCarModels] = useState<string[]>([]);
   
   // Initialize the form
   const form = useForm<VehicleFormValues>({
@@ -64,6 +72,21 @@ const VehicleListingForm = () => {
       status: 'draft'
     }
   });
+  
+  // Load car makes and models on component mount
+  useEffect(() => {
+    setCarMakes(getCarMakes());
+  }, []);
+  
+  // Update models when make changes
+  useEffect(() => {
+    if (selectedMake) {
+      const models = getCarModels(selectedMake);
+      setCarModels(models);
+    } else {
+      setCarModels([]);
+    }
+  }, [selectedMake]);
   
   const onSubmit = (data: VehicleFormValues) => {
     try {
@@ -95,8 +118,7 @@ const VehicleListingForm = () => {
     setSelectedCategoryId(category.id);
     form.setValue('category_id', category.id, { shouldDirty: true, shouldValidate: true });
     
-    // If we have a full path to this category, use category_path from the Category type if available
-    // or just set an array with the category name
+    // Set category path using category name (we don't use path property anymore)
     const categoryPath = category.name ? [category.name] : [];
     form.setValue('category_path', categoryPath, { shouldDirty: true });
     
@@ -177,31 +199,121 @@ const VehicleListingForm = () => {
                     )}
                   />
                   
-                  {/* Make */}
+                  {/* Make - Searchable Dropdown */}
                   <FormField
                     control={form.control}
                     name="make"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="flex flex-col">
                         <FormLabel>Make <span className="text-red-500">*</span></FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Toyota" {...field} />
-                        </FormControl>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "w-full justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value
+                                  ? carMakes.find((make) => make === field.value)
+                                  : "Select make"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0">
+                            <Command>
+                              <CommandInput placeholder="Search make..." />
+                              <CommandEmpty>No make found.</CommandEmpty>
+                              <CommandGroup className="max-h-60 overflow-y-auto">
+                                {carMakes.map((make) => (
+                                  <CommandItem
+                                    value={make}
+                                    key={make}
+                                    onSelect={() => {
+                                      form.setValue("make", make, { shouldValidate: true });
+                                      setSelectedMake(make);
+                                      // Reset model when make changes
+                                      form.setValue("model", "", { shouldValidate: true });
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        make === field.value
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                    {make}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   
-                  {/* Model */}
+                  {/* Model - Searchable Dropdown (depends on Make) */}
                   <FormField
                     control={form.control}
                     name="model"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="flex flex-col">
                         <FormLabel>Model <span className="text-red-500">*</span></FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Camry" {...field} />
-                        </FormControl>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "w-full justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                                disabled={!selectedMake}
+                              >
+                                {field.value
+                                  ? carModels.find((model) => model === field.value)
+                                  : selectedMake ? "Select model" : "Select make first"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0">
+                            <Command>
+                              <CommandInput placeholder="Search model..." />
+                              <CommandEmpty>No model found.</CommandEmpty>
+                              <CommandGroup className="max-h-60 overflow-y-auto">
+                                {carModels.map((model) => (
+                                  <CommandItem
+                                    value={model}
+                                    key={model}
+                                    onSelect={() => {
+                                      form.setValue("model", model, { shouldValidate: true });
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        model === field.value
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                    {model}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -370,7 +482,7 @@ const VehicleListingForm = () => {
                     {/* Transmission/Gear Type */}
                     <FormField
                       control={form.control}
-                      name="gear_type"
+                      name="transmission"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Transmission</FormLabel>
@@ -384,7 +496,7 @@ const VehicleListingForm = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {gearTypes.map(type => (
+                              {transmissionTypes.map(type => (
                                 <SelectItem key={type} value={type.toLowerCase()}>{type}</SelectItem>
                               ))}
                             </SelectContent>
@@ -436,6 +548,177 @@ const VehicleListingForm = () => {
                               {...field}
                               onChange={(e) => field.onChange(Number(e.target.value))}
                             />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {/* Doors */}
+                    <FormField
+                      control={form.control}
+                      name="doors"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Doors</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="e.g. 4" 
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {/* Seats */}
+                    <FormField
+                      control={form.control}
+                      name="seats"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Seats</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="e.g. 5" 
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {/* Drive Type */}
+                    <FormField
+                      control={form.control}
+                      name="drive_type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Drive Type</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select drive type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {driveTypes.map(type => (
+                                <SelectItem key={type} value={type.toLowerCase()}>{type}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {/* Wheel Side */}
+                    <FormField
+                      control={form.control}
+                      name="wheel_side"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Wheel Side</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select wheel side" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {wheelSides.map(side => (
+                                <SelectItem key={side} value={side.toLowerCase()}>{side}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {/* Cylinders */}
+                    <FormField
+                      control={form.control}
+                      name="cylinders"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cylinders</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="e.g. 4" 
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {/* Interior Color */}
+                    <FormField
+                      control={form.control}
+                      name="interior_color"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Interior Color</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g. Black" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {/* License Status */}
+                    <FormField
+                      control={form.control}
+                      name="license_status"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>License Status</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select license status" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {licenseStatuses.map(status => (
+                                <SelectItem key={status} value={status.toLowerCase()}>{status}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {/* Chassis Number */}
+                    <FormField
+                      control={form.control}
+                      name="chassis_number"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Chassis Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g. JH4DA9380MS016526" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

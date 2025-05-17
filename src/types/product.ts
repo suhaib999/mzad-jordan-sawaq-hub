@@ -91,7 +91,6 @@ export interface Category {
   children?: Category[];
   parent_id?: string | null;
   level?: number;
-  path?: string;
   is_leaf?: boolean;
 }
 
@@ -111,8 +110,16 @@ export const vehicleSchema = z.object({
   mileage: z.number().min(0, "Mileage must be a positive number"),
   engine_size: z.number().optional(),
   fuel_type: z.string().optional(),
-  gear_type: z.string().optional(),
+  transmission: z.string().optional(),
   body_type: z.string().optional(),
+  doors: z.number().optional(),
+  seats: z.number().optional(),
+  drive_type: z.string().optional(),
+  cylinders: z.number().optional(),
+  wheel_side: z.string().optional(),
+  interior_color: z.string().optional(),
+  license_status: z.string().optional(),
+  chassis_number: z.string().optional(),
   color: z.string().optional(),
   features: z.array(z.string()).optional(),
   condition: z.string().min(1, "Please select a condition"),

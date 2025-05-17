@@ -580,6 +580,92 @@ export type Database = {
         }
         Relationships: []
       }
+      vehicles: {
+        Row: {
+          body_type: string | null
+          chassis_number: string | null
+          color: string | null
+          condition: string
+          created_at: string
+          cylinders: number | null
+          doors: number | null
+          drive_type: string | null
+          engine_size: number | null
+          features: string[] | null
+          fuel_type: string | null
+          id: string
+          interior_color: string | null
+          license_status: string | null
+          make: string
+          mileage: number | null
+          model: string
+          product_id: string | null
+          seats: number | null
+          transmission: string | null
+          updated_at: string
+          wheel_side: string | null
+          year: number | null
+        }
+        Insert: {
+          body_type?: string | null
+          chassis_number?: string | null
+          color?: string | null
+          condition: string
+          created_at?: string
+          cylinders?: number | null
+          doors?: number | null
+          drive_type?: string | null
+          engine_size?: number | null
+          features?: string[] | null
+          fuel_type?: string | null
+          id?: string
+          interior_color?: string | null
+          license_status?: string | null
+          make: string
+          mileage?: number | null
+          model: string
+          product_id?: string | null
+          seats?: number | null
+          transmission?: string | null
+          updated_at?: string
+          wheel_side?: string | null
+          year?: number | null
+        }
+        Update: {
+          body_type?: string | null
+          chassis_number?: string | null
+          color?: string | null
+          condition?: string
+          created_at?: string
+          cylinders?: number | null
+          doors?: number | null
+          drive_type?: string | null
+          engine_size?: number | null
+          features?: string[] | null
+          fuel_type?: string | null
+          id?: string
+          interior_color?: string | null
+          license_status?: string | null
+          make?: string
+          mileage?: number | null
+          model?: string
+          product_id?: string | null
+          seats?: number | null
+          transmission?: string | null
+          updated_at?: string
+          wheel_side?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicles_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wishlists: {
         Row: {
           created_at: string
