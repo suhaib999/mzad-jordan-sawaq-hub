@@ -8,37 +8,51 @@ export const applyFilters = (query: any, filterParams: ProductFilterParams = {})
   
   const { 
     category, 
+    category_id,
+    subcategory_id,
+    category_path,
+    brand,
     condition, 
     price_min, 
     price_max, 
     location, 
     is_auction, 
     with_shipping,
-    query: searchQuery
+    query: searchQuery,
+    tags,
+    seller_id
   } = filterParams;
 
-  if (category) {
-    // Check if this is a top-level category with subcategories we need to include
-    if (category === 'vehicles' || category === 'electronics') {
-      // For top-level categories, we need to match either the exact category
-      // or any category that starts with this category/ (to include subcategories)
-      filteredQuery = filteredQuery.or(`category.eq.${category},category_path.cs.{"${category}"}`);
-    } 
-    // Check if we have a full path or just a slug
-    else if (Array.isArray(category)) {
-      // If it's an array, use contains for full path match
-      filteredQuery = filteredQuery.contains('category_path', category);
-    } else {
-      // For single category slug, check if it's in the category_path array
-      // This ensures we find products in this category AND its subcategories
-      filteredQuery = filteredQuery.contains('category_path', [category]);
-    }
+  // Filter by category using different approaches
+  if (category_path && Array.isArray(category_path) && category_path.length > 0) {
+    // If we have a full category path array, use contains operator for exact path match
+    filteredQuery = filteredQuery.contains('category_path', category_path);
+  } else if (category) {
+    // If we just have a category string, check if it's in the path array or matches the category field
+    filteredQuery = filteredQuery.or(`category.eq.${category},category_path.cs.{"${category}"}`);
   }
 
+  // Filter by category_id (specific category ID)
+  if (category_id) {
+    filteredQuery = filteredQuery.eq('category_id', category_id);
+  }
+  
+  // Filter by subcategory_id (specific subcategory ID)
+  if (subcategory_id) {
+    filteredQuery = filteredQuery.eq('subcategory_id', subcategory_id);
+  }
+  
+  // Filter by brand (separate from category)
+  if (brand) {
+    filteredQuery = filteredQuery.eq('brand', brand);
+  }
+
+  // Filter by condition
   if (condition && condition.length > 0) {
     filteredQuery = filteredQuery.in('condition', condition);
   }
 
+  // Filter by price range
   if (price_min !== undefined) {
     filteredQuery = filteredQuery.gte('price', price_min);
   }
@@ -47,20 +61,38 @@ export const applyFilters = (query: any, filterParams: ProductFilterParams = {})
     filteredQuery = filteredQuery.lte('price', price_max);
   }
 
+  // Filter by location
   if (location && Array.isArray(location) && location.length > 0) {
     filteredQuery = filteredQuery.in('location', location);
   }
 
+  // Filter by listing type (auction/fixed price)
   if (is_auction !== undefined) {
     filteredQuery = filteredQuery.eq('is_auction', is_auction);
   }
 
+  // Filter by shipping availability
   if (with_shipping) {
     filteredQuery = filteredQuery.not('shipping', 'is', null);
   }
 
+  // Filter by seller ID
+  if (seller_id) {
+    filteredQuery = filteredQuery.eq('seller_id', seller_id);
+  }
+
+  // Filter by tags
+  if (tags && Array.isArray(tags) && tags.length > 0) {
+    // This checks if any of the tags in the filter are present in the product's tags array
+    filteredQuery = filteredQuery.overlaps('tags', tags);
+  }
+
+  // Text search in title and description
   if (searchQuery) {
-    filteredQuery = filteredQuery.ilike('title', `%${searchQuery}%`);
+    // Basic search using ILIKE for both title and description
+    filteredQuery = filteredQuery.or(
+      `title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`
+    );
   }
 
   return filteredQuery;

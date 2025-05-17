@@ -9,41 +9,87 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/hooks/use-toast';
 
 const ProductSections = () => {
   const [activeTab, setActiveTab] = React.useState<string>("featured");
   
   // Fetch featured (non-auction) products
-  const { data: featuredProductsData = {products: [], count: 0}, isLoading: isFeaturedLoading } = useQuery({
+  const { data: featuredProductsData, isLoading: isFeaturedLoading, error: featuredError } = useQuery({
     queryKey: ['featuredProducts'],
     queryFn: async () => {
-      return fetchProducts(8, 0, { is_auction: false });
+      try {
+        return await fetchProducts(8, 0, { is_auction: false });
+      } catch (error) {
+        console.error("Error fetching featured products:", error);
+        throw error;
+      }
     }
   });
 
   // Fetch auction products
-  const { data: auctionProductsData = {products: [], count: 0}, isLoading: isAuctionLoading } = useQuery({
+  const { data: auctionProductsData, isLoading: isAuctionLoading, error: auctionError } = useQuery({
     queryKey: ['auctionProducts'],
     queryFn: async () => {
-      return fetchProducts(8, 0, { is_auction: true });
+      try {
+        return await fetchProducts(8, 0, { is_auction: true });
+      } catch (error) {
+        console.error("Error fetching auction products:", error);
+        throw error;
+      }
     }
   });
 
   // Fetch recent products
-  const { data: recentProductsData = {products: [], count: 0}, isLoading: isRecentLoading } = useQuery({
+  const { data: recentProductsData, isLoading: isRecentLoading, error: recentError } = useQuery({
     queryKey: ['recentProducts'],
     queryFn: async () => {
-      return fetchProducts(8, 0, { sort_by: "newest" });
+      try {
+        return await fetchProducts(8, 0, { sort_by: "newest" });
+      } catch (error) {
+        console.error("Error fetching recent products:", error);
+        throw error;
+      }
     }
   });
 
-  // Map products to card props only if they're loaded
-  const featuredProducts = !isFeaturedLoading && featuredProductsData.products ? 
-    featuredProductsData.products.map(mapProductToCardProps) : [];
-  const auctionProducts = !isAuctionLoading && auctionProductsData.products ? 
-    auctionProductsData.products.map(mapProductToCardProps) : [];
-  const recentProducts = !isRecentLoading && recentProductsData.products ? 
-    recentProductsData.products.map(mapProductToCardProps) : [];
+  // Handle errors
+  React.useEffect(() => {
+    if (featuredError) {
+      toast({
+        title: "Error",
+        description: "Failed to load featured products.",
+        variant: "destructive"
+      });
+    }
+    if (auctionError) {
+      toast({
+        title: "Error",
+        description: "Failed to load auction products.",
+        variant: "destructive"
+      });
+    }
+    if (recentError) {
+      toast({
+        title: "Error",
+        description: "Failed to load recent products.",
+        variant: "destructive"
+      });
+    }
+  }, [featuredError, auctionError, recentError]);
+
+  // Map products to card props only if they're loaded and have products
+  const featuredProducts = !isFeaturedLoading && featuredProductsData?.products 
+    ? featuredProductsData.products.map(mapProductToCardProps) 
+    : [];
+    
+  const auctionProducts = !isAuctionLoading && auctionProductsData?.products 
+    ? auctionProductsData.products.map(mapProductToCardProps) 
+    : [];
+    
+  const recentProducts = !isRecentLoading && recentProductsData?.products 
+    ? recentProductsData.products.map(mapProductToCardProps) 
+    : [];
 
   const renderLoadingSkeleton = () => (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

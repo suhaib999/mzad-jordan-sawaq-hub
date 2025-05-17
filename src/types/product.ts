@@ -6,12 +6,12 @@ export const productSchema = z.object({
   title: z.string().min(10, "Title must be at least 10 characters").max(100, "Title cannot exceed 100 characters"),
   description: z.string().min(30, "Description must be at least 30 characters").max(5000, "Description cannot exceed 5000 characters"),
   category: z.string().min(1, "Please select a category"),
-  category_id: z.string().optional(), // Added field for category ID
+  category_id: z.string().optional(), // ID for category
   subcategory: z.string().optional(),
-  subcategory_id: z.string().optional(), // Added field for subcategory ID
-  category_path: z.array(z.string()).optional(), // New field for category path
+  subcategory_id: z.string().optional(), // ID for subcategory
+  category_path: z.array(z.string()).optional(), // Array for full category path
+  brand: z.string().optional().nullable(), // Brand is separate from category
   condition: z.string().min(1, "Please select a condition"),
-  brand: z.string().optional().nullable(),
   model: z.string().optional().nullable(),
   year: z.string().optional().nullable(),
   color: z.string().optional().nullable(),
@@ -53,7 +53,7 @@ export const productSchema = z.object({
     })
   ).min(1, "At least one image is required"),
   attributes: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string())])).optional(),
-  custom_attributes: z.any().optional(), // Changed from string to any to match Json type
+  custom_attributes: z.any().optional(), // For category-specific attributes as JSONB
   status: z.enum(['active', 'draft']),
 }).superRefine((data, ctx) => {
   // Conditional validation based on listing type
@@ -88,4 +88,57 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
+  children?: Category[];
+  parent_id?: string | null;
+  level?: number;
+  path?: string;
+  is_leaf?: boolean;
 }
+
+// Vehicle specific schema
+export const vehicleSchema = z.object({
+  // Base product fields
+  title: z.string().min(10, "Title must be at least 10 characters").max(100, "Title cannot exceed 100 characters"),
+  description: z.string().min(30, "Description must be at least 30 characters").max(5000, "Description cannot exceed 5000 characters"),
+  category_path: z.array(z.string()).optional(),
+  category_id: z.string().min(1, "Please select a category"),
+  subcategory_id: z.string().optional(),
+  
+  // Vehicle specific fields
+  make: z.string().min(1, "Make is required"),
+  model: z.string().min(1, "Model is required"),
+  year: z.number().min(1900, "Please enter a valid year"),
+  mileage: z.number().min(0, "Mileage must be a positive number"),
+  engine_size: z.number().optional(),
+  fuel_type: z.string().optional(),
+  gear_type: z.string().optional(),
+  body_type: z.string().optional(),
+  color: z.string().optional(),
+  features: z.array(z.string()).optional(),
+  condition: z.string().min(1, "Please select a condition"),
+  
+  // Pricing fields
+  price: z.number().min(0.01, "Price must be greater than 0"),
+  is_negotiable: z.boolean().optional().default(false),
+  
+  // Location fields
+  location: z.object({
+    city: z.string().min(1, "City is required"),
+    neighborhood: z.string().min(1, "Neighborhood is required"),
+    street: z.string().optional(),
+  }),
+  
+  // Images and status
+  images: z.array(
+    z.object({
+      id: z.string(),
+      file: z.any().optional(),
+      url: z.string(),
+      order: z.number(),
+    })
+  ).min(1, "At least one image is required"),
+  
+  status: z.enum(['active', 'draft']),
+});
+
+export type VehicleFormValues = z.infer<typeof vehicleSchema>;

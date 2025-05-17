@@ -35,11 +35,13 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
 }) => {
   const [categoryValue, setCategoryValue] = useState<string>(form.getValues('category') || '');
   const [subcategoryValue, setSubcategoryValue] = useState<string>(form.getValues('subcategory') || '');
+  const [brandValue, setBrandValue] = useState<string>(form.getValues('brand') || '');
   
   // Initialize from form values when component mounts
   useEffect(() => {
     const category = form.getValues('category');
     const subcategory = form.getValues('subcategory');
+    const brand = form.getValues('brand');
     
     if (category) {
       setCategoryValue(category);
@@ -48,11 +50,13 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
     if (subcategory) {
       setSubcategoryValue(subcategory);
     }
+
+    if (brand) {
+      setBrandValue(brand);
+    }
   }, [form]);
   
   const onCategorySelect = useCallback((category: any, subcategory?: any) => {
-    console.log("Category selected:", category, subcategory);
-    
     try {
       // Always set category information
       form.setValue('category', category.slug, { shouldDirty: true, shouldValidate: true });
@@ -82,8 +86,6 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
       
       // Reset attributes when category changes to prevent data from previous categories
       form.setValue('attributes', {}, { shouldDirty: true });
-      
-      console.log("Updated form values:", form.getValues());
     } catch (error) {
       console.error("Error in category selection:", error);
       toast({
@@ -93,6 +95,12 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
       });
     }
   }, [form, setSelectedCategory]);
+
+  // Handle brand input changes
+  const handleBrandChange = (value: string) => {
+    setBrandValue(value);
+    form.setValue('brand', value, { shouldDirty: true });
+  };
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -162,6 +170,28 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
             )}
           />
           
+          {/* Brand Field - Separate from Category */}
+          <FormField
+            control={form.control}
+            name="brand"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Brand</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Enter brand name" 
+                    value={brandValue}
+                    onChange={(e) => handleBrandChange(e.target.value)}
+                  />
+                </FormControl>
+                <FormDescription>
+                  The manufacturer or brand of your item
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
           {/* Condition */}
           <FormField
             control={form.control}
@@ -188,6 +218,31 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
                     <SelectItem value="for_parts">For Parts</SelectItem>
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Tags Input */}
+          <FormField
+            control={form.control}
+            name="tags"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tags</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Enter tags, separated by commas" 
+                    value={(field.value || []).join(', ')}
+                    onChange={(e) => {
+                      const tagsArray = e.target.value.split(',').map(tag => tag.trim()).filter(Boolean);
+                      form.setValue('tags', tagsArray, { shouldDirty: true });
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Add descriptive keywords to help buyers find your item
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

@@ -206,6 +206,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
               size="sm" 
               onClick={handleBackClick}
               className="mb-4"
+              type="button"
             >
               Back
             </Button>
@@ -264,6 +265,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       variant="outline"
       className={`h-auto text-left justify-between p-3 ${isSelected ? 'border-primary' : ''}`}
       onClick={onClick}
+      type="button"
     >
       <div className="flex flex-col items-start">
         <span className="font-medium">{category.name}</span>

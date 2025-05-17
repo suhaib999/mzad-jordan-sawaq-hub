@@ -1,160 +1,263 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+import AuthLayout from './AuthLayout';
+import { Provider } from '@supabase/supabase-js';
+
+// Form schema using zod
+const registerSchema = z.object({
+  username: z.string().min(3, { message: 'Username must be at least 3 characters' }),
+  fullName: z.string().min(2, { message: 'Full name must be at least 2 characters' }),
+  email: z.string().email({ message: 'Please enter a valid email address' }),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const Register = () => {
   const navigate = useNavigate();
-  const { user, signUp, isLoading } = useAuth();
-  const [username, setUsername] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
-  const [isRedirecting, setIsRedirecting] = useState(false);
+  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
+  const [socialAuthIsLoading, setSocialAuthIsLoading] = useState(false);
+  
+  // Initialize the form with react-hook-form and zod validation
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      username: '',
+      fullName: '',
+      email: '',
+      password: '',
+    },
+  });
+  
+  // Handle form submission
+  const onSubmit = async (data: RegisterFormValues) => {
+    try {
+      setIsLoading(true);
+      
+      // Register user with Supabase
+      const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            username: data.username,
+            full_name: data.fullName,
+          },
+        },
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Show success message
+      toast({
+        title: "Registration successful",
+        description: "Please check your email to confirm your account.",
+      });
 
-  // Use useEffect to handle redirection after authentication
-  useEffect(() => {
-    // Only redirect when user is authenticated, not in loading state, and not already redirecting
-    if (user && !isLoading && !isRedirecting) {
-      setIsRedirecting(true);
-      navigate('/');
+      // Use window.location for more reliable redirect preventing navigation loops
+      window.location.href = '/auth/login';
+      
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Registration failed",
+        description: error.message || "There was a problem with your registration.",
+      });
+      console.error('Registration error:', error);
+    } finally {
+      setIsLoading(false);
     }
-  }, [user, isLoading, navigate, isRedirecting]);
-
-  const validatePassword = () => {
-    if (password !== confirmPassword) {
-      setPasswordError('Passwords do not match');
-      return false;
-    }
-    if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters long');
-      return false;
-    }
-    setPasswordError('');
-    return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validatePassword()) return;
-
+  const handleSocialLogin = async (provider: Provider) => {
     try {
-      await signUp(email, password, username, fullName);
-      // Redirection is now handled by the useEffect hook
+      setSocialAuthIsLoading(true);
+      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
     } catch (error: any) {
-      console.error("Registration error:", error.message);
-      // Error toast is displayed in the AuthContext
+      toast({
+        variant: "destructive",
+        title: "Sign up failed",
+        description: error.message || "There was a problem with social sign up.",
+      });
+      console.error('Social sign up error:', error);
+      setSocialAuthIsLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-[80vh] px-4 py-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
+    <AuthLayout>
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
           <CardTitle className="text-2xl text-center">Create an Account</CardTitle>
-          <CardDescription className="text-center">
-            Enter your information to create your MzadKumSooq account
-          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                type="text"
-                placeholder="john_doe"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="your_username" 
+                        {...field} 
+                        disabled={isLoading}
+                        autoComplete="username"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input
-                id="fullName"
-                type="text"
-                placeholder="John Doe"
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+              
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="John Doe" 
+                        {...field} 
+                        disabled={isLoading}
+                        autoComplete="name"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your.email@example.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+              
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="your.email@example.com" 
+                        {...field} 
+                        disabled={isLoading}
+                        type="email"
+                        autoComplete="email"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </Button>
+              
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="••••••••" 
+                        {...field} 
+                        disabled={isLoading}
+                        type="password"
+                        autoComplete="new-password"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                    Creating account...
+                  </>
+                ) : (
+                  'Register'
+                )}
+              </Button>
+            </form>
+          </Form>
+          
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-              {passwordError && (
-                <p className="text-red-500 text-sm mt-1">{passwordError}</p>
-              )}
+            
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                type="button"
+                disabled={socialAuthIsLoading}
+                onClick={() => handleSocialLogin('google')}
+              >
+                <img src="/google.svg" alt="Google" className="h-5 w-5 mr-2" />
+                Google
+              </Button>
+              <Button
+                variant="outline"
+                type="button"
+                disabled={socialAuthIsLoading}
+                onClick={() => handleSocialLogin('facebook')}
+              >
+                <img src="/facebook.svg" alt="Facebook" className="h-5 w-5 mr-2" />
+                Facebook
+              </Button>
             </div>
-            <Button 
-              type="submit" 
-              className="w-full bg-mzad-secondary hover:bg-mzad-secondary/90"
-              disabled={isLoading}
-            >
-              {isLoading ? "Creating Account..." : "Register"}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter>
-          <div className="text-center w-full text-sm">
-            Already have an account?{" "}
-            <Link to="/auth/login" className="text-mzad-secondary hover:underline">
-              Login
-            </Link>
           </div>
-        </CardFooter>
+          
+          <div className="mt-6 text-center text-sm">
+            <p>
+              Already have an account?{' '}
+              <Link to="/auth/login" className="text-mzad-primary hover:underline">
+                Login
+              </Link>
+            </p>
+          </div>
+        </CardContent>
       </Card>
-    </div>
+    </AuthLayout>
   );
 };
 
