@@ -35,11 +35,11 @@ const CategorySelector = ({ onCategorySelect, onCancel, initialCategoryId }: Cat
         const path = buildCategoryPath(initialCategoryId);
         setBreadcrumbs(path.slice(0, -1)); // All except the last one
         
-        // Find the parent category to display its children
+        // Find the parent category to display its subcategories
         if (path.length > 1) {
           const parentCategory = findCategoryById(path[path.length - 2].id);
-          if (parentCategory && parentCategory.children) {
-            setCurrentCategories(parentCategory.children);
+          if (parentCategory && parentCategory.subcategories) {
+            setCurrentCategories(parentCategory.subcategories);
           }
         }
         
@@ -68,13 +68,13 @@ const CategorySelector = ({ onCategorySelect, onCancel, initialCategoryId }: Cat
   const handleCategoryClick = (category: Category) => {
     setSelectedCategory(category);
     
-    if (category.children && category.children.length > 0) {
+    if (category.subcategories && category.subcategories.length > 0) {
       setBreadcrumbs([...breadcrumbs, { 
         id: category.id, 
         name: category.name,
         slug: category.slug
       }]);
-      setCurrentCategories(category.children);
+      setCurrentCategories(category.subcategories);
     } else {
       // If it's a leaf category, select it
       onCategorySelect(category);
@@ -97,8 +97,8 @@ const CategorySelector = ({ onCategorySelect, onCancel, initialCategoryId }: Cat
     const lastBreadcrumb = newBreadcrumbs[newBreadcrumbs.length - 1];
     const parentCategory = findCategoryById(lastBreadcrumb.id);
     
-    if (parentCategory && parentCategory.children) {
-      setCurrentCategories(parentCategory.children);
+    if (parentCategory && parentCategory.subcategories) {
+      setCurrentCategories(parentCategory.subcategories);
     } else {
       setCurrentCategories(categories);
     }
@@ -118,8 +118,8 @@ const CategorySelector = ({ onCategorySelect, onCancel, initialCategoryId }: Cat
       const lastBreadcrumb = newBreadcrumbs[newBreadcrumbs.length - 1];
       const parentCategory = findCategoryById(lastBreadcrumb.id);
       
-      if (parentCategory && parentCategory.children) {
-        setCurrentCategories(parentCategory.children);
+      if (parentCategory && parentCategory.subcategories) {
+        setCurrentCategories(parentCategory.subcategories);
       }
     }
   };
@@ -228,7 +228,7 @@ const CategorySelector = ({ onCategorySelect, onCancel, initialCategoryId }: Cat
                 >
                   <div className="flex justify-between items-center w-full">
                     <span>{category.name}</span>
-                    {category.children && category.children.length > 0 && (
+                    {category.subcategories && category.subcategories.length > 0 && (
                       <ChevronRight className="h-4 w-4 ml-2 text-muted-foreground" />
                     )}
                   </div>
@@ -243,7 +243,7 @@ const CategorySelector = ({ onCategorySelect, onCancel, initialCategoryId }: Cat
             <p className="text-sm text-muted-foreground">Selected Category:</p>
             <div className="flex items-center mt-1">
               <span className="font-medium">{selectedCategory.name}</span>
-              {selectedCategory.children && selectedCategory.children.length === 0 && (
+              {selectedCategory.subcategories && selectedCategory.subcategories.length === 0 && (
                 <Button 
                   className="ml-auto"
                   onClick={() => onCategorySelect(selectedCategory)}

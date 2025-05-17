@@ -1000,3 +1000,5 @@ const AddProduct = () => {
 };
 
 export default AddProduct;
+
+import { findCategoryById } from '@/data/categories';
