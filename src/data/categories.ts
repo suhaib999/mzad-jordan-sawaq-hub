@@ -7,12 +7,6 @@ export interface Category {
   subcategories?: Category[];
 }
 
-export interface CategoryBreadcrumb {
-  id: string;
-  name: string;
-  slug: string;
-}
-
 export const categoriesData: Category[] = [
   {
     id: '1',
@@ -237,8 +231,6 @@ export const categoriesData: Category[] = [
   },
 ];
 
-export const categories = categoriesData;
-
 export const buildCategoryPath = (categoryId: string): Category[] => {
   const path: Category[] = [];
 
@@ -285,30 +277,4 @@ export const findCategoryById = (categoryId: string, categories: Category[] = ca
   }
 
   return null;
-};
-
-// Add a search function
-export const searchCategories = (query: string, categoriesList: Category[] = categoriesData): Category[] => {
-  if (!query || query.trim() === '') {
-    return [];
-  }
-
-  const normalizedQuery = query.toLowerCase().trim();
-  const results: Category[] = [];
-
-  const searchInCategories = (categories: Category[]) => {
-    for (const category of categories) {
-      if (category.name.toLowerCase().includes(normalizedQuery) || 
-          category.slug.toLowerCase().includes(normalizedQuery)) {
-        results.push(category);
-      }
-      
-      if (category.subcategories && category.subcategories.length > 0) {
-        searchInCategories(category.subcategories);
-      }
-    }
-  };
-
-  searchInCategories(categoriesList);
-  return results;
 };
