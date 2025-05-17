@@ -1,12 +1,18 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { VehicleFormValues } from '@/types/product';
 import { createOrUpdateProduct } from '@/services/product/createOrUpdateProduct';
 import { toast } from '@/hooks/use-toast';
 import { ProductImageInput } from '@/services/product/imageService';
-import { ProductImage } from '@/services/product/types';
+import { ProductImage as DBProductImage } from '@/services/product/types';
 
-// Helper function to convert ProductImageInput to ProductImage
-const convertToProductImage = (images: ProductImageInput[]): ProductImage[] => {
+// Helper function to convert ProductImageInput to the ProductImage format expected by createOrUpdateProduct
+const convertToProductImage = (images: ProductImageInput[]): {
+  id: string;
+  url: string;
+  order: number;
+  file?: File | null;
+}[] => {
   return images.map(img => ({
     id: img.id || '',  // Ensure id is not undefined
     url: img.url || '',
