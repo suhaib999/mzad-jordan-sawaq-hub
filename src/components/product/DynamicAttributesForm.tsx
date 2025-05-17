@@ -1,22 +1,14 @@
-
-import React, { useState } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { Category } from '@/data/categories';
+import React from 'react';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Category } from '@/data/categories';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-} from '@/components/ui/form';
 import { Plus, X } from 'lucide-react';
 
 interface DynamicAttributesFormProps {
   category: Category;
-  form: UseFormReturn<any>;
+  form: any;
   customAttributes: { name: string; value: string }[];
   setCustomAttributes: React.Dispatch<React.SetStateAction<{ name: string; value: string }[]>>;
 }

@@ -169,9 +169,19 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
               </FormItem>} />
           
           {/* Brand Field - Separate from Category */}
-          <FormField control={form.control} name="brand" render={({
-          field
-        }) => {}} />
+          <FormField
+            control={form.control}
+            name="brand"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Brand</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Enter brand name" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           
           {/* Condition */}
           <FormField control={form.control} name="condition" render={({

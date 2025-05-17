@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { VehicleFormValues } from '@/types/product';
 import { createOrUpdateProduct } from '@/services/product/createOrUpdateProduct';
 import { toast } from '@/hooks/use-toast';
+import { ProductImageInput } from '@/services/product/imageService';
 
 export async function createVehicleListing(
   vehicleData: VehicleFormValues, 
@@ -32,8 +33,16 @@ export async function createVehicleListing(
       }
     };
     
+    // Make sure images have required properties for ProductImage type
+    const mappedImages: ProductImageInput[] = vehicleData.images.map(img => ({
+      id: img.id || '',
+      file: img.file,
+      url: img.url || '',
+      order: img.order || 0
+    }));
+    
     // Create or update the product
-    const { success, productId, error } = await createOrUpdateProduct(productData, vehicleData.images, userId);
+    const { success, productId, error } = await createOrUpdateProduct(productData, mappedImages, userId);
     
     if (!success || !productId) {
       return { success: false, error: error || 'Failed to create product listing' };
@@ -121,7 +130,15 @@ export async function updateVehicleListing(
       }
     };
     
-    const { success, error } = await createOrUpdateProduct(productData, vehicleData.images, userId);
+    // Make sure images have required properties for ProductImage type
+    const mappedImages: ProductImageInput[] = vehicleData.images.map(img => ({
+      id: img.id || '',
+      file: img.file,
+      url: img.url || '',
+      order: img.order || 0
+    }));
+    
+    const { success, error } = await createOrUpdateProduct(productData, mappedImages, userId);
     
     if (!success) {
       return { success: false, error: error || 'Failed to update product listing' };

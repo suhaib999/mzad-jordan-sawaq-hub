@@ -28,7 +28,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CategorySelectDialog from '@/components/category/CategorySelectDialog';
 import CategoryDisplay from '@/components/category/CategoryDisplay';
-import { Category, findCategoryById } from '@/data/categories';
+import { Category } from '@/data/categories';
 import PhoneSpecsSelector from '@/components/product/PhoneSpecsSelector';
 import { Progress } from '@/components/ui/progress';
 import { 

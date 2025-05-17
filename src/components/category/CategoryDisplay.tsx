@@ -2,7 +2,7 @@
 import React from 'react';
 import { ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Category, buildCategoryPath, findCategoryById } from '@/data/categories';
+import { buildCategoryPath, findCategoryById, Category } from '@/data/categories';
 
 interface CategoryDisplayProps {
   categoryId: string | null;

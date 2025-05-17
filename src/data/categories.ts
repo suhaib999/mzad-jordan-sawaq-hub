@@ -1,12 +1,29 @@
-import { Category } from "@/types/product";
+import { Category as ProductCategory } from "@/types/product";
 
-export function findCategoryById(categories: Category[], id: string): Category | null {
+// Types needed for Category components
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  children?: Category[];
+  parent_id?: string | null;
+  level?: number;
+  is_leaf?: boolean;
+}
+
+export interface CategoryBreadcrumb {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export function findCategoryById(id: string): Category | null {
   for (const category of categories) {
     if (category.id === id) {
       return category;
     }
     if (category.children) {
-      const found = findCategoryById(category.children, id);
+      const found = findCategoryByIdInChildren(category.children, id);
       if (found) {
         return found;
       }
@@ -15,13 +32,28 @@ export function findCategoryById(categories: Category[], id: string): Category |
   return null;
 }
 
-export function findCategoryBySlug(categories: Category[], slug: string): Category | null {
+function findCategoryByIdInChildren(categories: Category[], id: string): Category | null {
+  for (const category of categories) {
+    if (category.id === id) {
+      return category;
+    }
+    if (category.children) {
+      const found = findCategoryByIdInChildren(category.children, id);
+      if (found) {
+        return found;
+      }
+    }
+  }
+  return null;
+}
+
+export function findCategoryBySlug(slug: string): Category | null {
   for (const category of categories) {
     if (category.slug === slug) {
       return category;
     }
     if (category.children) {
-      const found = findCategoryBySlug(category.children, slug);
+      const found = findCategoryBySlugInChildren(category.children, slug);
       if (found) {
         return found;
       }
@@ -30,26 +62,60 @@ export function findCategoryBySlug(categories: Category[], slug: string): Catego
   return null;
 }
 
-export function getAllLeafCategories(categories: Category[]): Category[] {
+function findCategoryBySlugInChildren(categories: Category[], slug: string): Category | null {
+  for (const category of categories) {
+    if (category.slug === slug) {
+      return category;
+    }
+    if (category.children) {
+      const found = findCategoryBySlugInChildren(category.children, slug);
+      if (found) {
+        return found;
+      }
+    }
+  }
+  return null;
+}
+
+export function getAllLeafCategories(): Category[] {
   let leafCategories: Category[] = [];
   
   for (const category of categories) {
     if (category.is_leaf) {
       leafCategories.push(category);
     } else if (category.children) {
-      leafCategories = [...leafCategories, ...getAllLeafCategories(category.children)];
+      leafCategories = [...leafCategories, ...getAllLeafCategoriesInChildren(category.children)];
     }
   }
   
   return leafCategories;
 }
 
-export function getCategoryPath(categories: Category[], categoryId: string): Category[] {
-  const path: Category[] = [];
+function getAllLeafCategoriesInChildren(categories: Category[]): Category[] {
+  let leafCategories: Category[] = [];
   
-  function findPath(cats: Category[], id: string, currentPath: Category[]): boolean {
+  for (const category of categories) {
+    if (category.is_leaf) {
+      leafCategories.push(category);
+    } else if (category.children) {
+      leafCategories = [...leafCategories, ...getAllLeafCategoriesInChildren(category.children)];
+    }
+  }
+  
+  return leafCategories;
+}
+
+export function buildCategoryPath(categoryId: string): CategoryBreadcrumb[] {
+  const path: CategoryBreadcrumb[] = [];
+  
+  function findPath(cats: Category[], id: string, currentPath: CategoryBreadcrumb[]): boolean {
     for (const cat of cats) {
-      const newPath = [...currentPath, cat];
+      const catBreadcrumb: CategoryBreadcrumb = {
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug
+      };
+      const newPath = [...currentPath, catBreadcrumb];
       
       if (cat.id === id) {
         path.push(...newPath);
@@ -68,8 +134,28 @@ export function getCategoryPath(categories: Category[], categoryId: string): Cat
   return path;
 }
 
+export function searchCategories(query: string): Category[] {
+  const results: Category[] = [];
+  const lowerQuery = query.toLowerCase();
+  
+  function searchInCategories(cats: Category[]): void {
+    for (const cat of cats) {
+      if (cat.name.toLowerCase().includes(lowerQuery)) {
+        results.push(cat);
+      }
+      
+      if (cat.children) {
+        searchInCategories(cat.children);
+      }
+    }
+  }
+  
+  searchInCategories(categories);
+  return results;
+}
+
 // Modified categories data - removing brands from phones subcategory
-export const categories = [
+export const categories: Category[] = [
   {
     id: "1",
     name: "Vehicles",
