@@ -51,31 +51,39 @@ const TabsDetails: React.FC<TabsDetailsProps> = ({
   }, [form]);
   
   const onCategorySelect = useCallback((category: any, subcategory?: any) => {
-    console.log("Category selected:", category);
+    console.log("Category selected:", category, subcategory);
     
     try {
+      // Always set category information
+      form.setValue('category', category.slug, { shouldDirty: true, shouldValidate: true });
+      form.setValue('category_id', category.id, { shouldDirty: true });
+      setCategoryValue(category.slug);
+
       if (subcategory) {
         // Handle subcategory selection
-        form.setValue('category', category.slug, { shouldDirty: true, shouldValidate: true });
-        form.setValue('category_id', category.id, { shouldDirty: true });
         form.setValue('subcategory', subcategory.slug, { shouldDirty: true, shouldValidate: true });
         form.setValue('subcategory_id', subcategory.id, { shouldDirty: true });
         setSelectedCategory(subcategory.id);
-        setCategoryValue(category.slug);
         setSubcategoryValue(subcategory.slug);
+        
+        // Build category path array if both category and subcategory are selected
+        const categoryPath = [category.slug, subcategory.slug];
+        form.setValue('category_path', categoryPath, { shouldDirty: true });
       } else {
-        // Handle main category selection
-        form.setValue('category', category.slug, { shouldDirty: true, shouldValidate: true });
-        form.setValue('category_id', category.id, { shouldDirty: true });
+        // Handle main category selection only (no subcategory selected)
         form.setValue('subcategory', '', { shouldDirty: true });
         form.setValue('subcategory_id', '', { shouldDirty: true });
         setSelectedCategory(category.id);
-        setCategoryValue(category.slug);
         setSubcategoryValue('');
+        
+        // Set category path with just the main category
+        form.setValue('category_path', [category.slug], { shouldDirty: true });
       }
       
       // Reset attributes when category changes to prevent data from previous categories
       form.setValue('attributes', {}, { shouldDirty: true });
+      
+      console.log("Updated form values:", form.getValues());
     } catch (error) {
       console.error("Error in category selection:", error);
       toast({

@@ -9,6 +9,7 @@ export const productSchema = z.object({
   category_id: z.string().optional(), // Added field for category ID
   subcategory: z.string().optional(),
   subcategory_id: z.string().optional(), // Added field for subcategory ID
+  category_path: z.array(z.string()).optional(), // New field for category path
   condition: z.string().min(1, "Please select a condition"),
   brand: z.string().optional().nullable(),
   model: z.string().optional().nullable(),

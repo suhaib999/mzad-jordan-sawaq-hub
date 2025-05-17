@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Check, ChevronRight, Tag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,7 +46,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
     return null;
   }, []);
 
-  // Set initial state if category is already selected - only run once on mount
+  // Set initial state if category is already selected - only run once on mount or when selectedCategory changes
   useEffect(() => {
     if (!initialized && selectedCategory) {
       try {
@@ -86,8 +85,10 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
 
       // If no children, this is a leaf category
       if (!category.children || category.children.length === 0) {
+        // We pass only the main category without a subcategory
         onCategorySelect(category);
       }
+      // Otherwise we don't call onCategorySelect yet - we'll wait for subcategory selection
     } catch (error) {
       console.error("Error in handleCategorySelect:", error);
       toast({
@@ -105,10 +106,14 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
       setLeafCategories(subcategory.children || []);
       setLevel('leaf');
 
-      // If no children, this is a leaf category
+      // If no children, this is the final selection
       if (!subcategory.children || subcategory.children.length === 0) {
-        onCategorySelect(currentCategory as Category, subcategory);
+        // Pass both the main category and subcategory
+        if (currentCategory) {
+          onCategorySelect(currentCategory, subcategory);
+        }
       }
+      // Otherwise we don't call onCategorySelect yet - we'll wait for leaf category selection
     } catch (error) {
       console.error("Error in handleSubcategorySelect:", error);
       toast({
@@ -121,8 +126,10 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
 
   const handleLeafCategorySelect = (leafCategory: Category) => {
     try {
-      // Updated to only pass two parameters
-      onCategorySelect(currentSubcategory as Category, leafCategory);
+      // We now have all three levels selected, call onCategorySelect with the final leaf category
+      if (currentSubcategory) {
+        onCategorySelect(currentCategory as Category, leafCategory);
+      }
     } catch (error) {
       console.error("Error in handleLeafCategorySelect:", error);
       toast({

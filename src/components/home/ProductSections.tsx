@@ -63,7 +63,7 @@ const ProductSections = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Featured Products</h2>
         <div className="w-[400px]">
-          <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="featured">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList>
               <TabsTrigger value="featured">Featured</TabsTrigger>
               <TabsTrigger value="auctions">Hot Auctions</TabsTrigger>
@@ -73,7 +73,7 @@ const ProductSections = () => {
         </div>
       </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="featured">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsContent value="featured">
           {isFeaturedLoading ? (
             renderLoadingSkeleton()
@@ -82,7 +82,7 @@ const ProductSections = () => {
               <ProductGrid 
                 products={featuredProducts} 
                 viewAllLink="/browse?type=fixed" 
-                isLoading={false}
+                isLoading={isFeaturedLoading}
               />
               
               {featuredProducts.length > 0 && (
@@ -106,7 +106,7 @@ const ProductSections = () => {
               <ProductGrid 
                 products={auctionProducts} 
                 viewAllLink="/browse?type=auction" 
-                isLoading={false}
+                isLoading={isAuctionLoading}
               />
               
               {auctionProducts.length > 0 && (
@@ -130,7 +130,7 @@ const ProductSections = () => {
               <ProductGrid 
                 products={recentProducts} 
                 viewAllLink="/browse?sort=newest" 
-                isLoading={false}
+                isLoading={isRecentLoading}
               />
               
               {recentProducts.length > 0 && (
