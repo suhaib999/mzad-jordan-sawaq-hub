@@ -15,7 +15,6 @@ import WishlistPage from './pages/Wishlist/WishlistPage';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import ResetPassword from './pages/Auth/ResetPassword';
-import AuthLayout from './pages/Auth/AuthLayout';
 import NotFound from './pages/NotFound';
 import BidPage from './pages/Bids/BidPage';
 import RequireAuth from './components/auth/RequireAuth';
@@ -88,12 +87,10 @@ function App() {
                 } 
               />
               
-              {/* Auth routes */}
-              <Route path="/auth" element={<AuthLayout />}>
-                <Route path="login" element={<Login />} />
-                <Route path="register" element={<Register />} />
-                <Route path="reset-password" element={<ResetPassword />} />
-              </Route>
+              {/* Auth routes - updated to use direct components instead of Outlet */}
+              <Route path="/auth/login" element={<Login />} />
+              <Route path="/auth/register" element={<Register />} />
+              <Route path="/auth/reset-password" element={<ResetPassword />} />
               
               {/* Bids */}
               <Route 
