@@ -1,26 +1,15 @@
 
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import React, { ReactNode } from 'react';
 
-const AuthLayout = () => {
+interface AuthLayoutProps {
+  children: ReactNode;
+}
+
+const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto py-8">
-        <div className="mb-8 text-center">
-          <Link to="/" className="inline-block">
-            <div className="flex items-center justify-center">
-              <span className="text-3xl font-bold text-mzad-primary">Mzad</span>
-              <span className="text-3xl font-bold text-mzad-secondary">KumSooq</span>
-            </div>
-          </Link>
-        </div>
-
-        <Outlet />
-
-        <div className="mt-8 text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} MzadKumSooq. All rights reserved.
-        </div>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
+        {children}
       </div>
     </div>
   );

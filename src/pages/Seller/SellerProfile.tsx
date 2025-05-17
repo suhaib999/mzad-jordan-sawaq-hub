@@ -12,7 +12,7 @@ import ProductGrid from '@/components/product/ProductGrid';
 import { Skeleton } from '@/components/ui/skeleton';
 import { mapProductToCardProps } from '@/services/product/mappers';
 import { toast } from '@/hooks/use-toast';
-import SellerFeedbackSummary from '@/components/feedback/SellerFeedbackSummary';
+import { SellerFeedbackSummary } from '@/components/feedback/SellerFeedbackSummary';
 import { CalendarDays, MapPin, ShoppingBag, Star } from 'lucide-react';
 
 interface SellerProfile {

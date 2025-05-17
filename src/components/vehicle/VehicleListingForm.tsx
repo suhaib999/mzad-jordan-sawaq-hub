@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -96,11 +95,10 @@ const VehicleListingForm = () => {
     setSelectedCategoryId(category.id);
     form.setValue('category_id', category.id, { shouldDirty: true, shouldValidate: true });
     
-    // If we have a full path to this category, set it
-    if (category.path) {
-      const categoryPath = category.path.split('/');
-      form.setValue('category_path', categoryPath, { shouldDirty: true });
-    }
+    // If we have a full path to this category, use category_path from the Category type if available
+    // or just set an array with the category name
+    const categoryPath = category.name ? [category.name] : [];
+    form.setValue('category_path', categoryPath, { shouldDirty: true });
     
     // Close the dialog
     setIsCategoryDialogOpen(false);

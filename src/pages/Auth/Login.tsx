@@ -26,7 +26,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { refreshSession } = useAuth();
+  const { refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [socialAuthIsLoading, setSocialAuthIsLoading] = useState(false);
   
@@ -57,7 +57,7 @@ const Login = () => {
       }
       
       // Refresh user session in auth context
-      await refreshSession();
+      await refreshUser();
       
       // Show success message and redirect
       toast({
