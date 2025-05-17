@@ -5,6 +5,14 @@ import { createOrUpdateProduct } from '@/services/product/createOrUpdateProduct'
 import { toast } from '@/hooks/use-toast';
 import { ProductImageInput } from '@/services/product/imageService';
 
+// Helper function to convert ProductImageInput to ProductImage
+const convertToProductImage = (images: ProductImageInput[]) => {
+  return images.map(img => ({
+    ...img,
+    id: img.id || '',  // Ensure id is not undefined
+  }));
+};
+
 export async function createVehicleListing(
   vehicleData: VehicleFormValues, 
   userId: string
@@ -41,8 +49,11 @@ export async function createVehicleListing(
       order: img.order || 0
     }));
     
+    // Convert to ProductImage type required by createOrUpdateProduct
+    const imageData = convertToProductImage(mappedImages);
+    
     // Create or update the product
-    const { success, productId, error } = await createOrUpdateProduct(productData, mappedImages, userId);
+    const { success, productId, error } = await createOrUpdateProduct(productData, imageData, userId);
     
     if (!success || !productId) {
       return { success: false, error: error || 'Failed to create product listing' };
@@ -138,7 +149,10 @@ export async function updateVehicleListing(
       order: img.order || 0
     }));
     
-    const { success, error } = await createOrUpdateProduct(productData, mappedImages, userId);
+    // Convert to ProductImage type required by createOrUpdateProduct
+    const imageData = convertToProductImage(mappedImages);
+    
+    const { success, error } = await createOrUpdateProduct(productData, imageData, userId);
     
     if (!success) {
       return { success: false, error: error || 'Failed to update product listing' };

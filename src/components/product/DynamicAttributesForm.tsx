@@ -1,5 +1,5 @@
-import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import React, { useState } from 'react';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Category } from '@/data/categories';
 import { Button } from '@/components/ui/button';
